@@ -1,0 +1,37 @@
+.group-container {
+    position: relative;
+    margin: 0 auto;
+}
+
+.player {
+    position: absolute;
+    transform: translate(-50%, -50%);
+
+    width: 100px;
+    height: 100px;
+}
+
+.circle-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+
+    color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.Werewolf {
+    background-color: #f44336;
+}
+
+.Villager {
+    background-color: #4caf50;
+}
+
+.undefined {
+    cursor: not-allowed;
+}
