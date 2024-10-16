@@ -24,6 +24,10 @@
     cursor: pointer;
 }
 
+.circle-button:disabled {
+    cursor: not-allowed;
+}
+
 .Werewolf {
     background-color: #f44336;
 }
@@ -34,4 +38,8 @@
 
 .undefined {
     cursor: not-allowed;
+}
+
+.inactive {
+    opacity: 10%;
 }
