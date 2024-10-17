@@ -61,6 +61,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
 
                 const isActive = currentPlayer !== null && currentPlayer !== index ? 'inactive' : 'active';
                 const isSelected = selectedPlayers.includes(index) ? 'selected' : 'unselected';
+                const isAlive = player.alive ? 'alive' : 'dead';
 
                 return (<>
                     <div className='player'
@@ -70,7 +71,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                         }}
                     >
                         <button
-                            className={`circle-button ${role?.team} ${isActive} ${isSelected}`}
+                            className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive}`}
                             key={index}
                             disabled={role === undefined}
                             onClick={() => handleClick(index)}
@@ -85,7 +86,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                     {
                         player.statuses?.map((status, index) => {
 
-                            const distanceMultiplier = (index + 1) / ((player.statuses?.length || 1) + 1);
+                            const distanceMultiplier = (2 - index) / 3;
                             const newX = centerX + radius * distanceMultiplier * Math.sin(angle);
                             const newY = centerY - radius * distanceMultiplier * Math.cos(angle);
 

@@ -72,6 +72,20 @@ function App() {
         }
     }, [currentPlayer, gameState]);
 
+    useEffect(() => {
+        if (gameState.players.length > 0 && !setup) {
+            if (!gameState.players.find(player => player.role?.team === 'Evil' && player.alive)) {
+                alert('Villagers win!');
+            }
+            else if (
+                gameState.players.filter(player => player.role?.team === 'Evil' && player.alive).length
+                    >= gameState.players.filter(player => player.role?.team === 'Good' && player.alive).length
+            ) {
+                alert('Werewolves win!');
+            }
+        }
+    }, [gameState, setup]);
+
     function loadGameState() {
         const cachedGameState = localStorage.getItem('gameState');
         if (cachedGameState) {
@@ -138,20 +152,33 @@ function App() {
         }
 
         time++;
-        if (time > 2) {
-            // NEW DAY
+        // MORNING
+        if (time === 1) {
+            // HANDLE MURDER
+            tempGameState.players.forEach((player, index) => {
+                if (player.statuses?.includes('Targeted') &&
+                    !player.statuses?.includes('Protected') &&
+                    player.role?.name !== 'Soldier'
+                ) {
+                    tempGameState.players[index].alive = false;
+                }
+            });
+        }
+        // NEW DAY
+        else if (time > 2) {
             time = 0;
             day++;
 
             setCurrentPlayer(0);
         }
 
-        for (const player of tempGameState.players) {
+        tempGameState.players.forEach((player, index) => {
             if (player.statuses) {
-                player.statuses = updateStatuses(player.statuses, time);
+                // reset
+                tempGameState.players[index].statuses = updateStatuses(player.statuses, time);
                 // TODO: this is too fast for morning!
             }
-        }
+        });
 
         setGameState({ ...tempGameState, day, time });
     }
@@ -198,8 +225,13 @@ function App() {
         }
 
         let instruction;
+        const player = gameState.players[currentPlayer];
 
-        if (gameState.players[currentPlayer].role?.night) {
+        if (!player.alive) {
+            return 'This player is dead.';
+        }
+
+        if (player.role?.night) {
             instruction = gameState.players[currentPlayer].role?.night;
         }
         else {

@@ -38,10 +38,12 @@
 
 .circle-button.Evil {
     background-color: #f44336;
+    border: 8px solid #f44336;
 }
 
 .circle-button.Good {
     background-color: #4caf50;
+    border: 8px solid #4caf50;
 }
 
 .circle-button.undefined {
@@ -58,6 +60,10 @@
 
 .circle-button.selected {
     opacity: 50%;
+}
+
+.circle-button.dead {
+    background-color: #858587 !important;
 }
 
 .status-circle {

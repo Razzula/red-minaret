@@ -5,7 +5,7 @@ export function findPlayersNeighbours(gameState: GameState, currentPlayer: numbe
     const neighbours = [];
 
     for (let i = 1; i < gameState.players.length; i++) {
-        const neighbourIndex = currentPlayer + i % gameState.players.length;
+        const neighbourIndex = (currentPlayer + i) % gameState.players.length;
         if (gameState.players[neighbourIndex].alive) {
             neighbours.push(neighbourIndex);
             break;
