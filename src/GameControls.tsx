@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { GameState } from './App';
+import roles from './roles';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -8,14 +9,23 @@ type GameControlsProps = {
     gameSettings: any;
     advanceTime: () => void;
     setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
+
+    villagerPool: number[];
+    outsiderPool: number[];
+    werewolfPool: number[];
+    minionPool: number[];
 };
 
-function GameControls({ gameState, setGameState, gameSettings, advanceTime, setCurrentPlayer }: GameControlsProps) {
+function GameControls({ gameState, setGameState, gameSettings, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function assignRoles() {
         const players = gameState.players;
         const numPlayers = players.length;
-        const numWerewolves = Math.floor(numPlayers / 3);
+
+        const tempVillagerPool = [...villagerPool];
+        const tempOutsiderPool = [...outsiderPool];
+        const tempWerewolfPool = [...werewolfPool];
+        const tempMinionPool = [...minionPool];
 
         // clear slate
         players.forEach(player => {
@@ -24,28 +34,85 @@ function GameControls({ gameState, setGameState, gameSettings, advanceTime, setC
             player.alive = true;
         });
 
+        // select roles
+        const numEvil = Math.floor(numPlayers / 3);
+        const numOutsiders = 1;
+
         // determine Werewolves
-        const werewolfIndices: number[] = [];
-        while (werewolfIndices.length < numWerewolves) {
+        const evilIndicies: number[] = [];
+        while (evilIndicies.length < numEvil) {
             const index = Math.floor(Math.random() * numPlayers);
-            if (!werewolfIndices.includes(index)) {
-                werewolfIndices.push(index);
+            if (!evilIndicies.includes(index)) {
+                evilIndicies.push(index);
             }
         }
 
+        const werewolfIndicies = evilIndicies.slice(0, 1);
+
+        // determine Outsiders
+        const outsiderIndicies: number[] = [];
+        while (outsiderIndicies.length < numOutsiders) {
+            const index = Math.floor(Math.random() * numPlayers);
+            if (!evilIndicies.includes(index) && !outsiderIndicies.includes(index)) {
+                outsiderIndicies.push(index);
+            }
+        }
+        let drunkIndex: number | null = null;
+
         // assign roles
         players.forEach((player, index) => {
-            if (werewolfIndices.includes(index)) {
-                player.role = 'Werewolf';
-            } else {
-                player.role = 'Villager';
+            if (evilIndicies.includes(index)) {
+
+                if (werewolfIndicies.includes(index)) {
+                    // WEREWOLF
+                    const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
+                    player.role = roles[role];
+                    tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
+                }
+                else {
+                    // MINION
+                    const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
+                    player.role = roles[role];
+                    tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
+                }
+
+            }
+            else {
+
+                if (outsiderIndicies.includes(index)) {
+                    // OUTSIDER
+                    const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
+                    player.role = roles[role];
+                    tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
+
+                    // DRUNK
+                    if (roles[role].name === 'Drunk') {
+                        drunkIndex = index;
+                    }
+                }
+                else {
+                    // VILLAGER
+                    const role = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]
+                    player.role = roles[role];
+                    tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
+
+                    // SEER
+                    if (roles[role].name === 'Seer') {
+                        let redHerringIndex = Math.floor(Math.random() * numPlayers);
+                        while (evilIndicies.includes(redHerringIndex)) {
+                            // an evil player cannot be the red herring
+                            redHerringIndex = Math.floor(Math.random() * numPlayers);
+                        }
+                        players[redHerringIndex].statuses = [...players[redHerringIndex].statuses || [], 'Red Herring'];
+                    }
+                }
             }
         });
 
-        // handle drunk
-        if (Math.random() < gameSettings.drunkProb) {
-            const drunkIndex = Math.floor(Math.random() * numPlayers);
+        // DRUNK
+        if (drunkIndex !== null) {
             players[drunkIndex].statuses = [...players[drunkIndex].statuses || [], 'Drunk'];
+            players[drunkIndex].role = roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]];
         }
 
         setGameState({ ...gameState, players });

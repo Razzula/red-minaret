@@ -55,17 +55,31 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                         }}
                     >
                         <button
-                            className={`circle-button ${role} ${isActive}`}
+                            className={`circle-button ${role?.team} ${isActive}`}
                             key={index}
                             disabled={role === undefined}
                         >
                             <h2>{index + 1}</h2>
                         </button>
                         <span>{player.name}</span>
+                        { player.role &&
+                            <span> ({player.role?.name})</span>
+                        }
                         {
-                            player.statuses?.map((statue, index) => (
-                                <div key={index} className='statue'>{statue}</div>
-                            ))
+                            player.statuses?.map((status, index) => {
+                                // const newX = (centerX - x) / 2;
+                                // const newY = (centerY - y) / 2;
+
+                                return (
+                                    <div key={index}
+                                        // className='player'
+                                        // style={{
+                                        //     left: `${x}px`,
+                                        //     top: `${y}px`,
+                                        // }}
+                                    >{status}</div>
+                                );
+                            })
                         }
                     </div>
                 );

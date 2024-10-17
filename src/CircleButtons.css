@@ -28,11 +28,11 @@
     cursor: not-allowed;
 }
 
-.Werewolf {
+.Evil {
     background-color: #f44336;
 }
 
-.Villager {
+.Good {
     background-color: #4caf50;
 }
 
