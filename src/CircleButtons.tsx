@@ -9,9 +9,12 @@ type CircleButtonsProps = {
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
     radius: number;
     currentPlayer: number | null;
+    selectedPlayers: number[];
+    setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
+    handleAction: (index: number) => void;
 };
 
-const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer }) => {
+const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, setSelectedPlayers, handleAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -25,6 +28,17 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
             setCenterY(height / 2);
         }
     }, []);
+
+    function handleClick(index: number) {
+        if (currentPlayer === null) {
+            return;
+        }
+
+        if (currentPlayer !== index) {
+            // setSelectedPlayers([index]);
+            handleAction(index);
+        }
+    }
 
     const players = gameState.players;
 
@@ -46,8 +60,9 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                 const y = centerY - radius * Math.cos(angle);
 
                 const isActive = currentPlayer !== null && currentPlayer !== index ? 'inactive' : 'active';
+                const isSelected = selectedPlayers.includes(index) ? 'selected' : 'unselected';
 
-                return (
+                return (<>
                     <div className='player'
                         style={{
                             left: `${x}px`,
@@ -55,9 +70,10 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                         }}
                     >
                         <button
-                            className={`circle-button ${role?.team} ${isActive}`}
+                            className={`circle-button ${role?.team} ${isActive} ${isSelected}`}
                             key={index}
                             disabled={role === undefined}
+                            onClick={() => handleClick(index)}
                         >
                             <h2>{index + 1}</h2>
                         </button>
@@ -65,24 +81,35 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                         { player.role &&
                             <span> ({player.role?.name})</span>
                         }
-                        {
-                            player.statuses?.map((status, index) => {
-                                // const newX = (centerX - x) / 2;
-                                // const newY = (centerY - y) / 2;
-
-                                return (
-                                    <div key={index}
-                                        // className='player'
-                                        // style={{
-                                        //     left: `${x}px`,
-                                        //     top: `${y}px`,
-                                        // }}
-                                    >{status}</div>
-                                );
-                            })
-                        }
                     </div>
-                );
+                    {
+                        player.statuses?.map((status, index) => {
+
+                            const distanceMultiplier = (index + 1) / ((player.statuses?.length || 1) + 1);
+                            const newX = centerX + radius * distanceMultiplier * Math.sin(angle);
+                            const newY = centerY - radius * distanceMultiplier * Math.cos(angle);
+
+                            return (
+                                <div key={index}
+                                    className='status'
+                                    style={{
+                                        left: `${newX}px`,
+                                        top: `${newY}px`,
+                                        position: 'absolute',
+                                    }}
+                                >
+                                    <button
+                                        className={`circle-button status-circle ${status} ${isActive}`}
+                                        key={index}
+                                        disabled={role === undefined}
+                                    >
+                                        <p>{status}</p>
+                                    </button>
+                                </div>
+                            );
+                        })
+                    }
+                </>);
             })}
 
         </div>

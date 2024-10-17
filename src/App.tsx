@@ -5,6 +5,7 @@ import GameControls from './GameControls'
 
 import './App.css'
 import roles, { Role } from './roles'
+import { findPlayersNeighbours, whenStatusExpire } from './utils'
 
 export type GameState = {
     day: number;
@@ -35,6 +36,7 @@ function App() {
     const [gameSettings, setGameSettings] = useState({})
 
     const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
+    const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
 
     const [villagerPool, setVillagerPool] = useState<number[]>(roles.map((role, index) => role.type === 'Villager' ? index : null).filter(i => i !== null));
     const [outsiderPool, setOutsiderPool] = useState<number[]>(roles.map((role, index) => role.type === 'Outsider' ? index : null).filter(i => i !== null));
@@ -46,13 +48,29 @@ function App() {
 
     useEffect(() => {
         // loadGameState()
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (gameState) {
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
-    }, [gameState])
+    }, [gameState]);
+
+    useEffect(() => {
+        if (currentPlayer !== null) {
+            // EMPATH
+            if (gameState.players[currentPlayer].role?.name === 'Empath') {
+                const neighbours = findPlayersNeighbours(gameState, currentPlayer);
+                setSelectedPlayers(neighbours);
+            }
+            else {
+                setSelectedPlayers([]);
+            }
+        }
+        else {
+            setSelectedPlayers([]);
+        }
+    }, [currentPlayer, gameState]);
 
     function loadGameState() {
         const cachedGameState = localStorage.getItem('gameState');
@@ -102,14 +120,15 @@ function App() {
     }
 
     function advanceTime() {
-        let { day, time } = gameState;
+        const tempGameState = { ...gameState };
+        let { day, time } = tempGameState;
 
         if (time === 0) {
             if (currentPlayer === null) {
                 setCurrentPlayer(0);
                 return;
             }
-            else if (currentPlayer < gameState.players.length - 1) {
+            else if (currentPlayer < tempGameState.players.length - 1) {
                 setCurrentPlayer((currentPlayer + 1));
                 return;
             }
@@ -120,12 +139,32 @@ function App() {
 
         time++;
         if (time > 2) {
+            // NEW DAY
             time = 0;
             day++;
 
             setCurrentPlayer(0);
         }
-        setGameState({ ...gameState, day, time });
+
+        for (const player of tempGameState.players) {
+            if (player.statuses) {
+                player.statuses = updateStatuses(player.statuses, time);
+                // TODO: this is too fast for morning!
+            }
+        }
+
+        setGameState({ ...tempGameState, day, time });
+    }
+
+    function updateStatuses(statuses: string[], time: number) {
+        const newStatuses = [];
+        for (const status of statuses) {
+            const expire = whenStatusExpire(status);
+            if (expire === null || expire !== time) {
+                newStatuses.push(status);
+            }
+        }
+        return newStatuses;
     }
 
     function roleSettingsPanel(roleType: string, rolePool: number[], setRolePool: React.Dispatch<React.SetStateAction<number[]>>) {
@@ -153,36 +192,122 @@ function App() {
         });
     }
 
+    function getNightInstruction() {
+        if (currentPlayer === null) {
+            return null;
+        }
+
+        let instruction;
+
+        if (gameState.players[currentPlayer].role?.night) {
+            instruction = gameState.players[currentPlayer].role?.night;
+        }
+        else {
+            return 'There is nothing for this player to do, right now...';
+        }
+
+        // EMPATH
+        if (gameState.players[currentPlayer].role?.name === 'Empath') {
+            let evilCount = 0;
+            // check neighbours (skip over dead players)
+            const neighbours = findPlayersNeighbours(gameState, currentPlayer);
+            for (const neighbour of neighbours) {
+                if (gameState.players[neighbour].role?.team === 'Evil') {
+                    evilCount++;
+                }
+            }
+            instruction = `${instruction} (${evilCount}).`;
+        }
+
+        // DRUNK
+        if (gameState.players[currentPlayer].statuses?.includes('Drunk')) {
+            instruction = `${instruction} Remember, this player is the Drunk!`;
+        }
+
+        return instruction;
+
+    }
+
+    function handleAction(index: number) {
+        if (currentPlayer === null) {
+            return;
+        }
+
+        const currentRole = gameState.players[currentPlayer].role;
+        if (!currentRole) {
+            return;
+        }
+
+        if (currentRole.name === 'Werewolf') {
+            // WEREWOLF
+            gameState.players[index].statuses?.push('Targeted');
+            for (const selectedPlayer of selectedPlayers) {
+                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            }
+            setSelectedPlayers([index]);
+            return;
+        }
+
+        if (currentRole.name === 'Doctor') {
+            // DOCTOR
+            gameState.players[index].statuses?.push('Protected');
+            for (const selectedPlayer of selectedPlayers) {
+                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            }
+            setSelectedPlayers([index]);
+            return;
+        }
+
+        if (currentRole.name === 'Seer') {
+            // TODO
+            return;
+        }
+
+        if (currentRole.name === 'Butler') {
+            // BUTLER
+            gameState.players[index].statuses?.push('Patron');
+            for (const selectedPlayer of selectedPlayers) {
+                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            }
+            setSelectedPlayers([index]);
+            return;
+        }
+
+        setSelectedPlayers([index]);
+    }
+
     return (
         <div className='row'>
             {/* LEFT COLUMN */}
             <div className='sidebar'>
-                <h1>Configuration</h1>
-                <h2><u>Roster</u></h2>
+                { setup &&
+                    <div>
+                        <h1>Configuration</h1>
+                        <h2><u>Roster</u></h2>
 
-                <h3>Villagers</h3>
-                <div className='column'>
-                    {roleSettingsPanel('Villager', villagerPool, setVillagerPool)}
-                </div>
+                        <h3>Villagers</h3>
+                        <div className='column'>
+                            {roleSettingsPanel('Villager', villagerPool, setVillagerPool)}
+                        </div>
 
-                <h3>Outsiders</h3>
-                <div className='column'>
-                    {roleSettingsPanel('Outsider', outsiderPool, setOutsiderPool)}
-                </div>
+                        <h3>Outsiders</h3>
+                        <div className='column'>
+                            {roleSettingsPanel('Outsider', outsiderPool, setOutsiderPool)}
+                        </div>
 
-                <h3>Werewolves</h3>
-                <div className='column'>
-                    {roleSettingsPanel('Werewolf', werewolfPool, setWerewolfPool)}
-                </div>
+                        <h3>Werewolves</h3>
+                        <div className='column'>
+                            {roleSettingsPanel('Werewolf', werewolfPool, setWerewolfPool)}
+                        </div>
 
-                <h3>Minions</h3>
-                <div className='column'>
-                    {roleSettingsPanel('Minion', minionPool, setMinionPool)}
-                </div>
+                        <h3>Minions</h3>
+                        <div className='column'>
+                            {roleSettingsPanel('Minion', minionPool, setMinionPool)}
+                        </div>
 
-                <h2><u>Settings</u></h2>
-
-
+                        <h2><u>Settings</u></h2>
+                    </div>
+                }
             </div>
 
             {/* CENTRAL COLUMN */}
@@ -190,21 +315,22 @@ function App() {
                 {/* TOP BOX */}
                 <div className='control-box column'>
                     <h2>{timeSymbol}  { setup ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
-                    <h3>{getTimeBlurb()}</h3>
+                    <p>{getTimeBlurb()}</p>
 
                     <span>
-                        <h4>
+                        <p>
                         { currentPlayer !== null &&
-                            <span>{gameState.players[currentPlayer].role?.night || 'There is nothing for this player to do, right now...'}</span>
+                            <span>{getNightInstruction()}</span>
                         }
-                        </h4>
+                        </p>
                     </span>
                 </div>
 
                 {/* CENTRE CIRCLE */}
                 <CircleButtons radius={200}
                     gameState={gameState} setGameState={setGameState}
-                    currentPlayer={currentPlayer}
+                    currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
+                    handleAction={handleAction}
                 />
 
                 {/* BOTTOM BOX */}

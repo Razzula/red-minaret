@@ -40,7 +40,7 @@ export const roles: Role[] = [
         description: 'Each night, you learn how many of your 2 alive neighbors are evil.',
         team: 'Good', type: 'Villager',
 
-        night: 'Learn how many neighbours are evil (0, 1, or 2).',
+        night: 'Learn how many neighbours are evil.',
     },
 
     {
