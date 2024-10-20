@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { GameState } from './App';
+import { GameState } from '../App';
 
-import './CircleButtons.css';
+import '../styles/CircleButtons.css';
 
 type CircleButtonsProps = {
     gameState: GameState;

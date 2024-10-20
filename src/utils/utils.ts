@@ -1,4 +1,4 @@
-import { GameState } from "./App";
+import { GameState } from "../App";
 
 export function findPlayersNeighbours(gameState: GameState, currentPlayer: number): number[] {
 

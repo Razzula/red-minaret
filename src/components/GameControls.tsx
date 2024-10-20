@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { GameState } from './App';
-import roles from './roles';
+import { GameState } from '../App';
+import roles from '../data/roles';
 
 type GameControlsProps = {
     gameState: GameState;

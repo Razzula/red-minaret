@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import CircleButtons from './CircleButtons'
-import GameControls from './GameControls'
+import CircleButtons from './components/CircleButtons'
+import GameControls from './components/GameControls'
 
-import './App.css'
-import roles, { Role } from './roles'
-import { findPlayersNeighbours, whenStatusExpire } from './utils'
+import './styles/App.css'
+import roles, { Role } from './data/roles'
+import { findPlayersNeighbours, whenStatusExpire } from './utils/utils'
 
 export type GameState = {
     day: number;
@@ -22,7 +22,7 @@ export type Player = {
 }
 
 const playerList = [
-    'Tom', 'Josh', 'Zaki', 'Mia', 'Sam', 'Steve', 'Marvin', 'Graham White',
+    'Steve', 'Marvin', 'Graham White', 'Boblin', 'Doblin', 'Gorgonzola', 'Otto', 'Ryker', 'Harran', 'Zazu', 'Hush', 'Billybob'
 ]
 
 function App() {
@@ -30,7 +30,9 @@ function App() {
     const [gameState, setGameState] = useState<GameState>({
         day: 0,
         time: 0,
-        players: playerList.slice(0, 5).map(name => ({ name, alive: true })),
+        players: playerList
+            .sort(() => Math.random() - 0.5) // shuffle
+            .slice(0, 5).map(name => ({ name, alive: true })),
     })
 
     const [gameSettings, setGameSettings] = useState({})
