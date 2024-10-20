@@ -210,6 +210,11 @@ function App() {
             }
         }
 
+        let poolEnabled = true;
+        if (roleType === 'Minion' && gameState.players.length < 6) {
+            poolEnabled = false;
+        }
+
         return roles.map((role, index) => {
             if (role.type !== roleType) {
                 return;
@@ -217,6 +222,7 @@ function App() {
             return (
                 <li key={index}>{role.name}
                     <input type='checkbox'
+                        disabled={!poolEnabled}
                         checked={rolePool.includes(index)}
                         onChange={() => updateRolePool(index)}
                     />
@@ -301,7 +307,20 @@ function App() {
         }
 
         if (currentRole.name === 'Seer') {
-            // TODO
+            const newSelectedPlayers = [...selectedPlayers];
+            if (newSelectedPlayers.includes(index)) {
+                // deselect this player
+                newSelectedPlayers.splice(newSelectedPlayers.indexOf(index), 1);
+            }
+            else {
+                // select this player
+                if (newSelectedPlayers.length === 2) {
+                    // deselect the first player
+                    newSelectedPlayers.shift();
+                }
+                newSelectedPlayers.push(index);
+            }
+            setSelectedPlayers(newSelectedPlayers);
             return;
         }
 
@@ -317,6 +336,12 @@ function App() {
 
         setSelectedPlayers([index]);
     }
+
+    /**
+     * TODO:
+     * - Taj Mahal background
+     *      - bonus points to have sky reflect day/evening/night
+     */
 
     return (
         <div className='row'>
@@ -396,7 +421,7 @@ function App() {
                         <li key={index}>{player.name}</li>
                     ))}
                 </ul>
-                <span>TODO: put something actually useful here</span>
+                <span>TODO: put something actually useful here (game log?)</span>
             </div>
         </div>
     )

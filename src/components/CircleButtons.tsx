@@ -15,7 +15,7 @@ type CircleButtonsProps = {
     handleAction: (index: number) => void;
 };
 
-const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, setSelectedPlayers, handleAction }) => {
+const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -30,13 +30,13 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
         }
     }, []);
 
-    function handleClick(index: number) {
+    function handleClick(event: React.MouseEvent<HTMLElement>, index: number) {
         if (currentPlayer === null) {
             return;
         }
 
         if (currentPlayer !== index) {
-            // setSelectedPlayers([index]);
+            event.stopPropagation();
             handleAction(index);
         }
     }
@@ -77,13 +77,14 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                                     className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive}`}
                                     key={index}
                                     disabled={role === undefined}
-                                    onClick={() => handleClick(index)}
+                                    onClick={(e) => handleClick(e, index)}
                                 >
                                     <h2>{index + 1}</h2>
                                 </button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <span>TODO: show actions here</span>
+                                    <div>{player.role?.description}</div>
+                                    <div>TODO: show actions here</div>
                                 </TooltipContent>
                         </Tooltip>
                         <span>{player.name}</span>

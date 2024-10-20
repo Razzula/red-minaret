@@ -52,7 +52,7 @@ function GameControls({ gameState, setGameState, gameSettings, advanceTime, setC
 
         // determine Outsiders
         const outsiderIndicies: number[] = [];
-        while (outsiderIndicies.length < numOutsiders) {
+        while (outsiderIndicies.length < Math.min(numOutsiders, tempOutsiderPool.length)) {
             const index = Math.floor(Math.random() * numPlayers);
             if (!evilIndicies.includes(index) && !outsiderIndicies.includes(index)) {
                 outsiderIndicies.push(index);
@@ -97,14 +97,16 @@ function GameControls({ gameState, setGameState, gameSettings, advanceTime, setC
                     player.role = roles[role];
                     tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
 
-                    // SEER
-                    if (roles[role].name === 'Seer') {
-                        let redHerringIndex = Math.floor(Math.random() * numPlayers);
-                        while (evilIndicies.includes(redHerringIndex)) {
-                            // an evil player cannot be the red herring
-                            redHerringIndex = Math.floor(Math.random() * numPlayers);
+                    if (player.role) {
+                        // SEER
+                        if (roles[role].name === 'Seer') {
+                            let redHerringIndex = Math.floor(Math.random() * numPlayers);
+                            while (evilIndicies.includes(redHerringIndex)) {
+                                // an evil player cannot be the red herring
+                                redHerringIndex = Math.floor(Math.random() * numPlayers);
+                            }
+                            players[redHerringIndex].statuses?.push(statuses['Red Herring']);
                         }
-                        players[redHerringIndex].statuses?.push(statuses['Red Herring']);
                     }
                 }
             }
