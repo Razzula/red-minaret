@@ -27,7 +27,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Hunter', // Slayer
-        description: 'Once per game, during the day, publicly choose a player: if they are the Demon, they die.',
+        description: 'Once per game, during the day, publicly choose a player: if they are the Werewolf, they die.',
         team: 'Good', type: 'Villager',
     },
     {
@@ -37,7 +37,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Empath',
-        description: 'Each night, you learn how many of your 2 alive neighbors are evil.',
+        description: 'Each night, you learn how many of your 2 alive neighbours are evil.',
         team: 'Good', type: 'Villager',
 
         night: 'Learn how many neighbours are evil.',

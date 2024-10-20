@@ -4,6 +4,8 @@ import { GameState } from '../App';
 
 import '../styles/CircleButtons.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip';
+import { Dialogue, DialogueContent, DialogueTrigger } from './common/Dialogue';
+import { Voting } from './Voting';
 
 type CircleButtonsProps = {
     gameState: GameState;
@@ -13,9 +15,10 @@ type CircleButtonsProps = {
     selectedPlayers: number[];
     setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleAction: (index: number) => void;
+    togglePlayerAlive: (index: number) => void;
 };
 
-const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, currentPlayer, selectedPlayers, handleAction }) => {
+const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -52,6 +55,19 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
             ref={containerRef}
         >
 
+            <div className='centrepiece'>
+                { gameState.time === 2 &&
+                    <Dialogue>
+                        <DialogueTrigger>
+                            <button>Start Vote</button>
+                        </DialogueTrigger>
+                        <DialogueContent>
+                            <Voting players={players} togglePlayerAlive={togglePlayerAlive} />
+                        </DialogueContent>
+                    </Dialogue>
+                }
+            </div>
+
             {players.map((player, index) => {
 
                 const role = players[index].role;
@@ -84,7 +100,9 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <div>{player.role?.description}</div>
-                                    <div>TODO: show actions here</div>
+                                    <div>
+                                        <button onClick={() => togglePlayerAlive(index)}>{player.alive ? 'kill' : 'revive'}</button>
+                                    </div>
                                 </TooltipContent>
                         </Tooltip>
                         <span>{player.name}</span>

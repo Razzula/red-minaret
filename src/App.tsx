@@ -337,6 +337,12 @@ function App() {
         setSelectedPlayers([index]);
     }
 
+    function togglePlayerAlive(index: number) {
+        const tempGameState = { ...gameState };
+        tempGameState.players[index].alive = !tempGameState.players[index].alive;
+        setGameState(tempGameState);
+    }
+
     /**
      * TODO:
      * - Taj Mahal background
@@ -399,7 +405,7 @@ function App() {
                 <CircleButtons radius={200}
                     gameState={gameState} setGameState={setGameState}
                     currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
-                    handleAction={handleAction}
+                    handleAction={handleAction} togglePlayerAlive={togglePlayerAlive}
                 />
 
                 {/* BOTTOM BOX */}

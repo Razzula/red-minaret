@@ -52,3 +52,14 @@
     min-width: 300px;
     min-height: 50px;
 }
+
+.dialogue-content {
+    background: #2f2f2faa;
+    border-radius: 5px;
+    min-width: 200px;
+    min-height: 100px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
