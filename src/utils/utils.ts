@@ -21,19 +21,3 @@ export function findPlayersNeighbours(gameState: GameState, currentPlayer: numbe
 
     return neighbours;
 }
-
-export function whenStatusExpire(status: string): number | null {
-    switch (status) {
-        case 'Drunk':
-        case 'Red Herring':
-            return null;
-
-        case 'Patron':
-            return 0;
-
-        case 'Targeted':
-        case 'Protected':
-        default:
-            return 1;
-    }
-}

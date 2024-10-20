@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 
 import CircleButtons from './components/CircleButtons'
 import GameControls from './components/GameControls'
+import { findPlayersNeighbours } from './utils/utils'
+
+import roles, { Role } from './data/roles'
+import statuses, { Status } from './data/statuses'
 
 import './styles/App.css'
-import roles, { Role } from './data/roles'
-import { findPlayersNeighbours, whenStatusExpire } from './utils/utils'
 
 export type GameState = {
     day: number;
@@ -18,7 +20,7 @@ export type Player = {
     name: string;
     alive: boolean;
     role?: Role;
-    statuses?: string[];
+    statuses: Status[];
 }
 
 const playerList = [
@@ -32,7 +34,7 @@ function App() {
         time: 0,
         players: playerList
             .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, 5).map(name => ({ name, alive: true })),
+            .slice(0, 5).map(name => ({ name, alive: true, statuses: [] })),
     })
 
     const [gameSettings, setGameSettings] = useState({})
@@ -140,6 +142,8 @@ function App() {
         let { day, time } = tempGameState;
 
         if (time === 0) {
+            // at night, advance through players
+            // TODO: order should be role-based (use codenames), not 'chronological'
             if (currentPlayer === null) {
                 setCurrentPlayer(0);
                 return;
@@ -158,10 +162,11 @@ function App() {
         if (time === 1) {
             // HANDLE MURDER
             tempGameState.players.forEach((player, index) => {
-                if (player.statuses?.includes('Targeted') &&
-                    !player.statuses?.includes('Protected') &&
+                if (player.statuses?.find(status => status.name === 'Targeted') &&
+                    !player.statuses?.find(status => status.name === 'Protected') &&
                     player.role?.name !== 'Soldier'
                 ) {
+                    // TODO: handle SAINT
                     tempGameState.players[index].alive = false;
                 }
             });
@@ -185,11 +190,10 @@ function App() {
         setGameState({ ...tempGameState, day, time });
     }
 
-    function updateStatuses(statuses: string[], time: number) {
+    function updateStatuses(statuses: Status[], time: number) {
         const newStatuses = [];
         for (const status of statuses) {
-            const expire = whenStatusExpire(status);
-            if (expire === null || expire !== time) {
+            if (status.expiration === undefined || status.expiration !== time) {
                 newStatuses.push(status);
             }
         }
@@ -254,7 +258,7 @@ function App() {
         }
 
         // DRUNK
-        if (gameState.players[currentPlayer].statuses?.includes('Drunk')) {
+        if (gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk')) {
             instruction = `${instruction} Remember, this player is the Drunk!`;
         }
 
@@ -267,6 +271,8 @@ function App() {
             return;
         }
 
+        const isPlayerDrunk = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk') ? true : false;
+
         const currentRole = gameState.players[currentPlayer].role;
         if (!currentRole) {
             return;
@@ -274,7 +280,7 @@ function App() {
 
         if (currentRole.name === 'Werewolf') {
             // WEREWOLF
-            gameState.players[index].statuses?.push('Targeted');
+            gameState.players[index].statuses?.push(statuses['Targeted']);
             for (const selectedPlayer of selectedPlayers) {
                 gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
             }
@@ -284,7 +290,9 @@ function App() {
 
         if (currentRole.name === 'Doctor') {
             // DOCTOR
-            gameState.players[index].statuses?.push('Protected');
+            const statusToApply = isPlayerDrunk ? statuses["'Protected'"] : statuses['Protected'];
+
+            gameState.players[index].statuses?.push(statusToApply);
             for (const selectedPlayer of selectedPlayers) {
                 gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
             }
@@ -299,7 +307,7 @@ function App() {
 
         if (currentRole.name === 'Butler') {
             // BUTLER
-            gameState.players[index].statuses?.push('Patron');
+            gameState.players[index].statuses?.push(statuses['Patron']);
             for (const selectedPlayer of selectedPlayers) {
                 gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
             }
@@ -314,8 +322,9 @@ function App() {
         <div className='row'>
             {/* LEFT COLUMN */}
             <div className='sidebar'>
-                { setup &&
+                { setup ?
                     <div>
+                        {/* TODO: make this its own component? */}
                         <h1>Configuration</h1>
                         <h2><u>Roster</u></h2>
 
@@ -341,6 +350,7 @@ function App() {
 
                         <h2><u>Settings</u></h2>
                     </div>
+                    : <div>TODO: show a list of all roles, and what they do, here (like <a href='https://preview.redd.it/various-custom-full-scripts-7-15-players-3-core-14-custom-v0-77x00glowt691.jpg?width=640&crop=smart&auto=webp&s=fb9ac07d0ab9f51558b49c9b08ec3318396bec4c'>here</a>)</div>
                 }
             </div>
 
@@ -386,6 +396,7 @@ function App() {
                         <li key={index}>{player.name}</li>
                     ))}
                 </ul>
+                <span>TODO: put something actually useful here</span>
             </div>
         </div>
     )

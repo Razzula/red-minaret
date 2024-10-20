@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { GameState } from '../App';
 import roles from '../data/roles';
+import statuses from '../data/statuses';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -103,7 +104,7 @@ function GameControls({ gameState, setGameState, gameSettings, advanceTime, setC
                             // an evil player cannot be the red herring
                             redHerringIndex = Math.floor(Math.random() * numPlayers);
                         }
-                        players[redHerringIndex].statuses = [...players[redHerringIndex].statuses || [], 'Red Herring'];
+                        players[redHerringIndex].statuses?.push(statuses['Red Herring']);
                     }
                 }
             }
@@ -111,7 +112,7 @@ function GameControls({ gameState, setGameState, gameSettings, advanceTime, setC
 
         // DRUNK
         if (drunkIndex !== null) {
-            players[drunkIndex].statuses = [...players[drunkIndex].statuses || [], 'Drunk'];
+            players[drunkIndex].statuses?.push(statuses['Drunk']);
             players[drunkIndex].role = roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]];
         }
 

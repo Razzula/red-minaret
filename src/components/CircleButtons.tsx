@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GameState } from '../App';
 
 import '../styles/CircleButtons.css';
+import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip';
 
 type CircleButtonsProps = {
     gameState: GameState;
@@ -70,14 +71,21 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                             top: `${y}px`,
                         }}
                     >
-                        <button
-                            className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive}`}
-                            key={index}
-                            disabled={role === undefined}
-                            onClick={() => handleClick(index)}
-                        >
-                            <h2>{index + 1}</h2>
-                        </button>
+                        <Tooltip enableClick={true} enableHover={false}>
+                            <TooltipTrigger>
+                                <button
+                                    className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive}`}
+                                    key={index}
+                                    disabled={role === undefined}
+                                    onClick={() => handleClick(index)}
+                                >
+                                    <h2>{index + 1}</h2>
+                                </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <span>TODO: show actions here</span>
+                                </TooltipContent>
+                        </Tooltip>
                         <span>{player.name}</span>
                         { player.role &&
                             <span> ({player.role?.name})</span>
@@ -99,13 +107,18 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, 
                                         position: 'absolute',
                                     }}
                                 >
-                                    <button
-                                        className={`circle-button status-circle ${status} ${isActive}`}
-                                        key={index}
-                                        disabled={role === undefined}
-                                    >
-                                        <p>{status}</p>
-                                    </button>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <button
+                                                className={`circle-button status-circle ${status} ${isActive}`}
+                                                key={index}
+                                                disabled={role === undefined}
+                                                >
+                                                <p>{status.name}</p>
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>{status.description}</TooltipContent>
+                                    </Tooltip>
                                 </div>
                             );
                         })
