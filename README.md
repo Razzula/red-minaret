@@ -16,3 +16,6 @@ bun install
 ```bash
 bun run dev
 ```
+
+## Thanks
+- [The Pandemonium Institute](https://bloodontheclocktower.com/)

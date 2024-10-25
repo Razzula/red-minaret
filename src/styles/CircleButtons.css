@@ -70,6 +70,10 @@
     background-color: #858587 !important;
 }
 
+.circle-button.pending-execution {
+    border: 8px solid #858587 !important;
+}
+
 .status-circle {
     background-color: #ff00ff;
 }

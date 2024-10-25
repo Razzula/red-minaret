@@ -54,12 +54,30 @@
 }
 
 .dialogue-content {
-    background: #2f2f2faa;
+    background: #2f2f2fdd;
     border-radius: 5px;
     min-width: 200px;
     min-height: 100px;
 
+    padding: 10px;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
+    position: relative;
+}
+
+.dialogue-x {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.evil {
+    color: #f44336;
+}
+
+.good {
+    color: #4caf50;
 }

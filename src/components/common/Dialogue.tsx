@@ -43,10 +43,10 @@ function useDialogue({
     const click = useClick(context, {
         enabled: controlledOpen == null
     });
-    const dismiss = useDismiss(context, { outsidePressEvent: "mousedown" });
+    // const dismiss = useDismiss(context, { outsidePressEvent: "mousedown" });
     const role = useRole(context);
 
-    const interactions = useInteractions([click, dismiss, role]);
+    const interactions = useInteractions([click, /*dismiss,*/ role]);
 
     return React.useMemo(
         () => ({
@@ -74,7 +74,7 @@ type ContextType =
 
 const DialogueContext = React.createContext<ContextType>(null);
 
-const useDialogueContext = () => {
+export const useDialogueContext = () => {
     const context = React.useContext(DialogueContext);
 
     if (context == null) {

@@ -4,7 +4,7 @@ import { GameState } from '../App';
 
 import '../styles/CircleButtons.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip';
-import { Dialogue, DialogueContent, DialogueTrigger } from './common/Dialogue';
+import { Dialogue, DialogueClose, DialogueContent, DialogueTrigger } from './common/Dialogue';
 import { Voting } from './Voting';
 
 type CircleButtonsProps = {
@@ -15,7 +15,7 @@ type CircleButtonsProps = {
     selectedPlayers: number[];
     setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleAction: (index: number) => void;
-    togglePlayerAlive: (index: number) => void;
+    togglePlayerAlive: (name: string) => void;
 };
 
 const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive }) => {
@@ -62,7 +62,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
                             <button>Start Vote</button>
                         </DialogueTrigger>
                         <DialogueContent>
-                            <Voting players={players} togglePlayerAlive={togglePlayerAlive} />
+                            <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
                         </DialogueContent>
                     </Dialogue>
                 }
@@ -79,6 +79,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
                 const isActive = currentPlayer !== null && currentPlayer !== index ? 'inactive' : 'active';
                 const isSelected = selectedPlayers.includes(index) ? 'selected' : 'unselected';
                 const isAlive = player.alive ? 'alive' : 'dead';
+                const isPendingExecution = gameState.choppingBlock === player.name ? 'pending-execution' : '';
 
                 return (<>
                     <div className='player'
@@ -90,7 +91,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
                         <Tooltip enableClick={true} enableHover={false}>
                             <TooltipTrigger>
                                 <button
-                                    className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive}`}
+                                    className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive} ${isPendingExecution}`}
                                     key={index}
                                     disabled={role === undefined}
                                     onClick={(e) => handleClick(e, index)}
@@ -101,7 +102,7 @@ const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, curren
                                 <TooltipContent>
                                     <div>{player.role?.description}</div>
                                     <div>
-                                        <button onClick={() => togglePlayerAlive(index)}>{player.alive ? 'kill' : 'revive'}</button>
+                                        <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
                                     </div>
                                 </TooltipContent>
                         </Tooltip>
