@@ -5,6 +5,7 @@ import statuses from '../data/statuses';
 type GameControlsProps = {
     gameState: GameState;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+    resetGameState: () => void;
     gameSettings: any;
     advanceTime: () => void;
     setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
@@ -15,7 +16,7 @@ type GameControlsProps = {
     minionPool: number[];
 };
 
-function GameControls({ gameState, setGameState, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
+function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function assignRoles() {
         const players = gameState.players;
@@ -120,11 +121,11 @@ function GameControls({ gameState, setGameState, advanceTime, setCurrentPlayer, 
     }
 
     function startGame() {
-        setGameState({ ...gameState, day: 1, time: 0 });
+        setGameState({ ...gameState, day: 1, time: 0, state: 'playing' });
         setCurrentPlayer(0);
     }
 
-    if (gameState.day === 0 && gameState.time === 0) {
+    if (gameState.state === 'setup') {
         return (
             <div>
                 <button onClick={assignRoles}>Assign Roles</button>
@@ -133,10 +134,16 @@ function GameControls({ gameState, setGameState, advanceTime, setCurrentPlayer, 
         );
     }
 
+    if (gameState.state === 'playing') {
+        return (
+            <div>
+                <button onClick={advanceTime} disabled={gameState.state !== 'playing'}>Next</button>
+            </div>
+        );
+    }
+
     return (
-        <div>
-            <button onClick={advanceTime}>Next</button>
-        </div>
+        <button onClick={resetGameState}>Restart</button>
     );
 }
 

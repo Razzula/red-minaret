@@ -12,8 +12,13 @@ import './styles/App.css'
 export type GameState = {
     day: number;
     time: number;
+    state: 'setup' | 'playing' | 'defeat' | 'victory';
 
     players: Player[];
+
+    nominations: string[];
+    nominators: string[];
+    choppingBlock?: string;
 }
 
 export type Player = {
@@ -21,21 +26,33 @@ export type Player = {
     alive: boolean;
     role?: Role;
     statuses: Status[];
+    ghostVotes: number;
 }
 
 const playerList = [
     'Steve', 'Marvin', 'Graham White', 'Boblin', 'Doblin', 'Gorgonzola', 'Otto', 'Ryker', 'Harran', 'Zazu', 'Hush', 'Billybob'
 ]
 
-function App() {
-
-    const [gameState, setGameState] = useState<GameState>({
+function defaultGameState(): GameState  {
+    return {
         day: 0,
         time: 0,
+        state: 'setup',
         players: playerList
             .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, 5).map(name => ({ name, alive: true, statuses: [] })),
-    })
+            .slice(0, 5).map(name => ({
+                name, alive:
+                true, statuses: [],
+                ghostVotes: 1,
+            })),
+        nominations: [],
+        nominators: [],
+    };
+}
+
+function App() {
+
+    const [gameState, setGameState] = useState<GameState>(defaultGameState())
 
     const [gameSettings, /*setGameSettings*/] = useState({})
 
@@ -79,16 +96,25 @@ function App() {
     useEffect(() => {
         if (gameState.players.length > 0 && !setup) {
             if (!gameState.players.find(player => player.role?.team === 'Evil' && player.alive)) {
-                alert('Villagers win!');
+                gameState.state = 'victory';
             }
             else if (
                 gameState.players.filter(player => player.role?.team === 'Evil' && player.alive).length
                     >= gameState.players.filter(player => player.role?.team === 'Good' && player.alive).length
             ) {
-                alert('Werewolves win!');
+                gameState.state = 'defeat';
             }
         }
     }, [gameState, setup]);
+
+    useEffect(() => {
+        if (gameState.state === 'defeat') {
+            alert('Werewolves win!');
+        }
+        else if (gameState.state === 'victory') {
+            alert('Villagers win!');
+        }
+    }, [gameState.state, setup]);
 
     // function loadGameState() {
     //     const cachedGameState = localStorage.getItem('gameState');
@@ -104,6 +130,24 @@ function App() {
     //         [id]: value,
     //     }))
     // }
+
+    function resetGameState(keepNames = false) {
+        if (keepNames) {
+            setGameState((prev) => ({
+                ...defaultGameState(),
+                players: prev.players.map(player => ({
+                    ...player,
+                    alive: true,
+                    role: undefined,
+                    statuses: [],
+                    ghostVotes: 1,
+                })),
+            }));
+        }
+        else {
+            setGameState(defaultGameState());
+        }
+    }
 
     function getTimeSymbol() {
         switch (gameState.time) {
@@ -173,6 +217,28 @@ function App() {
         }
         // NEW DAY
         else if (time > 2) {
+
+            // handle lynch
+            if (gameState.choppingBlock) {
+                const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock);
+
+                tempGameState.players[lynchedIndex].alive = false;
+                tempGameState.choppingBlock = undefined;
+
+                tempGameState.nominations = [];
+                tempGameState.nominators = [];
+
+                // SAINT
+                if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
+                    // TODO: custom alerts via Dialogue component
+                    alert('(the Saint was lynched...)');
+                    tempGameState.state = 'defeat';
+                    setGameState({ ...tempGameState });
+                    return;
+                }
+                // VIRGIN, etc.
+            }
+
             time = 0;
             day++;
 
@@ -337,7 +403,11 @@ function App() {
         setSelectedPlayers([index]);
     }
 
-    function togglePlayerAlive(index: number) {
+    function togglePlayerAlive(name: string) {
+        const index = gameState.players.findIndex(player => player.name === name);
+        if (index === -1) {
+            return;
+        }
         const tempGameState = { ...gameState };
         tempGameState.players[index].alive = !tempGameState.players[index].alive;
         setGameState(tempGameState);
@@ -411,7 +481,7 @@ function App() {
                 {/* BOTTOM BOX */}
                 <div className='control-box'>
                     <GameControls
-                        gameState={gameState} setGameState={setGameState}
+                        gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
                         advanceTime={advanceTime} setCurrentPlayer={setCurrentPlayer}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
