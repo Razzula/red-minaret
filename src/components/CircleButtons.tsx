@@ -4,7 +4,7 @@ import { GameState } from '../App';
 
 import '../styles/CircleButtons.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip';
-import { Dialogue, DialogueClose, DialogueContent, DialogueTrigger } from './common/Dialogue';
+import { Dialogue, DialogueContent, DialogueTrigger } from './common/Dialogue';
 import { Voting } from './Voting';
 
 type CircleButtonsProps = {
@@ -18,7 +18,7 @@ type CircleButtonsProps = {
     togglePlayerAlive: (name: string) => void;
 };
 
-const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive }) => {
+const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);

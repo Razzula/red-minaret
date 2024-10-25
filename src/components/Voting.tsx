@@ -9,7 +9,7 @@ type VotingProps = {
     togglePlayerAlive: (index: string) => void;
 };
 
-export function Voting({ gameState, setGameState, togglePlayerAlive }: VotingProps) {
+export function Voting({ gameState, setGameState }: VotingProps) {
 
 
     const [voting, setVoting] = useState(false);
