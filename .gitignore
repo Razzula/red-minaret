@@ -7,10 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# bin
 node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
 
 # Editor directories and files
 .vscode/*

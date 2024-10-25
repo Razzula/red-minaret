@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import { GameState } from '../App';
 import roles from '../data/roles';
 import statuses from '../data/statuses';
@@ -17,7 +15,7 @@ type GameControlsProps = {
     minionPool: number[];
 };
 
-function GameControls({ gameState, setGameState, gameSettings, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
+function GameControls({ gameState, setGameState, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function assignRoles() {
         const players = gameState.players;

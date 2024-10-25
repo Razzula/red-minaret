@@ -15,7 +15,7 @@ type CircleButtonsProps = {
     handleAction: (index: number) => void;
 };
 
-const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction }) => {
+const CircleButtons: React.FC<CircleButtonsProps> = ({ gameState, radius, currentPlayer, selectedPlayers, handleAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);

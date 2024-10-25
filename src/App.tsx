@@ -37,7 +37,7 @@ function App() {
             .slice(0, 5).map(name => ({ name, alive: true, statuses: [] })),
     })
 
-    const [gameSettings, setGameSettings] = useState({})
+    const [gameSettings, /*setGameSettings*/] = useState({})
 
     const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
@@ -90,20 +90,20 @@ function App() {
         }
     }, [gameState, setup]);
 
-    function loadGameState() {
-        const cachedGameState = localStorage.getItem('gameState');
-        if (cachedGameState) {
-            setGameState(JSON.parse(cachedGameState));
-        }
-    }
+    // function loadGameState() {
+    //     const cachedGameState = localStorage.getItem('gameState');
+    //     if (cachedGameState) {
+    //         setGameState(JSON.parse(cachedGameState));
+    //     }
+    // }
 
-    function handleSettingsChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const { id, value } = event.target;
-        setGameSettings((prev) => ({
-            ...prev,
-            [id]: value,
-        }))
-    }
+    // function handleSettingsChange(event: React.ChangeEvent<HTMLInputElement>) {
+    //     const { id, value } = event.target;
+    //     setGameSettings((prev) => ({
+    //         ...prev,
+    //         [id]: value,
+    //     }))
+    // }
 
     function getTimeSymbol() {
         switch (gameState.time) {
