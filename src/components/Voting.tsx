@@ -25,6 +25,9 @@ export function Voting({ gameState, setGameState }: VotingProps) {
     const castVotes = Object.values(votes).reduce((count, value) => (value ? count + 1 : count), 0);
     const voteThreshold = Math.ceil(totalVotes / 2);
 
+    const butler = gameState.players.find(player => player.role?.name === 'Butler')?.name;
+    const patron = gameState.players.find(player => player.statuses.find(status => status.name === 'Patron'))?.name;
+
     const invalidSelection = (
         nominatedPlayer === nominatingPlayer
         || !nominatedPlayer || !nominatingPlayer
@@ -49,10 +52,15 @@ export function Voting({ gameState, setGameState }: VotingProps) {
     }
 
     function handleVote(playerName: string, vote: boolean) {
-        setVotes((prev) => ({
-            ...prev,
-            [playerName]: vote,
-        }));
+        const tempVotes = { ...votes };
+        tempVotes[playerName] = vote;
+
+        //  BUTLER
+        if (butler && playerName === patron) {
+            tempVotes[butler] = false;
+        }
+
+        setVotes(tempVotes);
     }
 
     function endVote() {
@@ -117,10 +125,16 @@ export function Voting({ gameState, setGameState }: VotingProps) {
 
                     {
                         Object.entries(votes).map(([playerName, vote]) => {
+
+                            const butlerCannotVote = playerName === butler && patron !== undefined && !votes[patron]; // BUTLER
+
                             return (
                                 <div key={playerName} className='row'>
                                     <span>{playerName}</span>
-                                    <input type='checkbox' checked={vote} onChange={() => handleVote(playerName, !vote)} />
+                                    <input type='checkbox'
+                                        checked={vote} onChange={() => handleVote(playerName, !vote)}
+                                        disabled={butlerCannotVote}
+                                    />
                                 </div>
                             );
                         })
