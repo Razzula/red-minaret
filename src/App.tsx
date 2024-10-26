@@ -20,7 +20,10 @@ export type GameState = {
 
     nominations: string[];
     nominators: string[];
-    choppingBlock?: string;
+    choppingBlock?: {
+        playerName: string;
+        votes: number;
+    };
 }
 
 export type Player = {

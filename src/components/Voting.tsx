@@ -29,8 +29,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
     const patron = gameState.players.find(player => player.statuses.find(status => status.name === 'Patron'))?.name;
 
     const invalidSelection = (
-        nominatedPlayer === nominatingPlayer
-        || !nominatedPlayer || !nominatingPlayer
+        !nominatedPlayer || !nominatingPlayer
     );
 
     function isPlayerEligibleToNominate(player: Player) {
@@ -82,36 +81,40 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                     <span>close</span>
                 </DialogClose>
 
-                <div className='column'>
-                    <div className='row'>
-                        <select
-                            value={nominatingPlayer}
-                            onChange={(e) => setNominatingPlayer(e.target.value)}
-                        >
-                            <option disabled selected></option>
-                            {gameState.players.filter(player => isPlayerEligibleToNominate(player)).map((player) => {
-                                return (
-                                    <option key={player.name} value={player.name}>{player.name}</option>
-                                );
-                            })}
-                        </select>
-                        <span>nominates</span>
-                        <select
-                            value={nominatedPlayer}
-                            onChange={(e) => setNominatedPlayer(e.target.value)}
-                        >
-                            <option disabled selected></option>
-                            {gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map((player) => {
-                                return (
-                                    <option key={player.name} value={player.name}>{player.name}</option>
-                                );
-                            })}
-                        </select>
+                { gameState.nominations.length < gameState.players.length && gameState.nominators.length < gameState.players.length ? (
+                    <div className='column'>
+                        <div className='row'>
+                            <select
+                                value={nominatingPlayer}
+                                onChange={(e) => setNominatingPlayer(e.target.value)}
+                            >
+                                <option disabled selected></option>
+                                {gameState.players.filter(player => isPlayerEligibleToNominate(player)).map((player) => {
+                                    return (
+                                        <option key={player.name} value={player.name}>{player.name}</option>
+                                    );
+                                })}
+                            </select>
+                            <span>nominates</span>
+                            <select
+                                value={nominatedPlayer}
+                                onChange={(e) => setNominatedPlayer(e.target.value)}
+                            >
+                                <option disabled selected></option>
+                                {gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map((player) => {
+                                    return (
+                                        <option key={player.name} value={player.name}>{player.name}</option>
+                                    );
+                                })}
+                            </select>
+                        </div>
+
+
+                        <button onClick={() => setVoting(true)} disabled={invalidSelection}>ok</button>
                     </div>
-
-
-                    <button onClick={() => setVoting(true)} disabled={invalidSelection}>ok</button>
-                </div>
+                ) : (
+                    <div>Nobody is eligible to vote</div>
+                )}
 
             </div>
         );
