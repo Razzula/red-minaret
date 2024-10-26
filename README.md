@@ -1,5 +1,5 @@
 <p align="center">
-    <img src='./public/icon.svg' width=256 />
+    <img src='./public/logo.svg' width=256 />
     <h1 align="center">Blood on the Taj Mahal</h1>
 </p>
 
