@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { GameState, Player } from "../App";
-import { DialogueClose, useDialogueContext } from "./common/Dialogue";
+import { DialogClose, useDialogContext } from "./common";
 import { enactVote } from "../game/core";
 
 type VotingProps = {
@@ -19,7 +19,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
 
     const [votes, setVotes] = useState<Record<string, boolean>>(getEligibleVoters());
 
-    const { setOpen } = useDialogueContext();
+    const { setOpen } = useDialogContext();
 
     const totalVotes = Object.keys(votes).length; // TODO: dead players shouldn't be counted in the threshold
     const castVotes = Object.values(votes).reduce((count, value) => (value ? count + 1 : count), 0);
@@ -70,9 +70,9 @@ export function Voting({ gameState, setGameState }: VotingProps) {
         return (
             <div className='dialogue-content'>
 
-                <DialogueClose className='dialogue-x'>
+                <DialogClose className='dialogue-x'>
                     <span>close</span>
-                </DialogueClose>
+                </DialogClose>
 
                 <div className='column'>
                     <div className='row'>

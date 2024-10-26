@@ -1,6 +1,9 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
 import { Status } from '../../data/statuses';
 import { Role } from "../../data/roles";
+import classNames from 'classnames';
+
+import styles from './Consortium.module.scss';
 
 type StatusTokenProps = {
     status: Status;
@@ -23,7 +26,7 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
 
     return (
         <div key={index}
-            className='status'
+            className={styles.status}
             style={{
                 left: `${newX}px`,
                 top: `${newY}px`,
@@ -33,14 +36,21 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
             <Tooltip>
                 <TooltipTrigger>
                     <button
-                        className={`circle-button status-circle ${fake ? 'fake' : ''} ${status} ${isPlayerActive}`}
+                        className={classNames(
+                          styles.circleButton,
+                          styles.statusCircle,
+                          {
+                              [styles.fake]: fake,
+                              [styles.inactive]: isPlayerActive,
+                          } as never,
+                        )}
                         key={index}
                         disabled={playerRole === undefined}
                     >
                         <img
                             src={`/red-minaret/iconpack/${status.icon}.png`}
                             alt={status.name}
-                            className={`status-circle-img`}
+                            className={styles.statusCircleImg}
                         />
                     </button>
                 </TooltipTrigger>

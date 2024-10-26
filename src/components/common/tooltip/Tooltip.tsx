@@ -1,7 +1,7 @@
 import React from 'react';
 import { FloatingPortal, Placement, autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useHover, useInteractions, useMergeRefs, useRole } from '@floating-ui/react';
 
-import '../../styles/tooltip.css';
+import styles from './Tooltip.module.scss';
 
 interface TooltipOptions {
     initialOpen?: boolean;
@@ -140,7 +140,7 @@ export const TooltipContent = React.forwardRef<
 
     return (
         <FloatingPortal>
-            <div className='Tooltip'
+            <div className={styles.Tooltip}
                 ref={ref}
                 style={{
                     ...context.floatingStyles,

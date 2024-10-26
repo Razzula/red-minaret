@@ -1,5 +1,5 @@
 import { GameState, Player } from "../../App";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
 import StatusToken from "./StatusToken";
 import classNames from 'classnames';
 
@@ -31,7 +31,11 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
     const isSelected = selectedPlayers.includes(index);
     const isAlive = player.alive;
     const isPendingExecution = gameState.choppingBlock === player.name;
-    const teamStyle = role?.team == 'Evil' ? styles.evil : styles.good;
+    let teamStyle;
+    if (role?.team)
+      teamStyle = role.team.toLowerCase() == 'evil' ? styles.evil : styles.good;
+    else
+      teamStyle = null;
 
     return (
         <div>
@@ -44,7 +48,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                 <Tooltip enableClick={true} enableHover={false}>
                     <TooltipTrigger>
                         <button
-                            // className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive} ${isPendingExecution}`}
                             className={classNames(
                               styles.circleButton,
                               teamStyle,
@@ -53,7 +56,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                                   [styles.selected]: isSelected,
                                   [styles.dead]: !isAlive,
                                   [styles.pendingExecution]: isPendingExecution,
-                              })}
+                              } as never)}
                             key={index}
                             disabled={role === undefined}
                             onClick={(e) => handleClick(e, index)}

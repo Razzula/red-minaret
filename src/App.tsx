@@ -7,7 +7,8 @@ import { findPlayersNeighbours } from './game/utils'
 import roles, { Role } from './data/roles'
 import { Status } from './data/statuses'
 
-import './styles/App.css'
+import './App.css'
+import './globals.css'
 import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
 
 export type GameState = {

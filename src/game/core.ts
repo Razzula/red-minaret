@@ -190,7 +190,7 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-                // TODO: custom alerts via Dialogue component
+                // TODO: custom alerts via Dialog component
                 alert('(the Saint was lynched...)');
                 tempGameState.state = 'defeat';
                 setGameState({ ...tempGameState });

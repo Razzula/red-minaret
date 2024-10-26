@@ -28,7 +28,7 @@
     height: 100%;
     border-radius: 50%;
 
-    color: white;
+    color: var(--white);
     border: none;
     display: flex;
     justify-content: center;
@@ -46,13 +46,13 @@
 }
 
 .evil {
-    background-color: #f44336;
-    border: 8px solid #f44336;
+    background-color: var(--red);
+    border: 8px solid var(--red);
 }
 
 .good {
-    background-color: #4caf50;
-    border: 8px solid #4caf50;
+    background-color: var(--green);
+    border: 8px solid var(--green);
 }
 
 .undefined {
@@ -72,24 +72,22 @@
 }
 
 .dead {
-    background-color: #858587 !important;
+    background-color: var(--grey) !important;
 }
 
 .pendingExecution {
-    border: 8px solid #858587 !important;
+    border: 8px solid var(--grey) !important;
 }
 
-.status-circle {
-    background-color: #ff00ff;
+.statusCircle {
+    background-color: var(--pink);
+
+    &.fake {
+        background-color: var(--grey);
+    }
 }
 
-.status-circle.fake {
-    background-color: #858587;
-}
-
-.status-circle-img {
+.statusCircleImg {
     width: inherit;
     height: inherit;
-
-
 }
