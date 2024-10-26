@@ -19,3 +19,4 @@ bun run dev
 
 ## Thanks
 - [The Pandemonium Institute](https://bloodontheclocktower.com/)
+- [Cainos](https://cainos.itch.io/pixel-art-icon-pack-rpg)

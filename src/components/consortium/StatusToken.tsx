@@ -19,6 +19,8 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
     const newX = centreX + radius * distanceMultiplier * Math.sin(angle);
     const newY = centreY - radius * distanceMultiplier * Math.cos(angle);
 
+    const fake = status.drunk || status.poisoned;
+
     return (
         <div key={index}
             className='status'
@@ -31,14 +33,18 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
             <Tooltip>
                 <TooltipTrigger>
                     <button
-                        className={`circle-button status-circle ${status} ${isPlayerActive}`}
+                        className={`circle-button status-circle ${fake ? 'fake' : ''} ${status} ${isPlayerActive}`}
                         key={index}
                         disabled={playerRole === undefined}
                     >
-                        <p>{status.name}</p>
+                        <img
+                            src={`/red-minaret/iconpack/${status.icon}.png`}
+                            alt={status.name}
+                            className={`status-circle-img`}
+                        />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent>{status.description}</TooltipContent>
+                <TooltipContent>{fake ? status.altDescription : status.description}</TooltipContent>
             </Tooltip>
         </div>
     );

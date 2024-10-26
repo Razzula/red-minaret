@@ -44,7 +44,11 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                             disabled={role === undefined}
                             onClick={(e) => handleClick(e, index)}
                         >
-                            <h2>{index + 1}</h2>
+                            <img
+                                src={`/red-minaret/iconpack/${role?.icon}.png`}
+                                alt={`${index + 1}`}
+                                className={`circle-button-img`}
+                            />
                         </button>
                         </TooltipTrigger>
                         <TooltipContent>

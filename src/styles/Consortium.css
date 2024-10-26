@@ -36,6 +36,11 @@
     cursor: pointer;
 }
 
+.circle-button-img {
+    width: inherit;
+    height: inherit;
+}
+
 .circle-button:disabled {
     cursor: not-allowed;
 }
@@ -76,4 +81,15 @@
 
 .status-circle {
     background-color: #ff00ff;
+}
+
+.status-circle.fake {
+    background-color: #858587;
+}
+
+.status-circle-img {
+    width: inherit;
+    height: inherit;
+
+
 }
