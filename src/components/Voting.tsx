@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { GameState, Player } from "../App";
 import { DialogueClose, useDialogueContext } from "./common/Dialogue";
+import { enactVote } from "../game/core";
 
 type VotingProps = {
     gameState: GameState;
@@ -10,7 +11,6 @@ type VotingProps = {
 };
 
 export function Voting({ gameState, setGameState }: VotingProps) {
-
 
     const [voting, setVoting] = useState(false);
 
@@ -60,35 +60,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
             setOpen(false);
 
             if (nominatedPlayer && nominatingPlayer) {
-                // track nominations
-                const tempGameState = {
-                    ...gameState,
-                    nominators: [...gameState.nominators, nominatingPlayer],
-                    nominations: [...gameState.nominations, nominatedPlayer],
-                };
-
-                // handle execution
-                if (castVotes >= voteThreshold) {
-                    // TODO: handle a tie
-                    tempGameState.choppingBlock = nominatedPlayer;
-                }
-
-                // track ghost votes
-                Object.entries(votes).forEach(([playerName, vote]) => {
-                    if (vote) { // iterate over players who voted
-                        const playerIndex = tempGameState.players.findIndex(player => player.name === playerName);
-                        const player = tempGameState.players[playerIndex];
-                        if (!player?.alive && player?.ghostVotes) {
-                            // if player using ghost votes, decrement
-                            tempGameState.players[playerIndex] = {
-                                ...player,
-                                ghostVotes: player.ghostVotes - 1,
-                            };
-                        }
-                    }
-                });
-
-                setGameState(tempGameState);
+                enactVote(gameState, setGameState, nominatingPlayer, nominatedPlayer, votes);
             }
         }
     }

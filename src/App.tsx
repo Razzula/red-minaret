@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import CircleButtons from './components/CircleButtons'
+import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
-import { findPlayersNeighbours } from './utils/utils'
+import { findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
-import statuses, { Status } from './data/statuses'
+import { Status } from './data/statuses'
 
 import './styles/App.css'
+import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
 
 export type GameState = {
     day: number;
@@ -68,7 +69,7 @@ function App() {
     const timeSymbol = getTimeSymbol();
 
     useEffect(() => {
-        // loadGameState()
+        loadGameState()
     }, []);
 
     useEffect(() => {
@@ -116,12 +117,12 @@ function App() {
         }
     }, [gameState.state, setup]);
 
-    // function loadGameState() {
-    //     const cachedGameState = localStorage.getItem('gameState');
-    //     if (cachedGameState) {
-    //         setGameState(JSON.parse(cachedGameState));
-    //     }
-    // }
+    function loadGameState() {
+        const cachedGameState = localStorage.getItem('gameState');
+        if (cachedGameState) {
+            setGameState(JSON.parse(cachedGameState));
+        }
+    }
 
     // function handleSettingsChange(event: React.ChangeEvent<HTMLInputElement>) {
     //     const { id, value } = event.target;
@@ -179,91 +180,6 @@ function App() {
             default:
                 return '';
         }
-    }
-
-    function advanceTime() {
-        const tempGameState = { ...gameState };
-        let { day, time } = tempGameState;
-
-        if (time === 0) {
-            // at night, advance through players
-            // TODO: order should be role-based (use codenames), not 'chronological'
-            if (currentPlayer === null) {
-                setCurrentPlayer(0);
-                return;
-            }
-            else if (currentPlayer < tempGameState.players.length - 1) {
-                setCurrentPlayer((currentPlayer + 1));
-                return;
-            }
-            else {
-                setCurrentPlayer(null);
-            }
-        }
-
-        time++;
-        // MORNING
-        if (time === 1) {
-            // HANDLE MURDER
-            tempGameState.players.forEach((player, index) => {
-                if (player.statuses?.find(status => status.name === 'Targeted') &&
-                    !player.statuses?.find(status => status.name === 'Protected') &&
-                    player.role?.name !== 'Soldier'
-                ) {
-                    // TODO: handle SAINT
-                    tempGameState.players[index].alive = false;
-                }
-            });
-        }
-        // NEW DAY
-        else if (time > 2) {
-
-            // handle lynch
-            if (gameState.choppingBlock) {
-                const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock);
-
-                tempGameState.players[lynchedIndex].alive = false;
-                tempGameState.choppingBlock = undefined;
-
-                tempGameState.nominations = [];
-                tempGameState.nominators = [];
-
-                // SAINT
-                if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-                    // TODO: custom alerts via Dialogue component
-                    alert('(the Saint was lynched...)');
-                    tempGameState.state = 'defeat';
-                    setGameState({ ...tempGameState });
-                    return;
-                }
-                // VIRGIN, etc.
-            }
-
-            time = 0;
-            day++;
-
-            setCurrentPlayer(0);
-        }
-
-        tempGameState.players.forEach((player, index) => {
-            if (player.statuses) {
-                // reset
-                tempGameState.players[index].statuses = updateStatuses(player.statuses, time);
-                // TODO: this is too fast for morning!
-            }
-        });
-
-        setGameState({ ...tempGameState, day, time });
-    }
-
-    function updateStatuses(statuses: Status[], time: number) {
-        const newStatuses = [];
-        for (const status of statuses) {
-            if (status.expiration === undefined || status.expiration !== time) {
-                newStatuses.push(status);
-            }
-        }
-        return newStatuses;
     }
 
     function roleSettingsPanel(roleType: string, rolePool: number[], setRolePool: React.Dispatch<React.SetStateAction<number[]>>) {
@@ -338,79 +254,12 @@ function App() {
 
     }
 
-    function handleAction(index: number) {
-        if (currentPlayer === null) {
-            return;
-        }
-
-        const isPlayerDrunk = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk') ? true : false;
-
-        const currentRole = gameState.players[currentPlayer].role;
-        if (!currentRole) {
-            return;
-        }
-
-        if (currentRole.name === 'Werewolf') {
-            // WEREWOLF
-            gameState.players[index].statuses?.push(statuses['Targeted']);
-            for (const selectedPlayer of selectedPlayers) {
-                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
-            }
-            setSelectedPlayers([index]);
-            return;
-        }
-
-        if (currentRole.name === 'Doctor') {
-            // DOCTOR
-            const statusToApply = isPlayerDrunk ? statuses["'Protected'"] : statuses['Protected'];
-
-            gameState.players[index].statuses?.push(statusToApply);
-            for (const selectedPlayer of selectedPlayers) {
-                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
-            }
-            setSelectedPlayers([index]);
-            return;
-        }
-
-        if (currentRole.name === 'Seer') {
-            const newSelectedPlayers = [...selectedPlayers];
-            if (newSelectedPlayers.includes(index)) {
-                // deselect this player
-                newSelectedPlayers.splice(newSelectedPlayers.indexOf(index), 1);
-            }
-            else {
-                // select this player
-                if (newSelectedPlayers.length === 2) {
-                    // deselect the first player
-                    newSelectedPlayers.shift();
-                }
-                newSelectedPlayers.push(index);
-            }
-            setSelectedPlayers(newSelectedPlayers);
-            return;
-        }
-
-        if (currentRole.name === 'Butler') {
-            // BUTLER
-            gameState.players[index].statuses?.push(statuses['Patron']);
-            for (const selectedPlayer of selectedPlayers) {
-                gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
-            }
-            setSelectedPlayers([index]);
-            return;
-        }
-
-        setSelectedPlayers([index]);
+    function handleActionCall(index: number) {
+        handleAction(index, currentPlayer, gameState, selectedPlayers, setSelectedPlayers);
     }
 
-    function togglePlayerAlive(name: string) {
-        const index = gameState.players.findIndex(player => player.name === name);
-        if (index === -1) {
-            return;
-        }
-        const tempGameState = { ...gameState };
-        tempGameState.players[index].alive = !tempGameState.players[index].alive;
-        setGameState(tempGameState);
+    function togglePlayerAliveCall(name: string) {
+        togglePlayerAlive(name, gameState, setGameState);
     }
 
     /**
@@ -472,10 +321,10 @@ function App() {
                 </div>
 
                 {/* CENTRE CIRCLE */}
-                <CircleButtons radius={200}
+                <Consortium radius={200}
                     gameState={gameState} setGameState={setGameState}
                     currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
-                    handleAction={handleAction} togglePlayerAlive={togglePlayerAlive}
+                    handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
                 />
 
                 {/* BOTTOM BOX */}
@@ -483,13 +332,13 @@ function App() {
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
-                        advanceTime={advanceTime} setCurrentPlayer={setCurrentPlayer}
+                        advanceTime={() => advanceTime(gameState, setGameState, currentPlayer, setCurrentPlayer)} setCurrentPlayer={setCurrentPlayer}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />
                 </div>
             </div>
 
-            {/* RIGHTa COLUMN */}
+            {/* RIGHT COLUMN */}
             <div className='sidebar'>
                 <h2>Players</h2>
                 <ul>
