@@ -120,8 +120,18 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
 
     // handle execution
     if (castVotes >= voteThreshold) {
-        // TODO: handle a tie
-        tempGameState.choppingBlock = nominatedPlayer;
+        const priorVotes = tempGameState.choppingBlock?.votes || 0;
+        if (castVotes > priorVotes) {
+            // this player is now on the chopping block
+            tempGameState.choppingBlock = {
+                playerName: nominatedPlayer,
+                votes: castVotes,
+            };
+        }
+        else if (priorVotes === castVotes) {
+            // in the case of a tie, no one is executed
+            tempGameState.choppingBlock = undefined;
+        }
     }
 
     // track ghost votes
@@ -181,13 +191,10 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
         // handle lynch
         if (gameState.choppingBlock) {
-            const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock);
+            const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock?.playerName);
 
             tempGameState.players[lynchedIndex].alive = false;
             tempGameState.choppingBlock = undefined;
-
-            tempGameState.nominations = [];
-            tempGameState.nominators = [];
 
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
@@ -199,6 +206,8 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             }
             // VIRGIN, etc.
         }
+        tempGameState.nominations = [];
+        tempGameState.nominators = [];
 
         time = 0;
         day++;

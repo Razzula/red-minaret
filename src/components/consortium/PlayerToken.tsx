@@ -30,7 +30,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
     const isActive = currentPlayer !== null && currentPlayer !== index;
     const isSelected = selectedPlayers.includes(index);
     const isAlive = player.alive;
-    const isPendingExecution = gameState.choppingBlock === player.name;
+    const isPendingExecution = gameState.choppingBlock?.playerName === player.name;
 
     const teamStyle = role?.team
         ? (role.team.toLowerCase() === 'evil' ? styles.evil : styles.good)
