@@ -1,6 +1,10 @@
 import { GameState, Player } from "../../App";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip";
 import StatusToken from "./StatusToken";
+import classNames from 'classnames';
+
+import styles from './Consortium.module.scss';
+
 
 type PlayerTokenProps = {
     player: Player;
@@ -23,14 +27,15 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
     const x = centreX + radius * Math.sin(angle);
     const y = centreY - radius * Math.cos(angle);
 
-    const isActive = currentPlayer !== null && currentPlayer !== index ? 'inactive' : 'active';
-    const isSelected = selectedPlayers.includes(index) ? 'selected' : 'unselected';
-    const isAlive = player.alive ? 'alive' : 'dead';
-    const isPendingExecution = gameState.choppingBlock === player.name ? 'pending-execution' : '';
+    const isActive = currentPlayer !== null && currentPlayer !== index;
+    const isSelected = selectedPlayers.includes(index);
+    const isAlive = player.alive;
+    const isPendingExecution = gameState.choppingBlock === player.name;
+    const teamStyle = role?.team == 'Evil' ? styles.evil : styles.good;
 
     return (
         <div>
-            <div className='player'
+            <div className={styles.player}
                 style={{
                     left: `${x}px`,
                     top: `${y}px`,
@@ -39,7 +44,16 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                 <Tooltip enableClick={true} enableHover={false}>
                     <TooltipTrigger>
                         <button
-                            className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive} ${isPendingExecution}`}
+                            // className={`circle-button ${role?.team} ${isActive} ${isSelected} ${isAlive} ${isPendingExecution}`}
+                            className={classNames(
+                              styles.circleButton,
+                              teamStyle,
+                              {
+                                  [styles.inactive]: isActive,
+                                  [styles.selected]: isSelected,
+                                  [styles.dead]: !isAlive,
+                                  [styles.pendingExecution]: isPendingExecution,
+                              })}
                             key={index}
                             disabled={role === undefined}
                             onClick={(e) => handleClick(e, index)}
@@ -47,7 +61,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                             <img
                                 src={`/red-minaret/iconpack/${role?.icon}.png`}
                                 alt={`${index + 1}`}
-                                className={`circle-button-img`}
+                                className={styles.circleButtonImg}
                             />
                         </button>
                         </TooltipTrigger>
@@ -73,7 +87,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                         centreY={centreY}
                         radius={radius}
                         angle={angle}
-                        isPlayerActive={isActive === 'active'}
+                        isPlayerActive={isActive}
                         playerRole={role}
                     />
                 ))

@@ -1,4 +1,4 @@
-.group-container {
+.groupContainer {
     position: relative;
     margin: 0 auto;
 
@@ -23,7 +23,7 @@
     height: 50px;
 }
 
-.circle-button {
+.circleButton {
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -36,46 +36,46 @@
     cursor: pointer;
 }
 
-.circle-button-img {
+.circleButtonImg {
     width: inherit;
     height: inherit;
 }
 
-.circle-button:disabled {
+.circleButton:disabled {
     cursor: not-allowed;
 }
 
-.circle-button.Evil {
+.evil {
     background-color: #f44336;
     border: 8px solid #f44336;
 }
 
-.circle-button.Good {
+.good {
     background-color: #4caf50;
     border: 8px solid #4caf50;
 }
 
-.circle-button.undefined {
+.undefined {
     cursor: not-allowed;
 }
 
-.circle-button.inactive {
+.inactive {
     opacity: 10%;
+
+    &:hover {
+        opacity: 50%;
+    }
 }
 
-.circle-button.inactive:hover {
+.selected {
     opacity: 50%;
 }
 
-.circle-button.selected {
-    opacity: 50%;
-}
-
-.circle-button.dead {
+.dead {
     background-color: #858587 !important;
 }
 
-.circle-button.pending-execution {
+.pendingExecution {
     border: 8px solid #858587 !important;
 }
 

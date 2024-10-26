@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState } from '../../App';
 
-import '../../styles/Consortium.css';
+import styles from './Consortium.module.scss';
 import { Dialogue, DialogueContent, DialogueTrigger } from '../common/Dialogue';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
@@ -47,7 +47,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
     const players = gameState.players;
 
     return (
-        <div className='group-container'
+        <div className={styles.groupContainer}
             style={{
                 width: `${3 * radius}px`,
                 height: `${3 * radius}px`,
