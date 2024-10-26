@@ -27,7 +27,8 @@ export type GameState = {
 }
 
 export type Player = {
-    name: string;
+    name: string; // this is the player's codename (mandatory)
+    realName?: string; // this is the player's real name (optional)
     alive: boolean;
     role?: Role;
     statuses: Status[];
@@ -346,7 +347,7 @@ function App() {
                 <h2>Players</h2>
                 <ul>
                     {gameState.players.map((player, index) => (
-                        <li key={index}>{player.name}</li>
+                        <li key={index}>{player.name} {player.realName && `(${player.realName})`}</li>
                     ))}
                 </ul>
                 <span>TODO: put something actually useful here (game log?)</span>

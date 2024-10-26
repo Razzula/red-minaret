@@ -9,6 +9,7 @@ import styles from './Consortium.module.scss';
 type PlayerTokenProps = {
     player: Player;
     gameState: GameState;
+    setGameState: React.Dispatch<React.SetStateAction<GameState>>;
     index: number;
     centreX: number;
     centreY: number;
@@ -19,7 +20,7 @@ type PlayerTokenProps = {
     handleClick: (event: React.MouseEvent<HTMLElement>, index: number) => void;
 }
 
-const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick}) => {
+const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick}) => {
 
     const role = gameState.players[index].role;
 
@@ -35,6 +36,16 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
     const teamStyle = role?.team
         ? (role.team.toLowerCase() === 'evil' ? styles.evil : styles.good)
         : null;
+
+    function renamePlayer() {
+        const newName = prompt('Enter new name:', player.realName || player.name);
+        console.log(newName);
+        if (newName) {
+            const tempGameState = {...gameState};
+            tempGameState.players[index].realName = newName;
+            setGameState(tempGameState);
+        }
+    }
 
     return (
         <div>
@@ -68,9 +79,12 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
                         </button>
                         </TooltipTrigger>
                         <TooltipContent>
+                            <div>{player.name} {player.realName && `(${player.realName})`}</div>
+                            <div><strong>{player.role?.name}</strong></div>
                             <div>{player.role?.description}</div>
                             <div>
                                 <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
+                                <button onClick={renamePlayer}>rename</button>
                             </div>
                         </TooltipContent>
                 </Tooltip>

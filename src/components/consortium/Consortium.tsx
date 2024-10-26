@@ -73,6 +73,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
                     <PlayerToken key={index}
                         player={player}
                         gameState={gameState}
+                        setGameState={setGameState}
                         index={index}
                         centreX={centerX}
                         centreY={centerY}
