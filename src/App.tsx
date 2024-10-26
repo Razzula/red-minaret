@@ -57,7 +57,7 @@ function defaultGameState(): GameState  {
 
 function App() {
 
-    const [gameState, setGameState] = useState<GameState>(defaultGameState())
+    const [gameState, setGameState] = useState<GameState>(loadGameState() || defaultGameState())
 
     const [gameSettings, /*setGameSettings*/] = useState({})
 
@@ -69,12 +69,7 @@ function App() {
     const [werewolfPool, setWerewolfPool] = useState<number[]>(roles.map((role, index) => role.type === 'Werewolf' ? index : null).filter(i => i !== null));
     const [minionPool, setMinionPool] = useState<number[]>(roles.map((role, index) => role.type === 'Minion' ? index : null).filter(i => i !== null));
 
-    const setup = gameState.day === 0 && gameState.time === 0
     const timeSymbol = getTimeSymbol();
-
-    useEffect(() => {
-        loadGameState()
-    }, []);
 
     useEffect(() => {
         if (gameState) {
@@ -99,7 +94,7 @@ function App() {
     }, [currentPlayer, gameState]);
 
     useEffect(() => {
-        if (gameState.players.length > 0 && !setup) {
+        if (gameState.players.length > 0 && gameState.state === 'playing') {
             if (!gameState.players.find(player => player.role?.team === 'Evil' && player.alive)) {
                 gameState.state = 'victory';
             }
@@ -110,7 +105,7 @@ function App() {
                 gameState.state = 'defeat';
             }
         }
-    }, [gameState, setup]);
+    }, [gameState]);
 
     useEffect(() => {
         if (gameState.state === 'defeat') {
@@ -119,13 +114,14 @@ function App() {
         else if (gameState.state === 'victory') {
             alert('Villagers win!');
         }
-    }, [gameState.state, setup]);
+    }, [gameState.state]);
 
     function loadGameState() {
         const cachedGameState = localStorage.getItem('gameState');
         if (cachedGameState) {
-            setGameState(JSON.parse(cachedGameState));
+            return JSON.parse(cachedGameState);
         }
+        return null;
     }
 
     // function handleSettingsChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -274,9 +270,12 @@ function App() {
 
     return (
         <div className='row'>
+
+            <button className='dialogue-x' onClick={() => resetGameState()}>Reset</button>
+
             {/* LEFT COLUMN */}
             <div className='sidebar'>
-                { setup ?
+                { gameState.state === 'setup' ?
                     <div>
                         {/* TODO: make this its own component? */}
                         <h1>Configuration</h1>
@@ -312,7 +311,7 @@ function App() {
             <div className='column'>
                 {/* TOP BOX */}
                 <div className='control-box column'>
-                    <h2>{timeSymbol}  { setup ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
+                    <h2>{timeSymbol}  { gameState.state === 'setup' ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
                     <p>{getTimeBlurb()}</p>
 
                     <span>
