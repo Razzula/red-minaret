@@ -1,5 +1,19 @@
 import React from 'react';
-import { FloatingPortal, Placement, autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useHover, useInteractions, useMergeRefs, useRole } from '@floating-ui/react';
+import {
+    FloatingPortal,
+    Placement,
+    autoUpdate,
+    flip,
+    offset,
+    shift,
+    useClick,
+    useDismiss,
+    useFloating,
+    useHover,
+    useInteractions,
+    useMergeRefs,
+    useRole
+} from '@floating-ui/react';
 
 import styles from './Tooltip.module.scss';
 

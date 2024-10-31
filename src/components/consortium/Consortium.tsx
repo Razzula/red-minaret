@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState } from '../../App';
-
-import styles from './Consortium.module.scss';
 import { Dialog, DialogContent, DialogTrigger } from '../common';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
+
+import styles from './Consortium.module.scss';
 
 type ConsortiumProps = {
     gameState: GameState;

@@ -1,10 +1,10 @@
+import classNames from 'classnames';
+
 import { GameState, Player } from "../../App";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
 import StatusToken from "./StatusToken";
-import classNames from 'classnames';
 
 import styles from './Consortium.module.scss';
-
 
 type PlayerTokenProps = {
     player: Player;
@@ -31,11 +31,10 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, index, cent
     const isSelected = selectedPlayers.includes(index);
     const isAlive = player.alive;
     const isPendingExecution = gameState.choppingBlock === player.name;
-    let teamStyle;
-    if (role?.team)
-      teamStyle = role.team.toLowerCase() == 'evil' ? styles.evil : styles.good;
-    else
-      teamStyle = null;
+
+    const teamStyle = role?.team
+        ? (role.team.toLowerCase() === 'evil' ? styles.evil : styles.good)
+        : null;
 
     return (
         <div>

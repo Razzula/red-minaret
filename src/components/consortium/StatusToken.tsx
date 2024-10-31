@@ -1,7 +1,9 @@
+import classNames from 'classnames';
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
+
 import { Status } from '../../data/statuses';
 import { Role } from "../../data/roles";
-import classNames from 'classnames';
 
 import styles from './Consortium.module.scss';
 
@@ -54,7 +56,7 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                         />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent>{fake ? status.altDescription : status.description}</TooltipContent>
+                <TooltipContent>{fake && status.altDescription ? status.altDescription : status.description}</TooltipContent>
             </Tooltip>
         </div>
     );
