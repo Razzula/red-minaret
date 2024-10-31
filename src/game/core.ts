@@ -177,9 +177,18 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
     if (time === 1) {
         // HANDLE MURDER
         tempGameState.players.forEach((player, index) => {
-            if (player.statuses?.find(status => status.name === 'Targeted') &&
-                !player.statuses?.find(status => status.name === 'Protected') &&
-                player.role?.name !== 'Soldier'
+            const targetedStatus = player.statuses?.find(status => status.name === 'Targeted');
+            const playerTargeted = targetedStatus !== undefined && !targetedStatus.drunk && !targetedStatus.poisoned;
+
+            const protectedStatus = player.statuses?.find(status => status.name === 'Protected');
+            const playerProtected = protectedStatus !== undefined && !protectedStatus.drunk && !protectedStatus.poisoned;
+
+            if (playerTargeted &&
+                !playerProtected &&
+                (
+                    player.role?.name !== 'Soldier'
+                    || player.statuses.find(status => status.name === 'Poisoned') !== undefined
+                )
             ) {
                 // TODO: handle SAINT
                 tempGameState.players[index].alive = false;
@@ -198,11 +207,16 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-                // TODO: custom alerts via Dialog component
-                alert('(the Saint was lynched...)');
-                tempGameState.state = 'defeat';
-                setGameState({ ...tempGameState });
-                return;
+                if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Poisoned') === undefined) {
+                    // TODO: custom alerts via Dialog component
+                    alert('(the Saint was lynched...)');
+                    tempGameState.state = 'defeat';
+                    setGameState({ ...tempGameState });
+                    return;
+                }
+                else {
+                    alert('the saint was lynched, however, they were poisioned, so the game continues)');
+                }
             }
             // VIRGIN, etc.
         }
@@ -242,6 +256,7 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
     }
 
     const isPlayerDrunk = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk') ? true : false;
+    const isPlayerPoisoned = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Poisoned') ? true : false;
 
     const currentRole = gameState.players[currentPlayer].role;
     if (!currentRole) {
@@ -250,7 +265,28 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
 
     if (currentRole.name === 'Werewolf') {
         // WEREWOLF
-        gameState.players[playerIndex].statuses?.push(statuses['Targeted']);
+        const statusToApply = statuses['Targeted'];
+        if (isPlayerPoisoned) {
+            // POISONED
+            // note: it is strange that a poisioner would ever target a Werewolf,
+            // however, the BotCT rules do not prevent this...
+            statusToApply.poisoned = true;
+            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Werewolf');
+        }
+
+        gameState.players[playerIndex].statuses?.push(statusToApply);
+        for (const selectedPlayer of selectedPlayers) {
+            gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+        }
+        setSelectedPlayers([playerIndex]);
+        return;
+    }
+
+    if (currentRole.name === 'Poisoner') {
+        // POISIONER
+        const statusToApply = statuses['Poisoned'];
+
+        gameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
             gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
@@ -264,6 +300,10 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
         if (isPlayerDrunk) {
             statusToApply.drunk = true;
             statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Drunk');
+        }
+        else if (isPlayerPoisoned) {
+            statusToApply.poisoned = true;
+            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Doctor');
         }
 
         gameState.players[playerIndex].statuses?.push(statusToApply);
@@ -294,6 +334,12 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
 
     if (currentRole.name === 'Butler') {
         // BUTLER
+        const statusToApply = statuses['Patron'];
+        if (isPlayerPoisoned) {
+            statusToApply.poisoned = true;
+            statusToApply.altDescription = statusToApply.altDescription;
+        }
+
         gameState.players[playerIndex].statuses?.push(statuses['Patron']);
         for (const selectedPlayer of selectedPlayers) {
             gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.

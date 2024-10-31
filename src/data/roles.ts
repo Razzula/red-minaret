@@ -79,7 +79,7 @@ export const roles: Role[] = [
         name: 'Poisoner',
         description: 'Each night, choose a player: they are poisoned tonight and tomorrow day.',
         team: 'Evil', type: 'Minion',
-        icon: 'roles/Green Potion',
+        icon: 'roles/Green Potion 2',
         night: 'Choose a player to poison.',
     },
 ]

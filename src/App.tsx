@@ -254,6 +254,9 @@ function App() {
         if (gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk')) {
             instruction = `${instruction} Remember, this player is the Drunk!`;
         }
+        else if (gameState.players[currentPlayer].statuses?.find(status => status.name === 'Poisoned')) {
+            instruction = `${instruction} Remember, this player has been poisoned!`;
+        }
 
         return instruction;
 
