@@ -28,7 +28,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
             <div>
                 <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>Assign Roles</button>
                 <button onClick={shuffleCodeNames}>Shuffle Codenames</button>
-                <button onClick={startGame} disabled={gameState.players.find(x => x.role === undefined) !== undefined}>Start</button>
+                <button onClick={startGame} disabled={gameState.players.length < 5 || gameState.players.find(x => x.role === undefined) !== undefined}>Start</button>
             </div>
         );
     }
