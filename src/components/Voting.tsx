@@ -129,7 +129,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                     {
                         Object.entries(votes).map(([playerName, vote]) => {
 
-                            const butlerCannotVote = playerName === butler && patron !== undefined && !votes[patron]; // BUTLER
+                            const butlerCannotVote = playerName === butler && (patron !== undefined ? !votes[patron] : true); // BUTLER
 
                             return (
                                 <div key={playerName} className='row'>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState } from '../../App';
-import { Dialog, DialogContent, DialogTrigger } from '../common';
+import { Dialog, DialogContent, DialogTrigger, Tooltip, TooltipContent, TooltipTrigger } from '../common';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
 
@@ -16,9 +16,11 @@ type ConsortiumProps = {
     setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleAction: (index: number) => void;
     togglePlayerAlive: (name: string) => void;
+    addPlayer: () => void;
+    removePlayer: (name: string) => void;
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive }) => {
+const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -56,6 +58,23 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
         >
 
             <div className='centrepiece'>
+                { gameState.state === 'setup' &&
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <button
+                                className={styles.circleButton}
+                                style={{
+                                    width: '100px',
+                                    height: '100px',
+                                }}
+                                onClick={addPlayer}
+                            >
+                                +
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add Player</TooltipContent>
+                    </Tooltip>
+                }
                 { gameState.time === 2 &&
                     <Dialog>
                         <DialogTrigger>
@@ -82,6 +101,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
                         selectedPlayers={selectedPlayers}
                         togglePlayerAlive={togglePlayerAlive}
                         handleClick={handleClick}
+                        removePlayer={removePlayer}
                     />
                 ))
             }

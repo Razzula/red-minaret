@@ -18,9 +18,10 @@ type PlayerTokenProps = {
     selectedPlayers: number[];
     togglePlayerAlive: (name: string) => void;
     handleClick: (event: React.MouseEvent<HTMLElement>, index: number) => void;
+    removePlayer: (name: string) => void;
 }
 
-const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick}) => {
+const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick, removePlayer}) => {
 
     const role = gameState.players[index].role;
 
@@ -68,12 +69,11 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                                   [styles.pendingExecution]: isPendingExecution,
                               } as never)}
                             key={index}
-                            disabled={role === undefined}
                             onClick={(e) => handleClick(e, index)}
                         >
                             <img
                                 src={`/red-minaret/icons/${role?.icon}.png`}
-                                alt={`${index + 1}`}
+                                alt={`${role?.name ?? 'no role'}`}
                                 className={styles.circleButtonImg}
                             />
                         </button>
@@ -85,12 +85,38 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                                 <div>{player.role?.description}</div>
                             </TooltipHoverContent>
                             <div>
-                                <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
+                                { gameState.state === 'setup' &&
+                                    <span>
+                                        <button onClick={() => {}}>assign role</button>
+                                        <button onClick={() => {}}>assign codename</button>
+                                        <button onClick={() => removePlayer(player.name)}>remove player</button>
+                                    </span>
+                                }
+                                { gameState.state !== 'setup' &&
+                                    <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
+                                }
                                 <button onClick={renamePlayer}>rename</button>
                             </div>
                         </TooltipContent>
                 </Tooltip>
-                <span>{player.realName} ({player.name})</span>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <div>
+                            <img
+                                src={`/red-minaret/characters/${player.name}.png`}
+                                alt={player.name}
+                                className={styles.circleButtonImg}
+                                style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '50%',
+                                }}
+                            />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent><span>{player.realName} ({player.name})</span></TooltipContent>
+                </Tooltip>
             </div>
 
             {

@@ -43,14 +43,14 @@ const codeNameList = [
     'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola', 'Otto', 'Zazu', 'Damien',
 ]
 
-function defaultGameState(): GameState  {
+function defaultGameState(playerCount: number = 5): GameState  {
     return {
         day: 0,
         time: 0,
         state: 'setup',
         players: codeNameList
             .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, 5).map(name => ({
+            .slice(0, playerCount).map(name => ({
                 name, alive:
                 true, statuses: [],
                 ghostVotes: 1,
@@ -151,7 +151,7 @@ function App() {
             }));
         }
         else {
-            setGameState(defaultGameState());
+            setGameState(defaultGameState(gameState.players.length));
         }
     }
 
@@ -276,6 +276,23 @@ function App() {
         setGameState(tempGameState);
     }
 
+    function addPlayer() {
+        const tempGameState = {...gameState};
+        const playerName = codeNameList
+            .sort(() => Math.random() - 0.5)
+            .find(name => !gameState.players.find(player => player.name === name))
+            ?? `Player ${gameState.players.length + 1}`;
+
+        tempGameState.players.push({ name: playerName, alive: true, statuses: [], ghostVotes: 1 });
+        setGameState(tempGameState);
+    }
+
+    function removePlayer(name: string) {
+        const tempGameState = {...gameState};
+        tempGameState.players = tempGameState.players.filter(player => player.name !== name);
+        setGameState(tempGameState);
+    }
+
     /**
      * TODO:
      * - Taj Mahal background
@@ -342,6 +359,7 @@ function App() {
                     gameState={gameState} setGameState={setGameState}
                     currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
                     handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
+                    addPlayer={addPlayer} removePlayer={removePlayer}
                 />
 
                 {/* BOTTOM BOX */}
