@@ -26,3 +26,5 @@ vite.config.js
 *.njsproj
 *.sln
 *.sw?
+
+/public/icons/unused/*

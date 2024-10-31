@@ -8,6 +8,7 @@ type GameControlsProps = {
     gameSettings: any;
     advanceTime: () => void;
     setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
+    shuffleCodeNames: () => void;
 
     villagerPool: number[];
     outsiderPool: number[];
@@ -15,7 +16,7 @@ type GameControlsProps = {
     minionPool: number[];
 };
 
-function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
+function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, shuffleCodeNames, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function startGame() {
         setGameState({ ...gameState, day: 1, time: 0, state: 'playing' });
@@ -26,6 +27,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         return (
             <div>
                 <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>Assign Roles</button>
+                <button onClick={shuffleCodeNames}>Shuffle Codenames</button>
                 <button onClick={startGame} disabled={gameState.players.find(x => x.role === undefined) !== undefined}>Start</button>
             </div>
         );

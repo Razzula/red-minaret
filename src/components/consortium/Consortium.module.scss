@@ -81,6 +81,7 @@
 
 .statusCircle {
     background-color: var(--pink);
+    cursor: default;
 
     &.fake {
         background-color: var(--grey);

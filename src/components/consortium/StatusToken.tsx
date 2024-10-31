@@ -50,13 +50,16 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                         disabled={playerRole === undefined}
                     >
                         <img
-                            src={`/red-minaret/iconpack/${status.icon}.png`}
+                            src={`/red-minaret/icons/${status.icon}.png`}
                             alt={status.name}
                             className={styles.statusCircleImg}
                         />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent>{fake && status.altDescription ? status.altDescription : status.description}</TooltipContent>
+                <TooltipContent>
+                    <div><strong>{status.name}</strong></div>
+                    {fake && status.altDescription ? status.altDescription : status.description}
+                </TooltipContent>
             </Tooltip>
         </div>
     );

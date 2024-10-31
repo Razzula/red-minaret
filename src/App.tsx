@@ -35,8 +35,12 @@ export type Player = {
     ghostVotes: number;
 }
 
-const playerList = [
-    'Steve', 'Marvin', 'Graham White', 'Boblin', 'Doblin', 'Gorgonzola', 'Otto', 'Ryker', 'Harran', 'Zazu', 'Hush', 'Billybob'
+const codeNameList = [
+    // Swinbourne Bois
+    'Steve', 'Marvin', 'Graham White',
+    // D&DBeans
+    'Boblin', 'Hush', 'Sabrina', 'Hanthur', 'Ryker', 'Chortle', 'Harran', 'Billybob', 'John',
+    'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola', 'Otto', 'Zazu', 'Damien',
 ]
 
 function defaultGameState(): GameState  {
@@ -44,7 +48,7 @@ function defaultGameState(): GameState  {
         day: 0,
         time: 0,
         state: 'setup',
-        players: playerList
+        players: codeNameList
             .sort(() => Math.random() - 0.5) // shuffle
             .slice(0, 5).map(name => ({
                 name, alive:
@@ -263,6 +267,15 @@ function App() {
         togglePlayerAlive(name, gameState, setGameState);
     }
 
+    function shuffleCodeNames() {
+        const tempGameState = {...gameState};
+        const shuffledNames = codeNameList.sort(() => Math.random() - 0.5);
+        tempGameState.players.forEach((player, index) => {
+            player.name = shuffledNames[index];
+        });
+        setGameState(tempGameState);
+    }
+
     /**
      * TODO:
      * - Taj Mahal background
@@ -337,6 +350,7 @@ function App() {
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
                         advanceTime={() => advanceTime(gameState, setGameState, currentPlayer, setCurrentPlayer)} setCurrentPlayer={setCurrentPlayer}
+                        shuffleCodeNames={shuffleCodeNames}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />
                 </div>

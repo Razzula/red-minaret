@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 
 import { GameState, Player } from "../../App";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
+import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
 import StatusToken from "./StatusToken";
 
 import styles from './Consortium.module.scss';
@@ -55,7 +55,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                     top: `${y}px`,
                 }}
             >
-                <Tooltip enableClick={true} enableHover={false}>
+                <Tooltip enableClick={true} enableHover={true}>
                     <TooltipTrigger>
                         <button
                             className={classNames(
@@ -72,26 +72,25 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                             onClick={(e) => handleClick(e, index)}
                         >
                             <img
-                                src={`/red-minaret/iconpack/${role?.icon}.png`}
+                                src={`/red-minaret/icons/${role?.icon}.png`}
                                 alt={`${index + 1}`}
                                 className={styles.circleButtonImg}
                             />
                         </button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <div>{player.name} {player.realName && `(${player.realName})`}</div>
-                            <div><strong>{player.role?.name}</strong></div>
-                            <div>{player.role?.description}</div>
+                            <TooltipHoverContent>
+                                <div>{player.realName} ({player.name})</div>
+                                <div><strong>{player.role?.name}</strong></div>
+                                <div>{player.role?.description}</div>
+                            </TooltipHoverContent>
                             <div>
                                 <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
                                 <button onClick={renamePlayer}>rename</button>
                             </div>
                         </TooltipContent>
                 </Tooltip>
-                <span>{player.name}</span>
-                { player.role &&
-                    <span> ({player.role?.name})</span>
-                }
+                <span>{player.realName} ({player.name})</span>
             </div>
 
             {
