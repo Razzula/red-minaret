@@ -31,12 +31,20 @@ export const statuses: { [key: string]: Status } = {
         description: 'The Werewolf has targeted to kill this player.',
         expiration: 1, // expires at morning
         icon: 'roles/Monster Eye',
+        altDescription: 'The $ROLE$ has tried to kill this player.',
     },
     'Patron': {
         name: 'Patron',
         description: 'The Butler can only vote if this player is voting too.',
         expiration: 0, // expires at night
         icon: 'roles/Envelope',
+        altDescription: 'The Butler has tried to selet this player as their Patron.',
+    },
+    'Poisoned': {
+        name: 'Poisoned',
+        description: "This player's ability is nullified for the day.",
+        expiration: 0, // expires at morning
+        icon: 'roles/Green Potion 2',
     },
 }
 

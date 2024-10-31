@@ -26,7 +26,10 @@ export function Voting({ gameState, setGameState }: VotingProps) {
     const voteThreshold = Math.ceil(totalVotes / 2);
 
     const butler = gameState.players.find(player => player.role?.name === 'Butler')?.name;
-    const patron = gameState.players.find(player => player.statuses.find(status => status.name === 'Patron'))?.name;
+    const patron = gameState.players.find(player => {
+        const patronStatus = player.statuses.find(status => status.name === 'Patron');
+        return patronStatus !== undefined && !patronStatus.poisoned;
+    })?.name;
 
     const invalidSelection = (
         !nominatedPlayer || !nominatingPlayer
@@ -129,7 +132,10 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                     {
                         Object.entries(votes).map(([playerName, vote]) => {
 
-                            const butlerCannotVote = playerName === butler && (patron !== undefined ? !votes[patron] : true); // BUTLER
+                            const butlerCannotVote = (
+                                playerName === butler // BUTLER
+                                && (patron !== undefined ? !votes[patron] : true)
+                            );
 
                             return (
                                 <div key={playerName} className='row'>
