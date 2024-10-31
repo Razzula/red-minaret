@@ -36,9 +36,18 @@ function useTooltip({
 }: TooltipOptions = {}) {
 
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen);
+    const [trigger, setTrigger] = React.useState<'hover' | 'click' | null>(null);
 
     const open = controlledOpen ?? uncontrolledOpen;
-    const setOpen = setControlledOpen ?? setUncontrolledOpen;
+    const setOpen = (isOpen: boolean, event?: Event) => {
+        setControlledOpen ? setControlledOpen(isOpen) : setUncontrolledOpen(isOpen);
+        if (isOpen) {
+            setTrigger(event?.type === 'click' ? 'click' : 'hover');
+        }
+        else {
+            setTrigger(null);
+        }
+    };
 
     const data = useFloating({
         placement,
@@ -75,6 +84,7 @@ function useTooltip({
         () => ({
             open,
             setOpen,
+            trigger,
             ...interactions,
             ...data
         }),
@@ -146,15 +156,30 @@ export const TooltipTrigger = React.forwardRef<
 export const TooltipContent = React.forwardRef<
     HTMLDivElement,
     React.HTMLProps<HTMLDivElement>
->(function TooltipContent({ style, ...props }, propRef) {
+>(function TooltipContent({ children, style, ...props }, propRef) {
     const context = useTooltipContext();
     const ref = useMergeRefs([context.refs.setFloating, propRef]);
 
     if (!context.open) return null;
 
+    // Find click and hover content within children
+    let clickContent: React.ReactNode = null;
+    let hoverContent: React.ReactNode = null;
+
+    React.Children.forEach(children, (child) => {
+        if (React.isValidElement(child)) {
+            if (child.type === TooltipClickContent) clickContent = child.props.children;
+            else if (child.type === TooltipHoverContent) hoverContent = child.props.children;
+        }
+    });
+
+    // Default to using `children` if neither `TooltipClickContent` nor `TooltipHoverContent` is provided
+    const contentToDisplay = context.trigger === 'click' ? clickContent || children : hoverContent || children;
+
     return (
         <FloatingPortal>
-            <div className={styles.Tooltip}
+            <div
+                className={styles.Tooltip}
                 ref={ref}
                 style={{
                     ...context.floatingStyles,
@@ -162,7 +187,13 @@ export const TooltipContent = React.forwardRef<
                     flexDirection: 'column',
                 }}
                 {...context.getFloatingProps(props)}
-            />
+            >
+                {contentToDisplay}
+            </div>
         </FloatingPortal>
     );
 });
+
+
+export const TooltipClickContent: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
+export const TooltipHoverContent: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
