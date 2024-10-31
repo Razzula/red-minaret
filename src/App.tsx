@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
+import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
 import { findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
 import { Status } from './data/statuses'
 
-import './styles/App.css'
-import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
+import './App.css'
+import './globals.css'
 
 export type GameState = {
     day: number;

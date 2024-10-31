@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState } from '../../App';
-
-import '../../styles/Consortium.css';
-import { Dialogue, DialogueContent, DialogueTrigger } from '../common/Dialogue';
+import { Dialog, DialogContent, DialogTrigger } from '../common';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
+
+import styles from './Consortium.module.scss';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -47,7 +47,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
     const players = gameState.players;
 
     return (
-        <div className='group-container'
+        <div className={styles.groupContainer}
             style={{
                 width: `${3 * radius}px`,
                 height: `${3 * radius}px`,
@@ -57,14 +57,14 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
 
             <div className='centrepiece'>
                 { gameState.time === 2 &&
-                    <Dialogue>
-                        <DialogueTrigger>
+                    <Dialog>
+                        <DialogTrigger>
                             <button>Start Vote</button>
-                        </DialogueTrigger>
-                        <DialogueContent>
+                        </DialogTrigger>
+                        <DialogContent>
                             <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
-                        </DialogueContent>
-                    </Dialogue>
+                        </DialogContent>
+                    </Dialog>
                 }
             </div>
 

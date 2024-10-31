@@ -1,6 +1,11 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip";
+import classNames from 'classnames';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
+
 import { Status } from '../../data/statuses';
 import { Role } from "../../data/roles";
+
+import styles from './Consortium.module.scss';
 
 type StatusTokenProps = {
     status: Status;
@@ -19,9 +24,11 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
     const newX = centreX + radius * distanceMultiplier * Math.sin(angle);
     const newY = centreY - radius * distanceMultiplier * Math.cos(angle);
 
+    const fake = status.drunk || status.poisoned;
+
     return (
         <div key={index}
-            className='status'
+            className={styles.status}
             style={{
                 left: `${newX}px`,
                 top: `${newY}px`,
@@ -31,14 +38,25 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
             <Tooltip>
                 <TooltipTrigger>
                     <button
-                        className={`circle-button status-circle ${status} ${isPlayerActive}`}
+                        className={classNames(
+                          styles.circleButton,
+                          styles.statusCircle,
+                          {
+                              [styles.fake]: fake,
+                              [styles.inactive]: isPlayerActive,
+                          } as never,
+                        )}
                         key={index}
                         disabled={playerRole === undefined}
                     >
-                        <p>{status.name}</p>
+                        <img
+                            src={`/red-minaret/iconpack/${status.icon}.png`}
+                            alt={status.name}
+                            className={styles.statusCircleImg}
+                        />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent>{status.description}</TooltipContent>
+                <TooltipContent>{fake && status.altDescription ? status.altDescription : status.description}</TooltipContent>
             </Tooltip>
         </div>
     );

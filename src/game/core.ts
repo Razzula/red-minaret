@@ -1,4 +1,5 @@
 import { GameState } from "../App";
+
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 
@@ -190,7 +191,7 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-                // TODO: custom alerts via Dialogue component
+                // TODO: custom alerts via Dialog component
                 alert('(the Saint was lynched...)');
                 tempGameState.state = 'defeat';
                 setGameState({ ...tempGameState });
@@ -250,7 +251,11 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
 
     if (currentRole.name === 'Doctor') {
         // DOCTOR
-        const statusToApply = isPlayerDrunk ? statuses["'Protected'"] : statuses['Protected'];
+        const statusToApply = statuses['Protected'];
+        if (isPlayerDrunk) {
+            statusToApply.drunk = true;
+            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Drunk');
+        }
 
         gameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
