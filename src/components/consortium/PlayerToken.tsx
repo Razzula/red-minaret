@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 
 import { GameState, Player } from "../../App";
-import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
+import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
 import StatusToken from "./StatusToken";
 
 import styles from './Consortium.module.scss';
