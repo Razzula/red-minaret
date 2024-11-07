@@ -128,6 +128,55 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
                 </Dialog>
             );
         }
+
+        if (gameState.time === 0 && currentPlayer !== null && players[currentPlayer].role?.name === 'Seer') {
+            // SEER
+            const seer = players[currentPlayer];
+            let seerResult: string;
+
+            if (seer.statuses.find((status) => status.name === 'Drunk')) {
+                seerResult = 'Drunk!';
+            }
+            else if (seer.statuses.find((status) => status.name === 'Poisoned')) {
+                seerResult = 'Poisoned!';
+            }
+            else {
+                // if a selected player is evil or the red herring, then the seer sees evil
+                seerResult = selectedPlayers.length > 0 ? (
+                    selectedPlayers.find((index) =>
+                        players[index].role?.team === 'Evil' || players[index].statuses.find((status) => status.name === 'Red Herring')
+                    ) !== undefined ? 'Evil' : 'Good'
+                ) : 'null';
+            }
+
+            const token = (
+                <span
+                    className={styles.circleButton}
+                    style={{
+                        width: '100px',
+                        height: '100px',
+                    }}
+                >
+                    {seerResult}
+                </span>
+            );
+
+            if (seerResult !== 'Drunk!' && seerResult !== 'Poisoned!') {
+                return token;
+            }
+
+            return (
+                <Tooltip enableHover={true}>
+                    <TooltipTrigger>
+                        {token}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        This player is {seerResult} You should give them intentionally unhelpful information.
+                    </TooltipContent>
+                </Tooltip>
+            );
+        }
+
         return null;
     };
 

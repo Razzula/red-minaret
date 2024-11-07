@@ -315,6 +315,7 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
     }
 
     if (currentRole.name === 'Seer') {
+        // SEER
         const newSelectedPlayers = [...selectedPlayers];
         if (newSelectedPlayers.includes(playerIndex)) {
             // deselect this player
@@ -328,6 +329,7 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
             }
             newSelectedPlayers.push(playerIndex);
         }
+        // XXX: this does not allow the Seer to select themselves!
         setSelectedPlayers(newSelectedPlayers);
         return;
     }
