@@ -19,9 +19,10 @@ type PlayerTokenProps = {
     togglePlayerAlive: (name: string) => void;
     handleClick: (event: React.MouseEvent<HTMLElement>, index: number) => void;
     removePlayer: (name: string) => void;
+    setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
-const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick, removePlayer}) => {
+const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick, removePlayer, setCurrentPlayer }) => {
 
     const role = gameState.players[index].role;
 
@@ -48,6 +49,36 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
         }
     }
 
+    function enterSpecialState(specialState: string) {
+        setGameState((prev) => ({
+            ...prev,
+            state: 'special',
+            special: {
+                state: specialState,
+                previous: prev.state,
+            }
+        }));
+
+        const currentPlayerIndex = gameState.players.findIndex((p) => p.name === player.name);
+        if (currentPlayerIndex !== -1) {
+            setCurrentPlayer(currentPlayerIndex);
+        }
+    }
+
+    function getCursorIconFromCurrentPlayer() {
+        if (currentPlayer === null) {
+            return 'auto';
+        }
+        const currentPlayerRole = gameState.players[currentPlayer].role;
+        if (currentPlayerRole !== undefined && (
+                gameState.time !== 0 || currentPlayerRole?.night !== undefined
+            )
+        ) {
+            return `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), auto`;
+        }
+        return 'not-allowed';
+    }
+
     return (
         <div>
             <div className={styles.player}
@@ -60,14 +91,17 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                     <TooltipTrigger>
                         <button
                             className={classNames(
-                              styles.circleButton,
-                              teamStyle,
-                              {
-                                  [styles.inactive]: isActive,
-                                  [styles.selected]: isSelected,
-                                  [styles.dead]: !isAlive,
-                                  [styles.pendingExecution]: isPendingExecution,
-                              } as never)}
+                                styles.circleButton,
+                                teamStyle,
+                                {
+                                    [styles.inactive]: isActive,
+                                    [styles.selected]: isSelected,
+                                    [styles.dead]: !isAlive,
+                                    [styles.pendingExecution]: isPendingExecution,
+                                } as never)}
+                            style={{
+                                cursor: getCursorIconFromCurrentPlayer(),
+                            }}
                             key={index}
                             onClick={(e) => handleClick(e, index)}
                         >
@@ -85,6 +119,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                                 <div>{player.role?.description}</div>
                             </TooltipHoverContent>
                             <div>
+                                {/* HOTBAR */}
                                 { gameState.state === 'setup' &&
                                     <span>
                                         <button onClick={() => {}}>assign role</button>
@@ -94,6 +129,12 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({player, gameState, setGameStat
                                 }
                                 { gameState.state !== 'setup' &&
                                     <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
+                                }
+                                { gameState.state !== 'setup' && gameState.time !== 0 && player.role?.name === 'Hunter' &&
+                                    <button
+                                        onClick={() => enterSpecialState('Hunter')}
+                                        disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
+                                    >shoot</button>
                                 }
                                 <button onClick={renamePlayer}>rename</button>
                             </div>

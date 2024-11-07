@@ -33,7 +33,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         );
     }
 
-    if (gameState.state === 'playing') {
+    if (gameState.state === 'playing' || gameState.state === 'special') {
         return (
             <div>
                 <button onClick={advanceTime} disabled={gameState.state !== 'playing'}>Next</button>

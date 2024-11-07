@@ -337,7 +337,6 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
         const statusToApply = statuses['Patron'];
         if (isPlayerPoisoned) {
             statusToApply.poisoned = true;
-            statusToApply.altDescription = statusToApply.altDescription;
         }
 
         gameState.players[playerIndex].statuses?.push(statuses['Patron']);
@@ -359,4 +358,47 @@ export function togglePlayerAlive(name: string, gameState: GameState, setGameSta
     const tempGameState = { ...gameState };
     tempGameState.players[index].alive = !tempGameState.players[index].alive;
     setGameState(tempGameState);
+}
+
+export function hunterAbility(
+    gameState: GameState, selectedPlayers: number[],
+    setGameState: React.Dispatch<React.SetStateAction<GameState>>, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>
+) {
+    // HUNTER
+    if (gameState.state === 'special' && gameState.special?.state === 'Hunter') {
+        const hunterIndex = gameState.players.findIndex(player => player.role?.name === 'Hunter');
+        const hunter = gameState.players[hunterIndex];
+        if (hunter && selectedPlayers.length === 1) {
+            if (hunter.role?.abilityUses === undefined || hunter.abilityUses < hunter.role?.abilityUses) {
+                const tempGameState = {...gameState};
+
+                if (hunter.statuses?.find(status => status.name === 'Poisoned') !== undefined) {
+                    // POISONED
+                    console.log('hunter is poisoned');
+                }
+                else if (hunter.statuses?.find(status => status.name === 'Drunk') !== undefined) {
+                    // DRUNK
+                    console.log('hunter is drunk');
+                }
+                else {
+                    // kill the selected player, if they are evil
+                    const target = gameState.players[selectedPlayers[0]];
+                    if (target.role?.team === 'Evil') {
+                        tempGameState.players[selectedPlayers[0]].alive = false;
+                    }
+                }
+
+                // log ability usage
+                tempGameState.players[hunterIndex].abilityUses = (hunter.abilityUses || 0) + 1;
+
+                // revert state
+                tempGameState.state = tempGameState.special?.previous || 'setup';
+                tempGameState.special = undefined;
+
+                setGameState(tempGameState);
+                setCurrentPlayer(null);
+                setSelectedPlayers([]);
+            }
+        }
+    }
 }

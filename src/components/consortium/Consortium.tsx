@@ -18,9 +18,11 @@ type ConsortiumProps = {
     togglePlayerAlive: (name: string) => void;
     addPlayer: () => void;
     removePlayer: (name: string) => void;
+    setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
+    handleSpecialAction: (specialState: string) => void;
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer }) => {
+const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, handleSpecialAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -46,6 +48,89 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
         }
     }
 
+    function cancelSpecialState() {
+        setGameState((prev) => ({
+            ...prev,
+            state: prev.special?.previous || 'setup',
+            special: undefined,
+        }));
+    }
+
+    const Centrepiece: React.FC = () => {
+
+        if (gameState.state === 'setup') {
+            // Add Player button
+            return (
+                <Tooltip>
+                    <TooltipTrigger>
+                        <button
+                            className={styles.circleButton}
+                            style={{
+                                width: '100px',
+                                height: '100px',
+                            }}
+                            onClick={addPlayer}
+                        >
+                            +
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add Player</TooltipContent>
+                </Tooltip>
+            );
+        }
+
+        if (gameState.state === 'special') {
+            // Cancel
+            return (
+                <div>
+                    <button
+                        className={styles.circleButton}
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                        onClick={() => handleSpecialAction('Hunter')}
+                    >
+                        Shoot
+                    </button>
+                    <button
+                        className={styles.circleButton}
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                        onClick={cancelSpecialState}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            );
+        }
+
+        if (gameState.time === 2) {
+            // Voting Dialog
+            return (
+                <Dialog>
+                    <DialogTrigger>
+                        <button
+                            className={styles.circleButton}
+                            style={{
+                                width: '100px',
+                                height: '100px',
+                            }}
+                        >
+                            Start Vote
+                        </button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
+                    </DialogContent>
+                </Dialog>
+            );
+        }
+        return null;
+    };
+
     const players = gameState.players;
 
     return (
@@ -58,33 +143,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
         >
 
             <div className='centrepiece'>
-                { gameState.state === 'setup' &&
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <button
-                                className={styles.circleButton}
-                                style={{
-                                    width: '100px',
-                                    height: '100px',
-                                }}
-                                onClick={addPlayer}
-                            >
-                                +
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent>Add Player</TooltipContent>
-                    </Tooltip>
-                }
-                { gameState.time === 2 &&
-                    <Dialog>
-                        <DialogTrigger>
-                            <button>Start Vote</button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
-                        </DialogContent>
-                    </Dialog>
-                }
+                <Centrepiece />
             </div>
 
             {
@@ -102,6 +161,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
                         togglePlayerAlive={togglePlayerAlive}
                         handleClick={handleClick}
                         removePlayer={removePlayer}
+                        setCurrentPlayer={setCurrentPlayer}
                     />
                 ))
             }

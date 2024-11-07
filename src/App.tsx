@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
-import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
+import { advanceTime, handleAction, hunterAbility, togglePlayerAlive } from './game/core'
 import { findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
@@ -14,7 +14,12 @@ import './globals.css'
 export type GameState = {
     day: number;
     time: number;
-    state: 'setup' | 'playing' | 'defeat' | 'victory';
+    state: 'setup' | 'playing' | 'defeat' | 'victory' | 'special';
+
+    special?: {
+        state: string;
+        previous: 'setup' | 'playing' | 'defeat' | 'victory' | 'special';
+    };
 
     players: Player[];
 
@@ -33,6 +38,7 @@ export type Player = {
     role?: Role;
     statuses: Status[];
     ghostVotes: number;
+    abilityUses: number;
 }
 
 const codeNameList = [
@@ -54,6 +60,7 @@ function defaultGameState(playerCount: number = 5): GameState  {
                 name, alive:
                 true, statuses: [],
                 ghostVotes: 1,
+                abilityUses: 0,
             })),
         nominations: [],
         nominators: [],
@@ -266,6 +273,13 @@ function App() {
         handleAction(index, currentPlayer, gameState, selectedPlayers, setSelectedPlayers);
     }
 
+    function handleSpecialAction(specialState: string) {
+        switch (specialState) {
+            case 'Hunter':
+                hunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers);
+        }
+    }
+
     function togglePlayerAliveCall(name: string) {
         togglePlayerAlive(name, gameState, setGameState);
     }
@@ -286,7 +300,7 @@ function App() {
             .find(name => !gameState.players.find(player => player.name === name))
             ?? `Player ${gameState.players.length + 1}`;
 
-        tempGameState.players.push({ name: playerName, alive: true, statuses: [], ghostVotes: 1 });
+        tempGameState.players.push({ name: playerName, alive: true, statuses: [], ghostVotes: 1, abilityUses: 0 });
         setGameState(tempGameState);
     }
 
@@ -363,6 +377,7 @@ function App() {
                     currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
                     handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
                     addPlayer={addPlayer} removePlayer={removePlayer}
+                    setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
                 />
 
                 {/* BOTTOM BOX */}
