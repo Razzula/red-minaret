@@ -9,9 +9,13 @@ export type Role  = {
 
     night?: string;
     day?: string;
+
+    abilityUses?: number;
 }
 
 export const roles: Role[] = [
+
+    // VILLAGERS
     {
         name: 'Seer', // Fortune Teller
         description: 'Each night, choose 2 players: you learn if either is a Werewolf. There is a good player that registers as a Werewolf to you.',
@@ -32,6 +36,7 @@ export const roles: Role[] = [
         description: 'Once per game, during the day, publicly choose a player: if they are the Werewolf, they die.',
         team: 'Good', type: 'Villager',
         icon: 'roles/Bow',
+        abilityUses: 1,
     },
     {
         name: 'Soldier',
@@ -47,6 +52,7 @@ export const roles: Role[] = [
         night: 'Learn how many neighbours are evil.',
     },
 
+    // OUTSIDERS
     {
         name: 'Drunk',
         description: 'You do not know you are the Drunk. You think you are a Villager, but you are not.',
@@ -67,6 +73,7 @@ export const roles: Role[] = [
         night: 'Select a patron.',
     },
 
+    // WEREWOLVES
     {
         name: 'Werewolf',
         description: 'do murders and stuff',
@@ -75,6 +82,7 @@ export const roles: Role[] = [
         night: 'Choose a player to kill.',
     },
 
+    // MINIONS
     {
         name: 'Poisoner',
         description: 'Each night, choose a player: they are poisoned tonight and tomorrow day.',

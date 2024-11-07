@@ -39,12 +39,12 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                 <TooltipTrigger>
                     <button
                         className={classNames(
-                          styles.circleButton,
-                          styles.statusCircle,
-                          {
-                              [styles.fake]: fake,
-                              [styles.inactive]: isPlayerActive,
-                          } as never,
+                            styles.circleButton,
+                            styles.statusCircle,
+                            {
+                                [styles.fake]: fake,
+                                [styles.inactive]: isPlayerActive,
+                            } as never,
                         )}
                         key={index}
                         disabled={playerRole === undefined}
