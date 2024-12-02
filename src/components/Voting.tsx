@@ -3,6 +3,7 @@ import { useState } from "react";
 import { GameState, Player } from "../App";
 import { DialogClose, useDialogContext } from "./common";
 import { enactVote } from "../game/core";
+import { Team } from "../enums";
 
 type VotingProps = {
     gameState: GameState;
@@ -149,7 +150,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                         })
                     }
 
-                    <span className={castVotes >= voteThreshold ? 'good' : 'evil'}>{castVotes}/{totalVotes}</span>
+                    <span className={castVotes >= voteThreshold ? Team.GOOD : Team.EVIL}>{castVotes}/{totalVotes}</span>
                     <button onClick={endVote} disabled={invalidSelection}>end vote</button>
                 </div>
             </div>

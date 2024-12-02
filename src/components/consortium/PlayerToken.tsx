@@ -5,6 +5,8 @@ import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from "..
 import StatusToken from "./StatusToken";
 
 import styles from './Consortium.module.scss';
+import { PlayState, Team } from '../../enums';
+import PseudonymToken from './PseudonymToken';
 
 type PlayerTokenProps = {
     player: Player;
@@ -36,7 +38,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
     const isPendingExecution = gameState.choppingBlock?.playerName === player.name;
 
     const teamStyle = role?.team
-        ? (role.team.toLowerCase() === 'evil' ? styles.evil : styles.good)
+        ? (role.team === Team.EVIL ? styles.evil : styles.good)
         : null;
 
     function renamePlayer() {
@@ -52,7 +54,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
     function enterSpecialState(specialState: string) {
         setGameState((prev) => ({
             ...prev,
-            state: 'special',
+            state: PlayState.SPECIAL,
             special: {
                 state: specialState,
                 previous: prev.state,
@@ -120,17 +122,17 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                             </TooltipHoverContent>
                             <div>
                                 {/* HOTBAR */}
-                                { gameState.state === 'setup' &&
+                                { gameState.state === PlayState.SETUP &&
                                     <span>
                                         <button onClick={() => {}}>assign role</button>
                                         <button onClick={() => {}}>assign codename</button>
                                         <button onClick={() => removePlayer(player.name)}>remove player</button>
                                     </span>
                                 }
-                                { gameState.state !== 'setup' &&
+                                { gameState.state !== PlayState.SETUP &&
                                     <button onClick={() => togglePlayerAlive(player.name)}>{player.alive ? 'kill' : 'revive'}</button>
                                 }
-                                { gameState.state !== 'setup' && gameState.time !== 0 && player.role?.name === 'Hunter' &&
+                                { gameState.state !== PlayState.SETUP && gameState.time !== 0 && player.role?.name === 'Hunter' &&
                                     <button
                                         onClick={() => enterSpecialState('Hunter')}
                                         disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
@@ -139,24 +141,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                                 <button onClick={renamePlayer}>rename</button>
                             </div>
                         </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                    <TooltipTrigger>
-                        <div>
-                            <img
-                                src={`/red-minaret/characters/${player.name}.png`}
-                                alt={player.name}
-                                className={styles.circleButtonImg}
-                                style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    borderRadius: '50%',
-                                }}
-                            />
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent><span>{player.realName} ({player.name})</span></TooltipContent>
                 </Tooltip>
             </div>
 
@@ -174,6 +158,16 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                     />
                 ))
             }
+
+                <PseudonymToken
+                    pseudonym={player.name}
+                    realName={player.realName}
+                    centreX={centreX}
+                    centreY={centreY}
+                    radius={radius}
+                    angle={angle}
+                />
+
         </div>
     );
 }

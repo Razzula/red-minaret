@@ -1,4 +1,5 @@
 import { GameState } from '../App';
+import { PlayState } from '../enums';
 import { assignRoles } from '../game/core';
 
 type GameControlsProps = {
@@ -19,11 +20,11 @@ type GameControlsProps = {
 function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, shuffleCodeNames, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function startGame() {
-        setGameState({ ...gameState, day: 1, time: 0, state: 'playing' });
+        setGameState({ ...gameState, day: 1, time: 0, state: PlayState.PLAYING });
         setCurrentPlayer(0);
     }
 
-    if (gameState.state === 'setup') {
+    if (gameState.state === PlayState.SETUP) {
         return (
             <div>
                 <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>Assign Roles</button>
@@ -33,10 +34,10 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         );
     }
 
-    if (gameState.state === 'playing' || gameState.state === 'special') {
+    if (gameState.state === PlayState.PLAYING || gameState.state === PlayState.SPECIAL) {
         return (
             <div>
-                <button onClick={advanceTime} disabled={gameState.state !== 'playing'}>Next</button>
+                <button onClick={advanceTime} disabled={gameState.state !== PlayState.PLAYING}>Next</button>
             </div>
         );
     }

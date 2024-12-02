@@ -6,6 +6,7 @@ import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
 
 import styles from './Consortium.module.scss';
+import { PlayState, Team } from '../../enums';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -13,16 +14,16 @@ type ConsortiumProps = {
     radius: number;
     currentPlayer: number | null;
     selectedPlayers: number[];
-    setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleAction: (index: number) => void;
     togglePlayerAlive: (name: string) => void;
     addPlayer: () => void;
     removePlayer: (name: string) => void;
     setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
+    setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleSpecialAction: (specialState: string) => void;
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, handleSpecialAction }) => {
+const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -51,14 +52,16 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
     function cancelSpecialState() {
         setGameState((prev) => ({
             ...prev,
-            state: prev.special?.previous || 'setup',
+            state: prev.special?.previous || PlayState.SETUP,
             special: undefined,
         }));
+        setCurrentPlayer(null);
+        setSelectedPlayers([]);
     }
 
     const Centrepiece: React.FC = () => {
 
-        if (gameState.state === 'setup') {
+        if (gameState.state === PlayState.SETUP) {
             // Add Player button
             return (
                 <Tooltip>
@@ -79,7 +82,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
             );
         }
 
-        if (gameState.state === 'special') {
+        if (gameState.state === PlayState.SPECIAL) {
             // Cancel
             return (
                 <div>
@@ -144,8 +147,8 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
                 // if a selected player is evil or the red herring, then the seer sees evil
                 seerResult = selectedPlayers.length > 0 ? (
                     selectedPlayers.find((index) =>
-                        players[index].role?.team === 'Evil' || players[index].statuses.find((status) => status.name === 'Red Herring')
-                    ) !== undefined ? 'Evil' : 'Good'
+                        players[index].role?.team === Team.EVIL || players[index].statuses.find((status) => status.name === 'Red Herring')
+                    ) !== undefined ? Team.EVIL : Team.GOOD
                 ) : 'null';
             }
 

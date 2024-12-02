@@ -2,6 +2,7 @@ import { GameState } from "../App";
 
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
+import { PlayState, Team } from "../enums";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -210,7 +211,7 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
                 if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Poisoned') === undefined) {
                     // TODO: custom alerts via Dialog component
                     alert('(the Saint was lynched...)');
-                    tempGameState.state = 'defeat';
+                    tempGameState.state = PlayState.DEFEAT;
                     setGameState({ ...tempGameState });
                     return;
                 }
@@ -367,7 +368,7 @@ export function hunterAbility(
     setGameState: React.Dispatch<React.SetStateAction<GameState>>, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>
 ) {
     // HUNTER
-    if (gameState.state === 'special' && gameState.special?.state === 'Hunter') {
+    if (gameState.state === PlayState.SPECIAL && gameState.special?.state === 'Hunter') {
         const hunterIndex = gameState.players.findIndex(player => player.role?.name === 'Hunter');
         const hunter = gameState.players[hunterIndex];
         if (hunter && selectedPlayers.length === 1) {
@@ -385,7 +386,7 @@ export function hunterAbility(
                 else {
                     // kill the selected player, if they are evil
                     const target = gameState.players[selectedPlayers[0]];
-                    if (target.role?.team === 'Evil') {
+                    if (target.role?.team === Team.EVIL) {
                         tempGameState.players[selectedPlayers[0]].alive = false;
                     }
                 }
@@ -394,7 +395,7 @@ export function hunterAbility(
                 tempGameState.players[hunterIndex].abilityUses = (hunter.abilityUses || 0) + 1;
 
                 // revert state
-                tempGameState.state = tempGameState.special?.previous || 'setup';
+                tempGameState.state = tempGameState.special?.previous || PlayState.SETUP;
                 tempGameState.special = undefined;
 
                 setGameState(tempGameState);

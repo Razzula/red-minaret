@@ -10,15 +10,16 @@ import { Status } from './data/statuses'
 
 import './App.css'
 import './globals.css'
+import { PlayerType, PlayState, PlayStateType, Team } from './enums'
 
 export type GameState = {
     day: number;
     time: number;
-    state: 'setup' | 'playing' | 'defeat' | 'victory' | 'special';
+    state: PlayStateType;
 
     special?: {
         state: string;
-        previous: 'setup' | 'playing' | 'defeat' | 'victory' | 'special';
+        previous: PlayStateType;
     };
 
     players: Player[];
@@ -45,15 +46,15 @@ const codeNameList = [
     // Swinbourne Bois
     'Steve', 'Marvin', 'Graham White',
     // D&DBeans
-    'Boblin', 'Hush', 'Sabrina', 'Hanthur', 'Ryker', 'Chortle', 'Harran', 'Billybob', 'John',
-    'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola', 'Otto', 'Zazu', 'Damien',
+    'Boblin', 'Hush', /*'Sabrina',*/ 'Hanthur', /*'Ryker',*/ 'Chortle', /*'Harran', 'Billybob', 'John',*/ 'Baglin',
+    /*'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola',*/ /*'Otto',*/ /*'Zazu', 'Damien', "Ku'Zaak",*/
 ]
 
 function defaultGameState(playerCount: number = 5): GameState  {
     return {
         day: 0,
         time: 0,
-        state: 'setup',
+        state: PlayState.SETUP,
         players: codeNameList
             .sort(() => Math.random() - 0.5) // shuffle
             .slice(0, playerCount).map(name => ({
@@ -76,10 +77,10 @@ function App() {
     const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
 
-    const [villagerPool, setVillagerPool] = useState<number[]>(roles.map((role, index) => role.type === 'Villager' ? index : null).filter(i => i !== null));
-    const [outsiderPool, setOutsiderPool] = useState<number[]>(roles.map((role, index) => role.type === 'Outsider' ? index : null).filter(i => i !== null));
-    const [werewolfPool, setWerewolfPool] = useState<number[]>(roles.map((role, index) => role.type === 'Werewolf' ? index : null).filter(i => i !== null));
-    const [minionPool, setMinionPool] = useState<number[]>(roles.map((role, index) => role.type === 'Minion' ? index : null).filter(i => i !== null));
+    const [villagerPool, setVillagerPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.VILLAGER ? index : null).filter(i => i !== null));
+    const [outsiderPool, setOutsiderPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.OUTSIDER ? index : null).filter(i => i !== null));
+    const [werewolfPool, setWerewolfPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.WEREWOLF ? index : null).filter(i => i !== null));
+    const [minionPool, setMinionPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.MINION ? index : null).filter(i => i !== null));
 
     const timeSymbol = getTimeSymbol();
 
@@ -105,25 +106,25 @@ function App() {
         }
     }, [currentPlayer, gameState]);
 
-    useEffect(() => {
-        if (gameState.players.length > 0 && gameState.state === 'playing') {
-            if (!gameState.players.find(player => player.role?.team === 'Evil' && player.alive)) {
-                gameState.state = 'victory';
+    useEffect(() => {1
+        if (gameState.players.length > 0 && gameState.state === PlayState.PLAYING) {
+            if (!gameState.players.find(player => player.role?.type === PlayerType.WEREWOLF && player.alive)) {
+                gameState.state = PlayState.VICTORY;
             }
             else if (
-                gameState.players.filter(player => player.role?.team === 'Evil' && player.alive).length
-                    >= gameState.players.filter(player => player.role?.team === 'Good' && player.alive).length
+                gameState.players.filter(player => player.role?.team === Team.EVIL && player.alive).length
+                    >= gameState.players.filter(player => player.role?.team === Team.GOOD && player.alive).length
             ) {
-                gameState.state = 'defeat';
+                gameState.state = PlayState.DEFEAT;
             }
         }
     }, [gameState]);
 
     useEffect(() => {
-        if (gameState.state === 'defeat') {
+        if (gameState.state === PlayState.DEFEAT) {
             alert('Werewolves win!');
         }
-        else if (gameState.state === 'victory') {
+        else if (gameState.state === PlayState.VICTORY) {
             alert('Villagers win!');
         }
     }, [gameState.state]);
@@ -205,7 +206,7 @@ function App() {
         }
 
         let poolEnabled = true;
-        if (roleType === 'Minion' && gameState.players.length < 6) {
+        if (roleType === PlayerType.MINION && gameState.players.length < 6) {
             poolEnabled = false;
         }
 
@@ -250,7 +251,7 @@ function App() {
             // check neighbours (skip over dead players)
             const neighbours = findPlayersNeighbours(gameState, currentPlayer);
             for (const neighbour of neighbours) {
-                if (gameState.players[neighbour].role?.team === 'Evil') {
+                if (gameState.players[neighbour].role?.team === Team.EVIL) {
                     evilCount++;
                 }
             }
@@ -323,7 +324,7 @@ function App() {
 
             {/* LEFT COLUMN */}
             <div className='sidebar'>
-                { gameState.state === 'setup' ?
+                { gameState.state === PlayState.SETUP ?
                     <div>
                         {/* TODO: make this its own component? */}
                         <h1>Configuration</h1>
@@ -331,22 +332,22 @@ function App() {
 
                         <h3>Villagers</h3>
                         <div className='column'>
-                            {roleSettingsPanel('Villager', villagerPool, setVillagerPool)}
+                            {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool)}
                         </div>
 
                         <h3>Outsiders</h3>
                         <div className='column'>
-                            {roleSettingsPanel('Outsider', outsiderPool, setOutsiderPool)}
+                            {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
                         </div>
 
                         <h3>Werewolves</h3>
                         <div className='column'>
-                            {roleSettingsPanel('Werewolf', werewolfPool, setWerewolfPool)}
+                            {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
                         </div>
 
                         <h3>Minions</h3>
                         <div className='column'>
-                            {roleSettingsPanel('Minion', minionPool, setMinionPool)}
+                            {roleSettingsPanel(PlayerType.MINION, minionPool, setMinionPool)}
                         </div>
 
                         <h2><u>Settings</u></h2>
@@ -359,7 +360,7 @@ function App() {
             <div className='column'>
                 {/* TOP BOX */}
                 <div className='control-box column'>
-                    <h2>{timeSymbol}  { gameState.state === 'setup' ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
+                    <h2>{timeSymbol}  { gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
                     <p>{getTimeBlurb()}</p>
 
                     <span>
