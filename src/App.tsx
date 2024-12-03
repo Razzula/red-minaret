@@ -46,7 +46,7 @@ const codeNameList = [
     // Swinbourne Bois
     'Steve', 'Marvin', 'Graham White',
     // D&DBeans
-    'Boblin', 'Hush', /*'Sabrina',*/ 'Hanthur', /*'Ryker',*/ 'Chortle', /*'Harran', 'Billybob', 'John',*/ 'Baglin',
+    'Boblin', 'Hush', 'Sabrina', 'Hanthur', /*'Ryker',*/ 'Chortle', /*'Harran', 'Billybob', 'John',*/ 'Baglin',
     /*'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola',*/ /*'Otto',*/ /*'Zazu', 'Damien', "Ku'Zaak",*/
 ]
 
@@ -318,48 +318,73 @@ function App() {
      */
 
     return (
-        <div className='row'>
+        <div className='tempname'>
+
+            {/* BACKGROUND IMAGE */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: -1,
+
+                    backgroundImage: `url('/red-minaret/backgrounds/${gameState.time === 0 ? 'TajMahalNight' : 'TajMahalDay'}.png')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    filter: `brightness(${gameState.time === 0 ? 20 : 30}%)`,
+                    margin: 0,
+                }}
+            />
 
             <button className='dialogue-x' onClick={() => resetGameState()}>Reset</button>
 
             {/* LEFT COLUMN */}
-            <div className='sidebar'>
-                { gameState.state === PlayState.SETUP ?
-                    <div>
-                        {/* TODO: make this its own component? */}
-                        <h1>Configuration</h1>
-                        <h2><u>Roster</u></h2>
+            <div className='verticalCentre'>
+                <div className='sidebar'>
+                    { gameState.state === PlayState.SETUP ?
+                        <div>
+                            {/* TODO: make this its own component? */}
+                            <h1>Configuration</h1>
+                            <h2><u>Roster</u></h2>
 
-                        <h3>Villagers</h3>
-                        <div className='column'>
-                            {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool)}
+                            <h3>Villagers</h3>
+                            <div className='column'>
+                                {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool)}
+                            </div>
+
+                            <h3>Outsiders</h3>
+                            <div className='column'>
+                                {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
+                            </div>
+
+                            <h3>Werewolves</h3>
+                            <div className='column'>
+                                {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
+                            </div>
+
+                            <h3>Minions</h3>
+                            <div className='column'>
+                                {roleSettingsPanel(PlayerType.MINION, minionPool, setMinionPool)}
+                            </div>
+
+                            <h2><u>Settings</u></h2>
                         </div>
-
-                        <h3>Outsiders</h3>
-                        <div className='column'>
-                            {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
-                        </div>
-
-                        <h3>Werewolves</h3>
-                        <div className='column'>
-                            {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
-                        </div>
-
-                        <h3>Minions</h3>
-                        <div className='column'>
-                            {roleSettingsPanel(PlayerType.MINION, minionPool, setMinionPool)}
-                        </div>
-
-                        <h2><u>Settings</u></h2>
-                    </div>
-                    : <div>TODO: show a list of all roles, and what they do, here (like <a href='https://preview.redd.it/various-custom-full-scripts-7-15-players-3-core-14-custom-v0-77x00glowt691.jpg?width=640&crop=smart&auto=webp&s=fb9ac07d0ab9f51558b49c9b08ec3318396bec4c'>here</a>)</div>
-                }
+                        : <div>TODO: show a list of all roles, and what they do, here (like <a href='https://preview.redd.it/various-custom-full-scripts-7-15-players-3-core-14-custom-v0-77x00glowt691.jpg?width=640&crop=smart&auto=webp&s=fb9ac07d0ab9f51558b49c9b08ec3318396bec4c'>here</a>)</div>
+                    }
+                </div>
             </div>
 
             {/* CENTRAL COLUMN */}
-            <div className='column'>
+            <div className='centreColumn'>
                 {/* TOP BOX */}
-                <div className='control-box column'>
+                <div className='control-box column'
+                    style={{
+                        flex: '0 0 auto',
+                    }}
+                >
                     <h2>{timeSymbol}  { gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
                     <p>{getTimeBlurb()}</p>
 
@@ -373,16 +398,32 @@ function App() {
                 </div>
 
                 {/* CENTRE CIRCLE */}
-                <Consortium radius={200}
-                    gameState={gameState} setGameState={setGameState}
-                    currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
-                    handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
-                    addPlayer={addPlayer} removePlayer={removePlayer}
-                    setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
-                />
+                <div
+                    style={{
+                        flex: '1 1 auto',
+                        // height: '400px',
+                        // width: '400px',
+                        // minHeight: '400px',
+                        // minWidth: '400px',
+                        height: '100%',
+                        width: '100%',
+                    }}
+                >
+                    <Consortium
+                        gameState={gameState} setGameState={setGameState}
+                        currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
+                        handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
+                        addPlayer={addPlayer} removePlayer={removePlayer}
+                        setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
+                    />
+                </div>
 
                 {/* BOTTOM BOX */}
-                <div className='control-box'>
+                <div className='control-box'
+                    style={{
+                        flex: '0 0 auto',
+                    }}
+                >
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
@@ -394,15 +435,18 @@ function App() {
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className='sidebar'>
-                <h2>Players</h2>
-                <ul>
-                    {gameState.players.map((player, index) => (
-                        <li key={index}>{player.name} {player.realName && `(${player.realName})`}</li>
-                    ))}
-                </ul>
-                <span>TODO: put something actually useful here (game log?)</span>
+            <div className='verticalCentre'>
+                <div className='sidebar'>
+                    <h2>Players</h2>
+                    <ul>
+                        {gameState.players.map((player, index) => (
+                            <li key={index}>{player.name} {player.realName && `(${player.realName})`}</li>
+                        ))}
+                    </ul>
+                    <span>TODO: put something actually useful here (game log?)</span>
+                </div>
             </div>
+
         </div>
     )
 }

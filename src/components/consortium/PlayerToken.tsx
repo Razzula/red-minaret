@@ -27,10 +27,11 @@ type PlayerTokenProps = {
 const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers, togglePlayerAlive, handleClick, removePlayer, setCurrentPlayer }) => {
 
     const role = gameState.players[index].role;
+    const circleDiameter = 100;
 
     const angle = (index * 2 * Math.PI) / (gameState.players?.length || 0);
-    const x = centreX + radius * Math.sin(angle);
-    const y = centreY - radius * Math.cos(angle);
+    const x = centreX + (radius - circleDiameter) * Math.sin(angle);
+    const y = centreY - (radius - circleDiameter) * Math.cos(angle);
 
     const isActive = currentPlayer !== null && currentPlayer !== index;
     const isSelected = selectedPlayers.includes(index);
@@ -69,14 +70,14 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
 
     function getCursorIconFromCurrentPlayer() {
         if (currentPlayer === null) {
-            return 'auto';
+            return 'pointer';
         }
         const currentPlayerRole = gameState.players[currentPlayer].role;
         if (currentPlayerRole !== undefined && (
                 gameState.time !== 0 || currentPlayerRole?.night !== undefined
             )
         ) {
-            return `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), auto`;
+            return `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), pointer`;
         }
         return 'not-allowed';
     }
@@ -116,7 +117,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                         </TooltipTrigger>
                         <TooltipContent>
                             <TooltipHoverContent>
-                                <div>{player.realName} ({player.name})</div>
                                 <div><strong>{player.role?.name}</strong></div>
                                 <div>{player.role?.description}</div>
                             </TooltipHoverContent>
@@ -125,7 +125,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                                 { gameState.state === PlayState.SETUP &&
                                     <span>
                                         <button onClick={() => {}}>assign role</button>
-                                        <button onClick={() => {}}>assign codename</button>
                                         <button onClick={() => removePlayer(player.name)}>remove player</button>
                                     </span>
                                 }
@@ -138,7 +137,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                                         disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
                                     >shoot</button>
                                 }
-                                <button onClick={renamePlayer}>rename</button>
                             </div>
                         </TooltipContent>
                 </Tooltip>
@@ -166,6 +164,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({ player, gameState, setGameSta
                     centreY={centreY}
                     radius={radius}
                     angle={angle}
+                    renamePlayer={renamePlayer}
                 />
 
         </div>

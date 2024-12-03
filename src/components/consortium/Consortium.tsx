@@ -11,7 +11,6 @@ import { PlayState, Team } from '../../enums';
 type ConsortiumProps = {
     gameState: GameState;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
-    radius: number;
     currentPlayer: number | null;
     selectedPlayers: number[];
     handleAction: (index: number) => void;
@@ -23,19 +22,31 @@ type ConsortiumProps = {
     handleSpecialAction: (specialState: string) => void;
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction }) => {
+const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
     const [centerY, setCenterY] = useState(0);
+    const [radius, setRadius] = useState(0);
 
     useEffect(() => {
-        if (containerRef.current) {
-            const container = containerRef.current;
-            const { width, height } = container.getBoundingClientRect();
-            setCenterX(width / 2);
-            setCenterY(height / 2);
-        }
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const container = containerRef.current;
+                const { width, height } = container.getBoundingClientRect();
+                setCenterX(width / 2);
+                setCenterY(height / 2);
+                setRadius(Math.min(width, height) / 2);
+            }
+        };
+
+        updateDimensions(); // initial call, on mount
+
+        // listen for resize events
+        window.addEventListener('resize', updateDimensions);
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+        };
     }, []);
 
     function handleClick(event: React.MouseEvent<HTMLElement>, index: number) {
@@ -188,8 +199,8 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, radius
     return (
         <div className={styles.groupContainer}
             style={{
-                width: `${3 * radius}px`,
-                height: `${3 * radius}px`,
+                width: '100%',
+                height: '100%',
             }}
             ref={containerRef}
         >

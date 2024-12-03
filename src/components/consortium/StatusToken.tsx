@@ -20,9 +20,10 @@ type StatusTokenProps = {
 
 const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centreY, radius, angle, isPlayerActive, playerRole}) => {
 
-    const distanceMultiplier = (2 - index) / 3;
-    const newX = centreX + radius * distanceMultiplier * Math.sin(angle);
-    const newY = centreY - radius * distanceMultiplier * Math.cos(angle);
+    const maxStatuses = 3;
+    const distanceMultiplier = (maxStatuses - (index + 1)) / maxStatuses;
+    const newX = centreX + (radius - 50) * distanceMultiplier * Math.sin(angle);
+    const newY = centreY - (radius - 50) * distanceMultiplier * Math.cos(angle);
 
     const fake = status.drunk || status.poisoned;
 

@@ -13,6 +13,8 @@ export type Role  = {
     day?: string;
 
     abilityUses?: number;
+
+    order?: number; // low number = early
 }
 
 export const roles: Role[] = [
@@ -53,6 +55,44 @@ export const roles: Role[] = [
         icon: 'roles/Heart',
         night: 'Learn how many neighbours are evil.',
     },
+    {
+        name: 'Virgin',
+        description: 'The first time you are nominated to be lynched, if the nominator is a Villager, they are executed immediately.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Diamond',
+    },
+    {
+        name: 'Ravenkeeper',
+        description: "Upon your death, you can learn one player's role during the following night.",
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Feather',
+        night: "(If died today...) Learn a player's role",
+    },
+    {
+        name: 'Undertaker',
+        description: 'At night, learn the role of the player lynched during the day.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Shovel',
+        night: 'Learn which role was lynched today (if any).',
+    },
+    {
+        name: 'Washerwoman',
+        description: 'Start with knowledge that one (of two) players is a particular Villager role.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Leather Armour',
+    },
+    {
+        name: 'Librarian',
+        description: 'Start with knowledge that one (of two) players is a particular Outsider role.', // if no Outsiders, then they learn this
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Book',
+    },
+    {
+        name: 'Investigator',
+        description: 'Start with knowledge that one (of two) players is a particular Minion role.', // if no Minions, then they learn this
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Scroll',
+    },
 
     // OUTSIDERS
     {
@@ -74,6 +114,12 @@ export const roles: Role[] = [
         icon: 'roles/Envelope', // Yes it's spelt wrong
         night: 'Select a patron.',
     },
+    {
+        name: 'Recluse',
+        description: 'You might register as evil - as a Minion or Wereolf - even if dead.',
+        team: Team.GOOD, type: PlayerType.OUTSIDER,
+        icon: 'roles/Candle',
+    },
 
     // WEREWOLVES
     {
@@ -89,8 +135,16 @@ export const roles: Role[] = [
         name: 'Poisoner',
         description: 'Each night, choose a player: they are poisoned tonight and tomorrow day.',
         team: Team.EVIL, type: PlayerType.MINION,
+        order: 10,
         icon: 'roles/Green Potion 2',
         night: 'Choose a player to poison.',
+    },
+    {
+        name: 'Spy',
+        description: 'TBD',
+        team: Team.EVIL, type: PlayerType.MINION,
+        icon: 'roles/Leather Helmet',
+        night: 'TBD',
     },
 ]
 

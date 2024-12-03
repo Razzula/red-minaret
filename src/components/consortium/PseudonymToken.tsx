@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
+import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
 
 import styles from './Consortium.module.scss';
 
@@ -9,13 +9,14 @@ type PseudonymTokenProps = {
     centreY: number;
     radius: number;
     angle: number;
+
+    renamePlayer: () => void;
 };
 
-const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, centreX, centreY, radius, angle}) => {
+const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, centreX, centreY, radius, angle, renamePlayer}) => {
 
-    const distanceMultiplier = 4 / 3;
-    const newX = centreX + radius * distanceMultiplier * Math.sin(angle);
-    const newY = centreY - radius * distanceMultiplier * Math.cos(angle);
+    const newX = centreX + (radius - 50) * Math.sin(angle);
+    const newY = centreY - (radius - 50) * Math.cos(angle);
 
     return (
         <div
@@ -26,7 +27,7 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                 position: 'absolute',
             }}
         >
-            <Tooltip>
+            <Tooltip enableClick={true} enableHover={true}>
                 <TooltipTrigger>
                     <div className={styles.profilePicture}>
                         <img
@@ -37,7 +38,12 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <div><strong>{pseudonym}</strong> ({realName})</div>
+                    <TooltipHoverContent>
+                        <div><strong>{pseudonym}</strong> ({realName})</div>
+                    </TooltipHoverContent>
+                    <TooltipClickContent>
+                        <button onClick={renamePlayer}>rename</button>
+                    </TooltipClickContent>
                 </TooltipContent>
             </Tooltip>
         </div>

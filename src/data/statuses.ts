@@ -11,7 +11,7 @@ export type Status = {
 export const statuses: { [key: string]: Status } = {
     'Drunk': {
         name: 'Drunk',
-        description: 'This player does not know that they are the Drunk. They think they are a Villager, but are not.',
+        description: 'This player does not know, but they are the Drunk. They think they are a Villager, but are not. None of their abilities work.',
         icon: 'statuses/Beer',
     },
     'Red Herring': {
@@ -38,7 +38,7 @@ export const statuses: { [key: string]: Status } = {
         description: 'The Butler can only vote if this player is voting too.',
         expiration: 0, // expires at night
         icon: 'roles/Envelope',
-        altDescription: 'The Butler has tried to selet this player as their Patron.',
+        altDescription: 'The Butler has tried to select this player as their Patron.',
     },
     'Poisoned': {
         name: 'Poisoned',

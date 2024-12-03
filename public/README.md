@@ -5,3 +5,6 @@
 
 ## ./icons/
 - [Cainos](https://cainos.itch.io/pixel-art-icon-pack-rpg)
+
+## ./backgrounds/
+- AI-generated placeholders
