@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { GameState, Player } from "../App";
 import { DialogClose, Tooltip, TooltipContent, TooltipTrigger, useDialogContext } from "./common";
-import { enactVote } from "../game/core";
-import { Team } from "../enums";
+import { enactVote, togglePlayerAlive } from "../game/core";
+import { PlayerType, Team } from "../enums";
 import CheckButton from "./common/CheckButton/CheckButton";
 import GridList from "./common/GridList/GridList";
 
@@ -13,9 +13,10 @@ type VotingProps = {
     gameState: GameState;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
     togglePlayerAlive: (index: string) => void;
+    setVotingAllowed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function Voting({ gameState, setGameState }: VotingProps) {
+export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProps) {
 
     const [voting, setVoting] = useState(false);
 
@@ -25,6 +26,33 @@ export function Voting({ gameState, setGameState }: VotingProps) {
     const [votes, setVotes] = useState<Record<string, boolean>>(getEligibleVoters());
 
     const { setOpen } = useDialogContext();
+
+    useEffect(() => {
+        if (voting) { // player nominated
+            // VRIGIN
+            const nominated = gameState.players.find(player => player.name === nominatedPlayer);
+            const isDrunk = nominated?.statuses.find(status => status.name === 'Drunk');
+            if (!isDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
+                if (nominated.role.abilityUses != undefined && nominated.abilityUses < nominated.role.abilityUses) {
+                    const nominator = gameState.players.find(player => player.name === nominatingPlayer);
+                    if (nominator?.role?.type === PlayerType.VILLAGER) {
+                        endVote();
+                        setVotingAllowed(false);
+                        const tempGameState = { ...gameState };
+
+                        const nominatorIndex = gameState.players.findIndex(player => player.name === nominator.name);
+                        tempGameState.players[nominatorIndex].alive = false;
+
+                        const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
+                        tempGameState.players[nominatedIndex].abilityUses += 1;
+
+                        setGameState(tempGameState);
+                        alert('virgin was nominated by a villager!');
+                    }
+                }
+            }
+        }
+    }, [voting]);
 
     const totalVotes = Object.keys(votes).length; // TODO: dead players shouldn't be counted in the threshold
     const castVotes = Object.values(votes).reduce((count, value) => (value ? count + 1 : count), 0);
@@ -89,7 +117,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                             src={`/red-minaret/characters/${selectedPlayer}.png`} alt={selectedPlayer}
                             className={styles.circleButton}
                             width={50} height={50}
-                            style={{ margin: '5px' }}
+                            style={{ margin: '5px', width: '50px', height: '50px' }}
                         />
                         :
                         <button className={styles.circleButton}

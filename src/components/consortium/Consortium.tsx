@@ -37,6 +37,8 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
     const [centerY, setCenterY] = useState(0);
     const [radius, setRadius] = useState(0);
 
+    const [votingAllowed, setVotingAllowed] = useState(false);
+
     useEffect(() => {
         const updateDimensions = () => {
             if (containerRef.current) {
@@ -56,6 +58,12 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
             window.removeEventListener('resize', updateDimensions);
         };
     }, []);
+
+    useEffect(() => {
+        if (gameState.time === 2) {
+            setVotingAllowed(true);
+        }
+    }, [gameState.time]);
 
     function handleClick(event: React.MouseEvent<HTMLElement>, index: number) {
         if (currentPlayer === null) {
@@ -142,6 +150,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                                         width: '100px',
                                         height: '100px',
                                     }}
+                                    disabled={!votingAllowed}
                                 >
                                     <i className='ra ra-noose' />
                                 </button>
@@ -150,7 +159,10 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                         </Tooltip>
                     </DialogTrigger>
                     <DialogContent>
-                        <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
+                        <Voting
+                            gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive}
+                            setVotingAllowed={setVotingAllowed}
+                        />
                     </DialogContent>
                 </Dialog>
             );

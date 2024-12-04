@@ -60,6 +60,7 @@ export const roles: Role[] = [
         description: 'The first time you are nominated to be lynched, if the nominator is a Villager, they are executed immediately.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Diamond',
+        abilityUses: 1,
     },
     {
         name: 'Ravenkeeper',
