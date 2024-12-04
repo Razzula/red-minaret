@@ -1,2 +1,5 @@
-export * from './dialog/Dialog.tsx';
-export * from './tooltip/Tooltip.tsx';
+export * from './CheckButton/CheckButton.tsx';
+export * from './Dialog/Dialog.tsx';
+export * from './GridList/GridList.tsx';
+export * from './Tabs/Tabs.tsx';
+export * from './Tooltip/Tooltip.tsx';

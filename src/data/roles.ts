@@ -50,7 +50,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Empath',
-        description: 'Each night, you learn how many of your 2 alive neighbours are evil.',
+        description: 'Each night, you learn how many of your two alive neighbours are evil.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Heart',
         night: 'Learn how many neighbours are evil.',
@@ -99,7 +99,7 @@ export const roles: Role[] = [
         name: 'Drunk',
         description: 'You do not know you are the Drunk. You think you are a Villager, but you are not.',
         team: Team.GOOD, type: PlayerType.OUTSIDER,
-        icon: 'roles/Beer',
+        icon: 'statuses/Beer',
     },
     {
         name: 'Saint',

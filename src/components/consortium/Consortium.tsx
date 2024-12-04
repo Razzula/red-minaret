@@ -20,9 +20,17 @@ type ConsortiumProps = {
     setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>;
     setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
     handleSpecialAction: (specialState: string) => void;
+
+    villagerPool: number[];
+    outsiderPool: number[];
+    werewolfPool: number[];
+    minionPool: number[];
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, currentPlayer, selectedPlayers, handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction }) => {
+const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, currentPlayer, selectedPlayers,
+    handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction,
+    villagerPool, outsiderPool, werewolfPool, minionPool
+}) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [centerX, setCenterX] = useState(0);
@@ -85,7 +93,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                             }}
                             onClick={addPlayer}
                         >
-                            +
+                            <i className='ra ra-health' />
                         </button>
                     </TooltipTrigger>
                     <TooltipContent>Add Player</TooltipContent>
@@ -126,15 +134,20 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
             return (
                 <Dialog>
                     <DialogTrigger>
-                        <button
-                            className={styles.circleButton}
-                            style={{
-                                width: '100px',
-                                height: '100px',
-                            }}
-                        >
-                            Start Vote
-                        </button>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <button
+                                    className={styles.circleButton}
+                                    style={{
+                                        width: '100px',
+                                        height: '100px',
+                                    }}
+                                >
+                                    <i className='ra ra-noose' />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>Nominate for Lynching</TooltipContent>
+                        </Tooltip>
                     </DialogTrigger>
                     <DialogContent>
                         <Voting gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive} />
@@ -225,6 +238,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                         handleClick={handleClick}
                         removePlayer={removePlayer}
                         setCurrentPlayer={setCurrentPlayer}
+                        villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />
                 ))
             }

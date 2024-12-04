@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "../common";
+import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
 
 import { Status } from '../../data/statuses';
 import { Role } from "../../data/roles";
@@ -16,9 +16,10 @@ type StatusTokenProps = {
     angle: number;
     isPlayerActive: boolean;
     playerRole?: Role;
+    removeStatus: (status: Status) => void;
 };
 
-const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centreY, radius, angle, isPlayerActive, playerRole}) => {
+const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centreY, radius, angle, isPlayerActive, playerRole, removeStatus}) => {
 
     const maxStatuses = 3;
     const distanceMultiplier = (maxStatuses - (index + 1)) / maxStatuses;
@@ -36,7 +37,7 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                 position: 'absolute',
             }}
         >
-            <Tooltip>
+            <Tooltip enableHover={true} enableClick={true}>
                 <TooltipTrigger>
                     <button
                         className={classNames(
@@ -58,8 +59,26 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                     </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <div><strong>{status.name}</strong></div>
-                    {fake && status.altDescription ? status.altDescription : status.description}
+                    <TooltipHoverContent>
+                        <div
+                            style={{
+                                maxWidth: '400px',
+                            }}
+                        >
+                            <div><strong>{status.name}</strong></div>
+                            {fake && status.altDescription ? status.altDescription : status.description}
+                        </div>
+                    </TooltipHoverContent>
+
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <button onClick={() => removeStatus(status)}>
+                                <i className='ra ra-cancel' />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Remove Status</TooltipContent>
+                    </Tooltip>
+
                 </TooltipContent>
             </Tooltip>
         </div>

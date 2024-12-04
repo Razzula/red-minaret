@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import 'rpg-awesome/css/rpg-awesome.min.css';
+
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
 import { advanceTime, handleAction, hunterAbility, togglePlayerAlive } from './game/core'
@@ -11,6 +13,12 @@ import { Status } from './data/statuses'
 import './App.css'
 import './globals.css'
 import { PlayerType, PlayState, PlayStateType, Team } from './enums'
+import pseudonyms from './data/pseudonyms'
+import GridList from './components/common/GridList/GridList'
+import CheckButton from './components/common/CheckButton/CheckButton'
+import { Tab, Tabs, Tooltip, TooltipContent, TooltipTrigger } from './components/common'
+
+import styles from './components/consortium/Consortium.module.scss';
 
 export type GameState = {
     day: number;
@@ -42,24 +50,18 @@ export type Player = {
     abilityUses: number;
 }
 
-const codeNameList = [
-    // Swinbourne Bois
-    'Steve', 'Marvin', 'Graham White',
-    // D&DBeans
-    'Boblin', 'Hush', 'Sabrina', 'Hanthur', /*'Ryker',*/ 'Chortle', /*'Harran', 'Billybob', 'John',*/ 'Baglin',
-    /*'Doblin', 'Sir. Reginald Cheese', 'Gorgonzola',*/ /*'Otto',*/ /*'Zazu', 'Damien', "Ku'Zaak",*/
-]
-
 function defaultGameState(playerCount: number = 5): GameState  {
     return {
         day: 0,
         time: 0,
         state: PlayState.SETUP,
-        players: codeNameList
+        players: pseudonyms
             .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, playerCount).map(name => ({
-                name, alive:
-                true, statuses: [],
+            .slice(0, playerCount).map((name, index) => ({
+                name,
+                realName: `Player ${index + 1}`,
+                alive: true,
+                statuses: [],
                 ghostVotes: 1,
                 abilityUses: 0,
             })),
@@ -195,7 +197,7 @@ function App() {
         }
     }
 
-    function roleSettingsPanel(roleType: string, rolePool: number[], setRolePool: React.Dispatch<React.SetStateAction<number[]>>) {
+    function roleSettingsPanel(roleType: string, rolePool: number[], setRolePool: React.Dispatch<React.SetStateAction<number[]>>, active: boolean = false) {
 
         const updateRolePool = (index: number) => {
             if (rolePool.includes(index)) {
@@ -210,20 +212,47 @@ function App() {
             poolEnabled = false;
         }
 
-        return roles.map((role, index) => {
-            if (role.type !== roleType) {
-                return;
-            }
-            return (
-                <li key={index}>{role.name}
-                    <input type='checkbox'
-                        disabled={!poolEnabled}
-                        checked={rolePool.includes(index)}
-                        onChange={() => updateRolePool(index)}
-                    />
-                </li>
-            );
-        });
+        return (
+            <GridList columns={6}>
+                {
+                    roles.map((role, index) => {
+                        if (role.type !== roleType) {
+                            return;
+                        }
+                        return (
+                            <Tooltip key={index}>
+                                <TooltipTrigger>
+                                    <CheckButton
+                                        image={`/red-minaret/icons/${role.icon}.png`}
+                                        altText={role.name}
+                                        isChecked={rolePool.includes(index)}
+                                        onChange={active ? () => updateRolePool(index) : () => {}}
+                                        disabled={!poolEnabled}
+                                    />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div
+                                        style={{
+                                            maxWidth: '400px',
+                                        }}
+                                    >
+                                        <div><strong>{role.name}</strong></div>
+                                        <div>{role.description}</div>
+                                        { !poolEnabled &&
+                                            <div
+                                                style={{
+                                                    color: '#ff5338',
+                                                }}
+                                            ><i>Not enough players to use this role!</i></div>
+                                        }
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        );
+                    })
+                }
+            </GridList>
+        );
     }
 
     function getNightInstruction() {
@@ -287,7 +316,7 @@ function App() {
 
     function shuffleCodeNames() {
         const tempGameState = {...gameState};
-        const shuffledNames = codeNameList.sort(() => Math.random() - 0.5);
+        const shuffledNames = pseudonyms.sort(() => Math.random() - 0.5);
         tempGameState.players.forEach((player, index) => {
             player.name = shuffledNames[index];
         });
@@ -296,7 +325,7 @@ function App() {
 
     function addPlayer() {
         const tempGameState = {...gameState};
-        const playerName = codeNameList
+        const playerName = pseudonyms
             .sort(() => Math.random() - 0.5)
             .find(name => !gameState.players.find(player => player.name === name))
             ?? `Player ${gameState.players.length + 1}`;
@@ -339,7 +368,14 @@ function App() {
                 }}
             />
 
-            <button className='dialogue-x' onClick={() => resetGameState()}>Reset</button>
+            <Tooltip>
+                    <TooltipTrigger>
+                        <button className='dialogue-x' onClick={() => resetGameState()}>
+                            <i className='ra ra-cycle' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset</TooltipContent>
+                </Tooltip>
 
             {/* LEFT COLUMN */}
             <div className='verticalCentre'>
@@ -347,7 +383,36 @@ function App() {
                     { gameState.state === PlayState.SETUP ?
                         <div>
                             {/* TODO: make this its own component? */}
-                            <h1>Configuration</h1>
+                            <h2>Configuration</h2>
+                            <Tabs>
+                                <Tab label='Roster'>
+                                    <h3>Villagers</h3>
+                                    <div className='column'>
+                                        {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool, true)}
+                                    </div>
+
+                                    <h3>Outsiders</h3>
+                                    <div className='column'>
+                                        {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool, true)}
+                                    </div>
+
+                                    <h3>Werewolves</h3>
+                                    <div className='column'>
+                                        {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool, true)}
+                                    </div>
+
+                                    <h3>Minions</h3>
+                                    <div className='column'>
+                                        {roleSettingsPanel(PlayerType.MINION, minionPool, setMinionPool, true)}
+                                    </div>
+                                </Tab>
+                                <Tab label='Settings'>
+                                    <span>🦗 chirp chirp</span>
+                                </Tab>
+                            </Tabs>
+                        </div>
+                        :
+                        <div>
                             <h2><u>Roster</u></h2>
 
                             <h3>Villagers</h3>
@@ -369,10 +434,7 @@ function App() {
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.MINION, minionPool, setMinionPool)}
                             </div>
-
-                            <h2><u>Settings</u></h2>
                         </div>
-                        : <div>TODO: show a list of all roles, and what they do, here (like <a href='https://preview.redd.it/various-custom-full-scripts-7-15-players-3-core-14-custom-v0-77x00glowt691.jpg?width=640&crop=smart&auto=webp&s=fb9ac07d0ab9f51558b49c9b08ec3318396bec4c'>here</a>)</div>
                     }
                 </div>
             </div>
@@ -382,6 +444,7 @@ function App() {
                 {/* TOP BOX */}
                 <div className='control-box column'
                     style={{
+                        minWidth: '600px',
                         flex: '0 0 auto',
                     }}
                 >
@@ -415,6 +478,7 @@ function App() {
                         handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
                         addPlayer={addPlayer} removePlayer={removePlayer}
                         setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
+                        villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />
                 </div>
 
@@ -437,13 +501,63 @@ function App() {
             {/* RIGHT COLUMN */}
             <div className='verticalCentre'>
                 <div className='sidebar'>
-                    <h2>Players</h2>
-                    <ul>
-                        {gameState.players.map((player, index) => (
-                            <li key={index}>{player.name} {player.realName && `(${player.realName})`}</li>
-                        ))}
-                    </ul>
-                    <span>TODO: put something actually useful here (game log?)</span>
+                    <div>
+                        <h2>Players</h2>
+                        <Tabs>
+                            {gameState.players.map((player) => (
+                                <Tab
+                                    label={
+                                        <img
+                                            className={styles.profilePicture}
+                                            src={`/red-minaret/characters/${player.name}.png`}
+                                        />
+                                    }
+                                >
+                                    <div><strong>{player.name || player.realName}</strong> ({player.realName})</div>
+
+                                    <div>
+                                        <h2>Knowledge</h2>
+                                        <div>this area will show a player's knowledge (what they did at night, etc.)</div>
+                                    </div>
+
+                                    { player.role?.name === 'Werewolf' &&
+                                        <div>
+                                            <h2>Bluffs</h2>
+                                            <GridList columns={3}>
+                                            {
+                                                roles
+                                                    .filter(role => !gameState.players.find(p => p.role?.name === role.name))
+                                                    .slice(0, 3)
+                                                    .map(
+                                                        role => (
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <img
+                                                                        src={`/red-minaret/icons/${role.icon}.png`}
+                                                                        alt={role.name}
+                                                                    />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <div><strong>{role.name}</strong></div>
+                                                                    <div>{role.description}</div>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )
+                                                    )
+                                            }
+                                            </GridList>
+                                        </div>
+                                    }
+
+                                </Tab>
+                            ))}
+                        </Tabs>
+                    </div>
+                    <hr />
+                    <div>
+                        <h2>Game Log</h2>
+                        <span>TODO: put something actually useful here...</span>
+                    </div>
                 </div>
             </div>
 

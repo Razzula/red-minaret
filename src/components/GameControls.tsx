@@ -1,6 +1,7 @@
 import { GameState } from '../App';
 import { PlayState } from '../enums';
 import { assignRoles } from '../game/core';
+import { Tooltip, TooltipContent, TooltipTrigger } from './common';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -27,9 +28,34 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
     if (gameState.state === PlayState.SETUP) {
         return (
             <div>
-                <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>Assign Roles</button>
-                <button onClick={shuffleCodeNames}>Shuffle Codenames</button>
-                <button onClick={startGame} disabled={gameState.players.length < 5 || gameState.players.find(x => x.role === undefined) !== undefined}>Start</button>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>
+                            <i className='ra ra-spades-card' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Assign Roles</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <button onClick={shuffleCodeNames}>
+                            <i className='ra ra-perspective-dice-six' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Shuffle Codenames</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                    <TooltipTrigger>
+
+                    <button onClick={startGame} disabled={gameState.players.length < 5 || gameState.players.find(x => x.role === undefined) !== undefined}>
+                            <i className='ra ra-stopwatch' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Start</TooltipContent>
+                </Tooltip>
+
             </div>
         );
     }
@@ -37,7 +63,14 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
     if (gameState.state === PlayState.PLAYING || gameState.state === PlayState.SPECIAL) {
         return (
             <div>
-                <button onClick={advanceTime} disabled={gameState.state !== PlayState.PLAYING}>Next</button>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <button onClick={advanceTime} disabled={gameState.state !== PlayState.PLAYING}>
+                            <i className='ra ra-hourglass' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Continue</TooltipContent>
+                </Tooltip>
             </div>
         );
     }

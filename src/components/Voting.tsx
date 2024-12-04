@@ -1,9 +1,13 @@
 import { useState } from "react";
 
 import { GameState, Player } from "../App";
-import { DialogClose, useDialogContext } from "./common";
+import { DialogClose, Tooltip, TooltipContent, TooltipTrigger, useDialogContext } from "./common";
 import { enactVote } from "../game/core";
 import { Team } from "../enums";
+import CheckButton from "./common/CheckButton/CheckButton";
+import GridList from "./common/GridList/GridList";
+
+import styles from './consortium/Consortium.module.scss';
 
 type VotingProps = {
     gameState: GameState;
@@ -76,6 +80,37 @@ export function Voting({ gameState, setGameState }: VotingProps) {
         }
     }
 
+    function profileSelect(selectedPlayer: string | undefined, selectablePlayers: string[], setPlayer: React.Dispatch<React.SetStateAction<string | undefined>>) {
+        return (
+            <Tooltip enableClick={true} enableHover={false}>
+                <TooltipTrigger>
+                    <img
+                        src={`/red-minaret/characters/${selectedPlayer}.png`} alt={selectedPlayer}
+                        className={styles.profilePicture}
+                    />
+                </TooltipTrigger>
+                <TooltipContent>
+                    <GridList columns={3}>
+                        {
+                            selectablePlayers.map((player) => {
+                                return (
+                                    <CheckButton
+                                        image={`/red-minaret/characters/${player}.png`} altText={player}
+                                        imageWidth='50px'
+                                        className={styles.profilePicture}
+                                        isChecked={selectedPlayer === player} onChange={() => {
+                                            setPlayer(player);
+                                        }}
+                                    />
+                                );
+                            })
+                        }
+                    </GridList>
+                </TooltipContent>
+            </Tooltip>
+        );
+    }
+
     if (!voting) {
         // NOMINATIONS
         return (
@@ -88,29 +123,21 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                 { gameState.nominations.length < gameState.players.length && gameState.nominators.length < gameState.players.length ? (
                     <div className='column'>
                         <div className='row'>
-                            <select
-                                value={nominatingPlayer}
-                                onChange={(e) => setNominatingPlayer(e.target.value)}
-                            >
-                                <option disabled selected></option>
-                                {gameState.players.filter(player => isPlayerEligibleToNominate(player)).map((player) => {
-                                    return (
-                                        <option key={player.name} value={player.name}>{player.name}</option>
-                                    );
-                                })}
-                            </select>
+                            {
+                                profileSelect(
+                                    nominatingPlayer,
+                                    gameState.players.filter(player => isPlayerEligibleToNominate(player)).map(player => player.name),
+                                    setNominatingPlayer
+                                )
+                            }
                             <span>nominates</span>
-                            <select
-                                value={nominatedPlayer}
-                                onChange={(e) => setNominatedPlayer(e.target.value)}
-                            >
-                                <option disabled selected></option>
-                                {gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map((player) => {
-                                    return (
-                                        <option key={player.name} value={player.name}>{player.name}</option>
-                                    );
-                                })}
-                            </select>
+                            {
+                                profileSelect(
+                                    nominatedPlayer,
+                                    gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map(player => player.name),
+                                    setNominatedPlayer
+                                )
+                            }
                         </div>
 
 
@@ -130,28 +157,37 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                 <div className='column'>
                     <span>{nominatingPlayer} nominates {nominatedPlayer}</span>
 
-                    {
-                        Object.entries(votes).map(([playerName, vote]) => {
+                    <GridList columns={3}>
+                        {
+                            Object.entries(votes).map(([playerName, vote]) => {
 
-                            const butlerCannotVote = (
-                                playerName === butler // BUTLER
-                                && (patron !== undefined ? !votes[patron] : true)
-                            );
+                                const butlerCannotVote = (
+                                    playerName === butler // BUTLER
+                                    && (patron !== undefined ? !votes[patron] : true)
+                                );
 
-                            return (
-                                <div key={playerName} className='row'>
-                                    <span>{playerName}</span>
-                                    <input type='checkbox'
-                                        checked={vote} onChange={() => handleVote(playerName, !vote)}
+                                return (
+                                    <CheckButton
+                                        image={`/red-minaret/characters/${playerName}.png`} altText={playerName}
+                                        imageWidth='50px'
+                                        className={styles.profilePicture}
+                                        isChecked={vote} onChange={() => handleVote(playerName, !vote)}
                                         disabled={butlerCannotVote}
                                     />
-                                </div>
-                            );
-                        })
-                    }
+                                );
+                            })
+                        }
+                    </GridList>
 
                     <span className={castVotes >= voteThreshold ? Team.GOOD : Team.EVIL}>{castVotes}/{totalVotes}</span>
-                    <button onClick={endVote} disabled={invalidSelection}>end vote</button>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <button onClick={endVote} disabled={invalidSelection}>
+                                <i className='ra ra-large-hammer' />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>End Vote</TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
         );
