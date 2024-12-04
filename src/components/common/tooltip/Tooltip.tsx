@@ -155,7 +155,7 @@ export const TooltipTrigger = React.forwardRef<
 
 export const TooltipContent = React.forwardRef<
     HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
+    React.HTMLProps<HTMLDivElement> & { maxWidth?: string | number }
 >(function TooltipContent({ children, style, ...props }, propRef) {
     const context = useTooltipContext();
     const ref = useMergeRefs([context.refs.setFloating, propRef]);
@@ -185,6 +185,7 @@ export const TooltipContent = React.forwardRef<
                     ...context.floatingStyles,
                     ...style,
                     flexDirection: 'column',
+                    maxWidth: props.maxWidth ?? 400,
                 }}
                 {...context.getFloatingProps(props)}
             >

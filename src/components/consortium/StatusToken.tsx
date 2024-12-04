@@ -69,7 +69,7 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                             {fake && status.altDescription ? status.altDescription : status.description}
                         </div>
                     </TooltipHoverContent>
-
+                    <hr />
                     <Tooltip>
                         <TooltipTrigger>
                             <button onClick={() => removeStatus(status)}>
@@ -78,7 +78,6 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                         </TooltipTrigger>
                         <TooltipContent>Remove Status</TooltipContent>
                     </Tooltip>
-
                 </TooltipContent>
             </Tooltip>
         </div>

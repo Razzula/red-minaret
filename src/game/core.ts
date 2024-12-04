@@ -3,6 +3,7 @@ import { GameState } from "../App";
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayState, Team } from "../enums";
+import { getWerewolfBluffs } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -102,6 +103,9 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
         players[drunkIndex].statuses?.push(statuses['Drunk']);
         players[drunkIndex].role = roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]];
     }
+
+    // bluffs
+    gameState.bluffs = getWerewolfBluffs(gameState, roles);
 
     setGameState({ ...gameState, players });
 }

@@ -84,10 +84,20 @@ export function Voting({ gameState, setGameState }: VotingProps) {
         return (
             <Tooltip enableClick={true} enableHover={false}>
                 <TooltipTrigger>
-                    <img
-                        src={`/red-minaret/characters/${selectedPlayer}.png`} alt={selectedPlayer}
-                        className={styles.profilePicture}
-                    />
+                    { selectedPlayer ?
+                        <img
+                            src={`/red-minaret/characters/${selectedPlayer}.png`} alt={selectedPlayer}
+                            className={styles.circleButton}
+                            width={50} height={50}
+                            style={{ margin: '5px' }}
+                        />
+                        :
+                        <button className={styles.circleButton}
+                            style={{ width: '50px', height: '50px' }}
+                        >
+                            <i className='ra ra-help' />
+                        </button>
+                    }
                 </TooltipTrigger>
                 <TooltipContent>
                     <GridList columns={3}>
@@ -116,13 +126,15 @@ export function Voting({ gameState, setGameState }: VotingProps) {
         return (
             <div className='dialogue-content'>
 
-                <DialogClose className='dialogue-x'>
-                    <span>close</span>
-                </DialogClose>
-
                 { gameState.nominations.length < gameState.players.length && gameState.nominators.length < gameState.players.length ? (
                     <div className='column'>
-                        <div className='row'>
+                        <div className='row'
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                            }}
+                        >
                             {
                                 profileSelect(
                                     nominatingPlayer,
@@ -140,8 +152,21 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                             }
                         </div>
 
+                        <div>
+                            <Tooltip placement='bottom'>
+                                <TooltipTrigger>
+                                    <button onClick={() => setVoting(true)} disabled={invalidSelection}><i className='ra ra-large-hammer' /></button>
+                                </TooltipTrigger>
+                                <TooltipContent>Begin Voting</TooltipContent>
+                            </Tooltip>
 
-                        <button onClick={() => setVoting(true)} disabled={invalidSelection}>ok</button>
+                            <Tooltip placement='bottom'>
+                                <TooltipTrigger>
+                                    <DialogClose><i className='ra ra-cancel' /></DialogClose>
+                                </TooltipTrigger>
+                                <TooltipContent>Close</TooltipContent>
+                            </Tooltip>
+                        </div>
                     </div>
                 ) : (
                     <div>Nobody is eligible to vote</div>
@@ -180,7 +205,7 @@ export function Voting({ gameState, setGameState }: VotingProps) {
                     </GridList>
 
                     <span className={castVotes >= voteThreshold ? Team.GOOD : Team.EVIL}>{castVotes}/{totalVotes}</span>
-                    <Tooltip>
+                    <Tooltip placement='bottom'>
                         <TooltipTrigger>
                             <button onClick={endVote} disabled={invalidSelection}>
                                 <i className='ra ra-large-hammer' />

@@ -79,14 +79,6 @@
     right: 10px;
 }
 
-.evil {
-    color: var(--red);
-}
-
-.good {
-    color: var(--green);
-}
-
 .verticalCentre {
     display: flex;
     justify-content: center;
@@ -109,4 +101,42 @@ hr {
     border-top: 1px solid #505050;
     margin: 1rem 0;
     width: 100%;
+}
+
+button {
+    background: #505050;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background: #767676;
+}
+
+button:disabled {
+    color: #cccccc;
+    background: #767676;
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+button > i {
+    font-size: 2em; /* Adjust as needed */
+    vertical-align: middle; /* Align icon with text */
+}
+
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+.evil {
+    color: var(--red);
+}
+
+.good {
+    color: var(--green);
 }

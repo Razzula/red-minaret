@@ -18,13 +18,19 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
 
     return (
         <div>
-            <div style={{ display: 'flex', borderBottom: '0px solid #505050' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap', // Allow wrapping to multiple rows
+                    borderBottom: '0px solid #505050',
+                }}
+            >
                 {tabs.map((tab, index) => (
                     <button
                         key={index}
                         onClick={() => setActiveTab(index)}
                         style={{
-                            flex: 1,
+                            flex: '1 0 auto', // Allow flexible size for tabs
                             padding: '1rem',
                             border: 'none',
                             borderBottom: activeTab === index ? '3px solid #007acc' : 'none',

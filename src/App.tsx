@@ -25,6 +25,7 @@ export type GameState = {
     time: number;
     state: PlayStateType;
 
+    /* special state used to handle certain game cases */
     special?: {
         state: string;
         previous: PlayStateType;
@@ -32,12 +33,16 @@ export type GameState = {
 
     players: Player[];
 
+    /* voting */
     nominations: string[];
     nominators: string[];
     choppingBlock?: {
         playerName: string;
         votes: number;
     };
+
+    /* extras */
+    bluffs?: Role[];
 }
 
 export type Player = {
@@ -169,13 +174,13 @@ function App() {
         switch (gameState.time) {
             case 0:
                 if (currentPlayer === null) {
-                    return '⚙';
+                    return 'ra ra-cog';
                 }
-                return '🌙'
+                return 'ra ra-wolf-howl'
             case 1:
-                return '☀️'
+                return 'ra ra-sun'
             case 2:
-                return '🌆'
+                return 'ra ra-moon-sun'
             default:
                 return ''
         }
@@ -340,12 +345,6 @@ function App() {
         setGameState(tempGameState);
     }
 
-    /**
-     * TODO:
-     * - Taj Mahal background
-     *      - bonus points to have sky reflect day/evening/night
-     */
-
     return (
         <div className='tempname'>
 
@@ -448,7 +447,17 @@ function App() {
                         flex: '0 0 auto',
                     }}
                 >
-                    <h2>{timeSymbol}  { gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}` }  {timeSymbol}</h2>
+                    <h2>
+                        <i className={timeSymbol} />
+                        <span
+                            style={{
+                                margin: '10px',
+                            }}
+                        >
+                            { gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}` }
+                        </span>
+                        <i className={timeSymbol} />
+                    </h2>
                     <p>{getTimeBlurb()}</p>
 
                     <span>
@@ -507,10 +516,23 @@ function App() {
                             {gameState.players.map((player) => (
                                 <Tab
                                     label={
-                                        <img
-                                            className={styles.profilePicture}
-                                            src={`/red-minaret/characters/${player.name}.png`}
-                                        />
+                                        <Tooltip placement='left'>
+                                            <TooltipTrigger>
+                                                <img
+                                                    className={styles.profilePicture}
+                                                    src={`/red-minaret/characters/${player.name}.png`}
+                                                    style={{
+                                                        width: '38px',
+                                                        height: '38px',
+                                                    }}
+                                                />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <div>
+                                                    <strong>{player.name || player.realName}</strong> ({player.realName})
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     }
                                 >
                                     <div><strong>{player.name || player.realName}</strong> ({player.realName})</div>
@@ -525,25 +547,32 @@ function App() {
                                             <h2>Bluffs</h2>
                                             <GridList columns={3}>
                                             {
-                                                roles
-                                                    .filter(role => !gameState.players.find(p => p.role?.name === role.name))
-                                                    .slice(0, 3)
-                                                    .map(
-                                                        role => (
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <img
-                                                                        src={`/red-minaret/icons/${role.icon}.png`}
-                                                                        alt={role.name}
-                                                                    />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
+                                                /* TODO: currently, this re-selects on every update, but should persist */
+                                                gameState.bluffs?.map(
+                                                    role => (
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <img
+                                                                    src={`/red-minaret/icons/${role.icon}.png`}
+                                                                    alt={role.name}
+                                                                    style={{
+                                                                        cursor: 'help',
+                                                                    }}
+                                                                />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <div
+                                                                    style={{
+                                                                        maxWidth: '400px',
+                                                                    }}
+                                                                >
                                                                     <div><strong>{role.name}</strong></div>
                                                                     <div>{role.description}</div>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )
+                                                                </div>
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     )
+                                                )
                                             }
                                             </GridList>
                                         </div>

@@ -11,6 +11,7 @@ import GridList from '../common/GridList/GridList';
 import roles from '../../data/roles';
 import CheckButton from '../common/CheckButton/CheckButton';
 import statuses, { Status } from '../../data/statuses';
+import { getWerewolfBluffs } from '../../game/utils';
 
 type PlayerTokenProps = {
     player: Player;
@@ -111,11 +112,15 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         if (role) {
             const tempGameState = {...gameState};
             tempGameState.players[index].role = role;
+
+            // update bluffs
+            tempGameState.bluffs = getWerewolfBluffs(tempGameState, roles);
+
             setGameState(tempGameState);
         }
     }
 
-    function roleSettingsPanel(rolePool: number[]) {
+    function roleSelectionPanel(rolePool: number[]) {
         return rolePool.map((roleIndex) => (
             <CheckButton
                 key={roleIndex}
@@ -189,18 +194,32 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                             />
                         </button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent maxWidth={500}>
                             <TooltipHoverContent>
-                                <div
-                                    style={{
-                                        maxWidth: '500px',
-                                    }}
-                                >
+                                <div>
                                     <div><strong>{player.role?.name}</strong></div>
                                     <div>{player.role?.description}</div>
                                 </div>
+                                { isPendingExecution &&
+                                    <div className='evil'>
+                                        <hr />
+                                        <i>
+                                            This player is flagged for execution!
+                                            They will be lynched tonight, unless another player is nominated with <strong>{gameState.choppingBlock?.votes}</strong> or more votes.
+                                        </i>
+                                    </div>
+                                }
+                                { !isAlive &&
+                                    <div className='evil'>
+                                        <hr />
+                                        <i>
+                                            This player is dead!
+                                        </i>
+                                    </div>
+                                }
                             </TooltipHoverContent>
                             <div>
+                                <hr />
                                 {/* HOTBAR */}
                                 { gameState.state === PlayState.SETUP &&
                                     <span>
@@ -212,13 +231,13 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                                         <button onClick={() => {}}><i className='ra ra-spades-card' /></button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <GridList columns={6}>{ roleSettingsPanel(villagerPool) }</GridList>
+                                                        <GridList columns={6}>{ roleSelectionPanel(villagerPool) }</GridList>
                                                         <hr />
-                                                        <GridList columns={6}>{ roleSettingsPanel(outsiderPool) }</GridList>
+                                                        <GridList columns={6}>{ roleSelectionPanel(outsiderPool) }</GridList>
                                                         <hr />
-                                                        <GridList columns={6}>{ roleSettingsPanel(werewolfPool) }</GridList>
+                                                        <GridList columns={6}>{ roleSelectionPanel(werewolfPool) }</GridList>
                                                         <hr />
-                                                        <GridList columns={6}>{ roleSettingsPanel(minionPool) }</GridList>
+                                                        <GridList columns={6}>{ roleSelectionPanel(minionPool) }</GridList>
                                                     </TooltipContent>
                                                 </Tooltip>
 
@@ -237,7 +256,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
 
                                 <Tooltip>
                                     <TooltipTrigger>
-
                                         <Tooltip enableClick={true} enableHover={false}>
                                             <TooltipTrigger>
                                                 <button onClick={() => {}}><i className='ra ra-round-bottom-flask' /></button>
@@ -248,7 +266,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                                 </GridList>
                                             </TooltipContent>
                                         </Tooltip>
-
                                     </TooltipTrigger>
                                     <TooltipContent>Assign Status</TooltipContent>
                                 </Tooltip>
@@ -257,7 +274,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                     <Tooltip>
                                         <TooltipTrigger>
                                             <button onClick={() => togglePlayerAlive(player.name)}>
-                                                <i className={player.alive ? 'ra ra-broken-skull' : 'ra ra-angel-wings'} />
+                                                <i className={player.alive ? 'ra ra-skull' : 'ra ra-angel-wings'} />
                                             </button>
                                         </TooltipTrigger>
                                         <TooltipContent>{player.alive ? 'Kill' : 'Revive'}</TooltipContent>

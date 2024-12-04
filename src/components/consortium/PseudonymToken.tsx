@@ -45,42 +45,43 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                         <div><strong>{pseudonym}</strong> ({realName})</div>
                     </TooltipHoverContent>
                     <TooltipClickContent>
-                        <div>
-                            <button onClick={() => renamePlayer()}>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <i className='ra ra-quill-ink' />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Rename
-                                    </TooltipContent>
-                                </Tooltip>
-                            </button>
-                        </div>
-                            <GridList columns={3}>
-                                {
-                                    pseudonyms.map((newPseudonym) => (
-                                        <Tooltip key={newPseudonym}
-                                            enableHover={true}
-                                        >
-                                            <TooltipTrigger>
-                                                <img key={newPseudonym}
-                                                    src={`/red-minaret/characters/${newPseudonym}.png`}
-                                                    alt={pseudonym}
-                                                    className={styles.profilePicture}
-                                                    style={{
-                                                        borderRadius: '20%',
-                                                    }}
-                                                    onClick={() => setPseudonym(newPseudonym)}
-                                                />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <div><strong>{newPseudonym}</strong></div>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    ))
-                                }
-                            </GridList>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <button onClick={() => renamePlayer()}
+                                    style={{
+                                        width: '100%',
+                                    }}
+                                ><i className='ra ra-quill-ink' /></button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                Rename
+                            </TooltipContent>
+                        </Tooltip>
+                        <hr />
+                        <GridList columns={3}>
+                            {
+                                pseudonyms.map((newPseudonym) => (
+                                    <Tooltip key={newPseudonym}
+                                        enableHover={true}
+                                    >
+                                        <TooltipTrigger>
+                                            <img key={newPseudonym}
+                                                src={`/red-minaret/characters/${newPseudonym}.png`}
+                                                alt={pseudonym}
+                                                className={styles.profilePicture}
+                                                style={{
+                                                    borderRadius: '20%',
+                                                }}
+                                                onClick={() => setPseudonym(newPseudonym)}
+                                            />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <div><strong>{newPseudonym}</strong></div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))
+                            }
+                        </GridList>
                     </TooltipClickContent>
                 </TooltipContent>
             </Tooltip>

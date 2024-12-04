@@ -1,4 +1,6 @@
 import { GameState } from "../App";
+import { Role } from "../data/roles";
+import { Team } from "../enums";
 
 export function findPlayersNeighbours(gameState: GameState, currentPlayer: number): number[] {
 
@@ -20,4 +22,15 @@ export function findPlayersNeighbours(gameState: GameState, currentPlayer: numbe
     }
 
     return neighbours;
+}
+
+export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
+    return [...roles]
+        .sort(() => Math.random() - 0.5)
+        .filter(role =>
+            role.team === Team.GOOD &&
+            role.name !== 'Drunk' &&
+            !gameState.players.find(p => p.role?.name === role.name)
+        )
+        .slice(0, 3)
 }

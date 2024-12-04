@@ -52,9 +52,17 @@
     border: 8px solid var(--red);
 }
 
+.evil:hover {
+    background-color: #bb4941;
+}
+
 .good {
     background-color: var(--green);
     border: 8px solid var(--green);
+}
+
+.good:hover {
+    background-color: #4e9e51;
 }
 
 .undefined {
@@ -78,12 +86,19 @@
 }
 
 .pendingExecution {
-    border: 8px solid var(--black) !important;
+    border: 8px solid #1e1e1e !important;
 }
 
 .statusCircle {
-    background-color: var(--pink);
-    cursor: default;
+    background-color: var(--purple);
+
+    &.fake {
+        background-color: var(--grey);
+    }
+}
+
+.statusCircle:hover {
+    background-color: var(--purple);
 
     &.fake {
         background-color: var(--grey);
