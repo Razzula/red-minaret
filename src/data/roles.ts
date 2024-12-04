@@ -13,6 +13,8 @@ export type Role  = {
     day?: string;
 
     abilityUses?: number;
+    useType?: string;
+    condition?: string;
 
     order?: number; // low number = early
 }
@@ -67,7 +69,9 @@ export const roles: Role[] = [
         description: "Upon your death, you can learn one player's role during the following night.",
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Feather',
-        night: "(If died today...) Learn a player's role",
+        night: "Learn a player's role",
+        condition: 'dead',
+        abilityUses: 1,
     },
     {
         name: 'Undertaker',
@@ -75,24 +79,31 @@ export const roles: Role[] = [
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Shovel',
         night: 'Learn which role was lynched today (if any).',
+
     },
     {
         name: 'Washerwoman',
         description: 'Start with knowledge that one (of two) players is a particular Villager role.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Leather Armour',
+        night: 'Learn that one (of two) players is a particular Villager role.',
+        abilityUses: 1,
     },
     {
         name: 'Librarian',
         description: 'Start with knowledge that one (of two) players is a particular Outsider role.', // if no Outsiders, then they learn this
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Book',
+        night: 'Learn that one (of two) players is a particular Outsider role.',
+        abilityUses: 1,
     },
     {
         name: 'Investigator',
         description: 'Start with knowledge that one (of two) players is a particular Minion role.', // if no Minions, then they learn this
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Scroll',
+        night: 'Learn that one (of two) players is a particular Minion role.',
+        abilityUses: 1,
     },
 
     // OUTSIDERS

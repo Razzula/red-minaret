@@ -168,55 +168,65 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
             );
         }
 
-        if (gameState.time === 0 && currentPlayer !== null && players[currentPlayer].role?.name === 'Seer') {
+        if (gameState.time === 0 && currentPlayer !== null) {
+            const player = players[currentPlayer];
             // SEER
-            const seer = players[currentPlayer];
-            let seerResult: string;
+            if (player.role?.name === 'Seer') {
+                const seer = player;
+                let seerResult: string;
 
-            if (seer.statuses.find((status) => status.name === 'Drunk')) {
-                seerResult = 'Drunk!';
+                if (seer.statuses.find((status) => status.name === 'Drunk')) {
+                    seerResult = 'Drunk!';
+                }
+                else if (seer.statuses.find((status) => status.name === 'Poisoned')) {
+                    seerResult = 'Poisoned!';
+                }
+                else {
+                    // if a selected player is evil or the red herring, then the seer sees evil
+                    seerResult = selectedPlayers.length > 0 ? (
+                        selectedPlayers.find((index) =>
+                            players[index].role?.team === Team.EVIL || players[index].statuses.find((status) => status.name === 'Red Herring')
+                        ) !== undefined ? Team.EVIL : Team.GOOD
+                    ) : 'null';
+                }
+
+                const token = (
+                    <span
+                        className={styles.circleButton}
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                    >
+                        {seerResult}
+                    </span>
+                );
+
+                if (seerResult !== 'Drunk!' && seerResult !== 'Poisoned!') {
+                    return token;
+                }
+
+                return (
+                    <Tooltip enableHover={true}>
+                        <TooltipTrigger>
+                            {token}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            This player is {seerResult} You should give them intentionally unhelpful information.
+                        </TooltipContent>
+                    </Tooltip>
+                );
             }
-            else if (seer.statuses.find((status) => status.name === 'Poisoned')) {
-                seerResult = 'Poisoned!';
-            }
-            else {
-                // if a selected player is evil or the red herring, then the seer sees evil
-                seerResult = selectedPlayers.length > 0 ? (
-                    selectedPlayers.find((index) =>
-                        players[index].role?.team === Team.EVIL || players[index].statuses.find((status) => status.name === 'Red Herring')
-                    ) !== undefined ? Team.EVIL : Team.GOOD
-                ) : 'null';
+            // RAVENKEEPER
+            else if (player.role?.name === 'Ravenkeeper') {
+                // TODO: refactor out above logic into a function
+                return (
+                    null
+                );
             }
 
-            const token = (
-                <span
-                    className={styles.circleButton}
-                    style={{
-                        width: '100px',
-                        height: '100px',
-                    }}
-                >
-                    {seerResult}
-                </span>
-            );
-
-            if (seerResult !== 'Drunk!' && seerResult !== 'Poisoned!') {
-                return token;
-            }
-
-            return (
-                <Tooltip enableHover={true}>
-                    <TooltipTrigger>
-                        {token}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        This player is {seerResult} You should give them intentionally unhelpful information.
-                    </TooltipContent>
-                </Tooltip>
-            );
+            return null;
         }
-
-        return null;
     };
 
     const players = gameState.players;

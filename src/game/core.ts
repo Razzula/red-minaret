@@ -169,6 +169,20 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             return;
         }
         else if (currentPlayer < tempGameState.players.length - 1) {
+            // increment ability use counts, for night actions
+            const player = tempGameState.players[currentPlayer];
+            if (
+                player.role?.abilityUses !== undefined
+                && player.abilityUses < player.role?.abilityUses
+                && player.role?.night !== undefined
+                // some roles only increment under certain conditions
+                && (player.role?.condition === undefined || (
+                    (player.role?.condition === 'dead' && !player.alive)
+                ))
+            ) {
+                tempGameState.players[currentPlayer].abilityUses += 1;
+                setGameState(tempGameState);
+            }
             setCurrentPlayer((currentPlayer + 1));
             return;
         }

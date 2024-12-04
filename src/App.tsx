@@ -99,10 +99,21 @@ function App() {
 
     useEffect(() => {
         if (currentPlayer !== null) {
+            const player = gameState.players[currentPlayer];
             // EMPATH
-            if (gameState.players[currentPlayer].role?.name === 'Empath') {
+            if (player.role?.name === 'Empath') {
                 const neighbours = findPlayersNeighbours(gameState, currentPlayer);
                 setSelectedPlayers(neighbours);
+            }
+            // WASHERWOMAN, LIBRARIAN, INVESTIGATOR
+            else if (
+                player.role?.name === 'Washerwoman'
+                || player.role?.name === 'Librarian'
+                || player.role?.name === 'Investigator'
+            ) {
+                if (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses) {
+                    alert('this role requires information to be chosen and given to the player. as the storyteller, this is your choice!');
+                }
             }
             else {
                 setSelectedPlayers([]);
@@ -168,6 +179,8 @@ function App() {
         else {
             setGameState(defaultGameState(gameState.players.length));
         }
+        setCurrentPlayer(null);
+        setSelectedPlayers([]);
     }
 
     function getTimeSymbol() {
@@ -268,19 +281,28 @@ function App() {
         let instruction;
         const player = gameState.players[currentPlayer];
 
-        if (!player.alive) {
+        // RAVENKEEPER
+        if (player.role?.name === 'Ravenkeeper') {
+            if (player.alive || player.role?.abilityUses && player.abilityUses >= player.role?.abilityUses) {
+                return 'There is nothing for this player to do, right now...';
+            }
+        }
+        // DEATH
+        else if (!player.alive) {
             return 'This player is dead.';
         }
 
-        if (player.role?.night) {
-            instruction = gameState.players[currentPlayer].role?.night;
+        if (player.role?.night
+            && (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses)
+        ) {
+            instruction = player.role?.night;
         }
         else {
             return 'There is nothing for this player to do, right now...';
         }
 
         // EMPATH
-        if (gameState.players[currentPlayer].role?.name === 'Empath') {
+        if (player.role?.name === 'Empath') {
             let evilCount = 0;
             // check neighbours (skip over dead players)
             const neighbours = findPlayersNeighbours(gameState, currentPlayer);
@@ -293,10 +315,10 @@ function App() {
         }
 
         // DRUNK
-        if (gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk')) {
+        if (player.statuses?.find(status => status.name === 'Drunk')) {
             instruction = `${instruction} Remember, this player is the Drunk!`;
         }
-        else if (gameState.players[currentPlayer].statuses?.find(status => status.name === 'Poisoned')) {
+        else if (player.statuses?.find(status => status.name === 'Poisoned')) {
             instruction = `${instruction} Remember, this player has been poisoned!`;
         }
 
