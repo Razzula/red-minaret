@@ -1,0 +1,13 @@
+.DialogOverlay {
+    background: rgba(0, 0, 0, 0.5);
+    display: grid;
+    place-items: center;
+}
+
+.Dialog {
+    margin: 15px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    z-index: 100;
+}
