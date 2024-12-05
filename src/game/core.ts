@@ -1,4 +1,4 @@
-import { GameState } from "../App";
+import { GameState, PopupEvent, LogEvent } from "../App";
 
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
@@ -229,6 +229,8 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
         // HANDLE MURDER
         let murder = false;
         let temp: string = '';
+        const popupEvent: PopupEvent = { message: 'It is a new day!' };
+        const log: LogEvent[] = [];
 
         tempGameState.players.forEach((player, index) => {
             const targetedStatus = player.statuses?.find(status => status.name === 'Targeted');
@@ -244,8 +246,10 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
                     ) {
                         murder = true;
                         tempGameState.players[index].alive = false;
+                        // alert
+                        popupEvent.heading = 'A red sun rises, blood has been spilled this night...';
                         // gamelog
-                        tempGameState.log.push({
+                        log.push({
                             type: 'severe',
                             message: `${tempGameState.players[index].name} was murdered in the night!`,
                         });
@@ -260,8 +264,10 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             }
         });
         if (!murder) {
+            // alert
+            popupEvent.heading = 'Day drops, day rises. Dusk is sweet, the sunrise sweeter.';
             // gamelog
-            tempGameState.log.push({
+            log.push({
                 type: 'public',
                 message: 'Nobody was murdered in the night...',
                 extra: (() => {
@@ -276,6 +282,16 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
                 })()
             });
         }
+
+        if (log.length > 0) {
+            popupEvent.events = log;
+            log.forEach(logEvent => {
+                tempGameState.log.push(logEvent);
+            })
+        }
+        if (popupEvent) {
+            tempGameState.popupEvent = popupEvent;
+        }
     }
     // NEW DAY
     else if (time > 2) {
@@ -284,10 +300,13 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
         if (gameState.choppingBlock) {
             const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock?.playerName);
 
+            const popupEvent: PopupEvent = {}
+            const log: LogEvent[] = [];
+
             tempGameState.players[lynchedIndex].alive = false;
             tempGameState.choppingBlock = undefined;
 
-            tempGameState.log.push({
+            log.push({
                 type: 'severe',
                 message: `${tempGameState.players[lynchedIndex].name} was lynched!`,
             });
@@ -295,17 +314,40 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
                 if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Poisoned') === undefined) {
-                    // TODO: custom alerts via Dialog component
-                    alert('(the Saint was lynched...)');
+                    // game log
+                    tempGameState.log = log;
+                    // alert
+                    popupEvent.heading = 'The Saint has been lynched!';
+                    popupEvent.events = log;
+                    tempGameState.popupEvent = popupEvent;
                     tempGameState.state = PlayState.DEFEAT;
                     setGameState({ ...tempGameState });
                     return;
                 }
                 else {
-                    alert('the saint was lynched, however, they were poisioned, so the game continues)');
+                    // game log
+                    log.push({
+                        type: 'private',
+                        message: 'The game continues...',
+                        indent: 1,
+                        extra: `${tempGameState.players[lynchedIndex].name} was the Saint, however, they were poisoned.`,
+                    });
+                    // alert
+                    popupEvent.heading = 'The Saint has been lynched!';
+                    tempGameState.popupEvent = popupEvent;
                 }
             }
-            // VIRGIN, etc.
+            popupEvent.events = log;
+            tempGameState.popupEvent = popupEvent;
+            log.forEach(logEvent => {
+                tempGameState.log.push(logEvent);
+            });
+        }
+        else {
+            tempGameState.log.push({
+                type: 'public',
+                message: 'Nobody was lynched.',
+            });
         }
         tempGameState.nominations = [];
         tempGameState.nominators = [];

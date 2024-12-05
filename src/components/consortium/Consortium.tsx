@@ -8,6 +8,7 @@ import PlayerToken from './PlayerToken';
 
 import styles from './Consortium.module.scss';
 import { PlayState, Team } from '../../enums';
+import Log from '../../Log';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -240,6 +241,39 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
             }}
             ref={containerRef}
         >
+
+            {/* ALERT POPUP */}
+            { gameState.popupEvent &&
+                <Dialog open={gameState.popupEvent !== undefined}>
+                    <DialogContent>
+                        <div className='dialogue-content'
+                            style={{
+                                padding: '20px',
+                            }}
+                        >
+                            <div className='column'>
+                                { gameState.popupEvent.heading &&
+                                    <div className='dialogueHeading'>{gameState.popupEvent.heading}</div>
+                                }
+                                { gameState.popupEvent.message &&
+                                    <div>{gameState.popupEvent.message}</div>
+                                }
+                                { gameState.popupEvent.events && gameState.popupEvent.events?.length > 0 &&
+                                    <Log events={gameState.popupEvent.events} />
+                                }
+                                <Tooltip placement='top'>
+                                    <TooltipTrigger>
+                                        <button onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}>
+                                            <i className='ra ra-cancel' />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Close</TooltipContent>
+                                </Tooltip>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            }
 
             <div className='centrepiece'>
                 <Centrepiece />

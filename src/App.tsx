@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Too
 import { Tab, Tabs } from './components/common/Tabs/Tabs'
 
 import styles from './components/consortium/Consortium.module.scss';
+import Log from './Log';
 
 export type GameState = {
     day: number;
@@ -43,8 +44,9 @@ export type GameState = {
     };
 
     /* extras */
-    log: Event[];
-    currentEvent?: Event;
+    log: LogEvent[];
+    currentEvent?: LogEvent;
+    popupEvent?: PopupEvent;
     bluffs?: Role[];
 }
 
@@ -56,14 +58,21 @@ export type Player = {
     statuses: Status[];
     ghostVotes: number;
     abilityUses: number;
-    knowledge: Event[];
+    knowledge: LogEvent[];
 }
 
-export type Event = {
+export type LogEvent = {
     type: 'public' | 'private' | 'alert' | 'severe' | 'heading';
     message: string;
     extra?: string;
     indent?: number;
+}
+
+export type PopupEvent = {
+    heading?: string;
+    message?: string;
+    events?: LogEvent[];
+    extra?: string;
 }
 
 function defaultGameState(playerCount: number = 5): GameState  {
@@ -117,6 +126,18 @@ function App() {
             if (player.role?.name === 'Empath') {
                 const neighbours = findPlayersNeighbours(gameState, currentPlayer);
                 setSelectedPlayers(neighbours);
+
+                // game log
+                setGameState((prev) => {
+                    const tempGameState = {...prev};
+                    tempGameState.currentEvent = {
+                        type: 'private',
+                        message: `${player.name} learnt that x of ${neighbours.map(
+                            (index) => tempGameState.players[index].name
+                        ).join(', ')} are evil.`,
+                    };
+                    return tempGameState;
+                });
             }
             // WASHERWOMAN, LIBRARIAN, INVESTIGATOR
             else if (
@@ -125,7 +146,13 @@ function App() {
                 || player.role?.name === 'Investigator'
             ) {
                 if (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses) {
-                    alert('this role requires information to be chosen and given to the player. as the storyteller, this is your choice!');
+                    setGameState((prev) => ({
+                        ...prev,
+                        popupEvent: {
+                            heading: player.role?.name,
+                            message: 'this role requires information to be chosen and given to the player. as the storyteller, this is your choice!',
+                        }
+                    }));
                 }
             }
             else {
@@ -153,12 +180,33 @@ function App() {
 
     useEffect(() => {
         if (gameState.state === PlayState.DEFEAT) {
-            alert('Werewolves win!');
+            gameOver('Werewolves');
         }
         else if (gameState.state === PlayState.VICTORY) {
-            alert('Villagers win!');
+            gameOver('Villagers');
         }
     }, [gameState.state]);
+
+    function gameOver(winner: string) {
+        const log: LogEvent[] = [
+            { type: 'heading', message: 'Game Over!' },
+            { type: 'severe', message: `The ${winner} have won!`, indent: 1 },
+        ]
+        setGameState((prev) => ({
+            ...prev,
+            popupEvent: {
+                heading: `The ${winner} have won!`,
+                events: log,
+            },
+            log: [
+                ...prev.log,
+                ...log,
+            ],
+            time: 1,
+        }));
+        setCurrentPlayer(null);
+        setSelectedPlayers([]);
+    }
 
     function loadGameState() {
         const cachedGameState = localStorage.getItem('gameState');
@@ -213,6 +261,13 @@ function App() {
     }
 
     function getTimeBlurb() {
+        if (gameState.state === PlayState.DEFEAT) {
+            return 'The Werewolves have won!';
+        }
+        else if (gameState.state === PlayState.VICTORY) {
+            return 'The Villagers have won!';
+        }
+
         switch (gameState.time) {
             case 0:
                 if (currentPlayer === null) {
@@ -629,13 +684,7 @@ function App() {
                                         { player.knowledge?.length > 0 &&
                                             <div>
                                                 <h2>Knowledge</h2>
-                                                <div className='log'>
-                                                    {
-                                                        player.knowledge?.map((knowledge, index) => (
-                                                            <div key={index} className='logMessage'>{knowledge.message}</div>
-                                                        ))
-                                                    }
-                                                </div>
+                                                <Log events={player.knowledge} />
                                             </div>
                                         }
                                     </div>
@@ -659,29 +708,7 @@ function App() {
                                 </TooltipContent>
                             </Tooltip>
                         </h2>
-                        <div className='log'>
-                            { gameState.log.length > 0 ?
-                                gameState.log.map((entry, index) => (
-                                    <div key={index} className='logMessage'
-                                        style={{
-                                            marginLeft: entry.indent ? `${entry.indent * 20}px` : '0',
-                                        }}
-                                    >
-                                        <span className={entry.type}>{entry.message}</span>
-                                        { entry.extra &&
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <i className='private ra ra-help' style={{ margin: 10, cursor: 'help' }} />
-                                                </TooltipTrigger>
-                                                <TooltipContent>{entry.extra}</TooltipContent>
-                                            </Tooltip>
-                                        }
-                                    </div>
-                                ))
-                                :
-                                <div className='logMessage'><i>Nothing to report...</i></div>
-                            }
-                        </div>
+                        <Log events={gameState.log} />
                     </div>
                 </div>
             </div>

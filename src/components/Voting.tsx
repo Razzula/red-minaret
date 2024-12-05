@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { GameState, Player } from '../App';
+import { GameState, LogEvent, Player } from '../App';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
 import { DialogClose, useDialogContext } from './common/Dialog/Dialog';
 import { enactVote } from '../game/core';
@@ -41,8 +41,12 @@ export function Voting({
             if (!isDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
                 if (nominated.role.abilityUses != undefined && nominated.abilityUses < nominated.role.abilityUses) {
                     const nominator = gameState.players.find(player => player.name === nominatingPlayer);
+                    const tempGameState = { ...gameState };
+
+                    const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
+                    tempGameState.players[nominatedIndex].abilityUses += 1;
+
                     if (nominator?.role?.type === PlayerType.VILLAGER) {
-                        const tempGameState = { ...gameState };
 
                         endVote();
                         setVotingAllowed(false);
@@ -50,24 +54,37 @@ export function Voting({
                         const nominatorIndex = gameState.players.findIndex(player => player.name === nominator.name);
                         tempGameState.players[nominatorIndex].alive = false;
 
-                        const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
-                        tempGameState.players[nominatedIndex].abilityUses += 1;
+                        // game log
+                        const log: LogEvent[] = [
+                            {
+                                type: 'public',
+                                message: `${nominatingPlayer} nominated ${nominatedPlayer}`,
+                            },
+                            {
+                                type: 'severe',
+                                message: `${nominatingPlayer} has died!`,
+                                indent: 1,
+                                extra: `${nominatedPlayer} was the Virgin.`,
+                            }
+                        ];
+                        tempGameState.log = [...tempGameState.log, ...log];
+                        // alert
+                        tempGameState.popupEvent = {
+                            heading: `${nominatingPlayer} has died!`,
+                            message: `${nominatedPlayer} was the Virgin.`,
+                            events: log,
+                        }
 
-                        alert('virgin was nominated by a villager!');
-
-                        tempGameState.log.push({
-                            type: 'public',
-                            message: `${nominatingPlayer} nominated ${nominatedPlayer}`,
-                        })
-                        tempGameState.log.push({
-                            type: 'severe',
-                            message: `${nominatingPlayer} has died!`,
-                            indent: 1,
-                            extra: `${nominatedPlayer} was the Virgin.`,
-                        })
-
-                        setGameState(tempGameState);
                     }
+                    else {
+                        tempGameState.log.push({
+                            type: 'alert',
+                            message: `${nominatedPlayer}'s Virgin ability has been exhuasted.`,
+                            extra: `${nominatingPlayer} is not a Villager.`,
+                        });
+                    }
+
+                    setGameState(tempGameState);
                 }
             }
 

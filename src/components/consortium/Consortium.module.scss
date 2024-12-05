@@ -77,8 +77,13 @@
     }
 }
 
+.active {
+    opacity: 100%;
+    animation: warble 3s infinite;
+}
+
 .selected {
-    opacity: 50%;
+    opacity: 75%;
 }
 
 .dead {
@@ -116,4 +121,16 @@
     border-radius: 50%;
     background: #858587;
     cursor: pointer;
+}
+
+@keyframes warble {
+    0% {
+        box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 10px 8px rgba(255, 255, 255, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+    }
 }

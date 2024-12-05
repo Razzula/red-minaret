@@ -47,7 +47,8 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
     const x = centreX + (radius - circleDiameter) * Math.sin(angle);
     const y = centreY - (radius - circleDiameter) * Math.cos(angle);
 
-    const isActive = currentPlayer !== null && currentPlayer !== index;
+    const isActive = currentPlayer === index;
+    const isInactive = currentPlayer !== null && currentPlayer !== index;
     const isSelected = selectedPlayers.includes(index);
     const isAlive = player.alive;
     const isPendingExecution = gameState.choppingBlock?.playerName === player.name;
@@ -184,7 +185,8 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 styles.circleButton,
                                 teamStyle,
                                 {
-                                    [styles.inactive]: isActive,
+                                    [styles.inactive]: isInactive,
+                                    [styles.active]: isActive,
                                     [styles.selected]: isSelected,
                                     [styles.dead]: !isAlive,
                                     [styles.pendingExecution]: isPendingExecution,

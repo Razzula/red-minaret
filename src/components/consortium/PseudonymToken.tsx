@@ -67,7 +67,7 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                                         <TooltipTrigger>
                                             <img key={newPseudonym}
                                                 src={`/red-minaret/characters/${newPseudonym}.png`}
-                                                alt={pseudonym}
+                                                alt={newPseudonym}
                                                 className={styles.profilePicture}
                                                 style={{
                                                     borderRadius: '20%',

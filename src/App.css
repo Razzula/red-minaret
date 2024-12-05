@@ -169,6 +169,8 @@ button > i {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     font-family: 'Arial', sans-serif;
     font-size: 14px;
+    width: 95%;
+    /* margin: 10px; */
 }
 
 .logMessage {
@@ -185,4 +187,10 @@ button > i {
     margin:10px;
     cursor: help;
     font-size: 0.7em !important;
+}
+
+.dialogueHeading {
+    font-weight: 700;
+    margin-bottom: 10px;
+    /* text-decoration: underline; */
 }
