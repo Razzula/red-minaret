@@ -9,9 +9,10 @@ interface CheckButtonProps {
     onChange: (checked: boolean) => void;
     disabled?: boolean;
     className?: string;
+    styles?: React.CSSProperties;
 }
 
-const CheckButton: React.FC<CheckButtonProps> = ({ image, imageWidth, imageHeight, altText, isChecked, onChange, disabled, className }) => {
+const CheckButton: React.FC<CheckButtonProps> = ({ image, imageWidth, imageHeight, altText, isChecked, onChange, disabled, className, styles }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleClick = () => {
@@ -31,6 +32,7 @@ const CheckButton: React.FC<CheckButtonProps> = ({ image, imageWidth, imageHeigh
         transition: 'filter 0.3s, border-bottom 0.3s',
         color: '#ffffff',
         ...(isHovered && !isChecked ? { filter: 'grayscale(0%) brightness(1.2)' } : {}),
+        ...styles,
     };
 
     return (

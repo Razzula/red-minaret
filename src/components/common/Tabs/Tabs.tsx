@@ -30,8 +30,7 @@ export const Tabs: React.FC<TabsProps> = ({ children }) => {
                         key={index}
                         onClick={() => setActiveTab(index)}
                         style={{
-                            flex: '1 0 auto', // Allow flexible size for tabs
-                            padding: '1rem',
+                            flex: '1 0 auto',
                             border: 'none',
                             borderBottom: activeTab === index ? '3px solid #007acc' : 'none',
                             background: 'none',

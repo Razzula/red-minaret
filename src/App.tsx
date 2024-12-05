@@ -16,7 +16,8 @@ import { PlayerType, PlayState, PlayStateType, Team } from './enums'
 import pseudonyms from './data/pseudonyms'
 import GridList from './components/common/GridList/GridList'
 import CheckButton from './components/common/CheckButton/CheckButton'
-import { Tab, Tabs, Tooltip, TooltipContent, TooltipTrigger } from './components/common'
+import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Tooltip/Tooltip'
+import { Tab, Tabs } from './components/common/Tabs/Tabs'
 
 import styles from './components/consortium/Consortium.module.scss';
 
@@ -42,6 +43,8 @@ export type GameState = {
     };
 
     /* extras */
+    log: Event[];
+    currentEvent?: Event;
     bluffs?: Role[];
 }
 
@@ -53,6 +56,14 @@ export type Player = {
     statuses: Status[];
     ghostVotes: number;
     abilityUses: number;
+    knowledge: Event[];
+}
+
+export type Event = {
+    type: 'public' | 'private' | 'alert' | 'severe' | 'heading';
+    message: string;
+    extra?: string;
+    indent?: number;
 }
 
 function defaultGameState(playerCount: number = 5): GameState  {
@@ -69,9 +80,11 @@ function defaultGameState(playerCount: number = 5): GameState  {
                 statuses: [],
                 ghostVotes: 1,
                 abilityUses: 0,
+                knowledge: [],
             })),
         nominations: [],
         nominators: [],
+        log: [],
     };
 }
 
@@ -122,9 +135,9 @@ function App() {
         else {
             setSelectedPlayers([]);
         }
-    }, [currentPlayer, gameState]);
+    }, [currentPlayer]);
 
-    useEffect(() => {1
+    useEffect(() => {
         if (gameState.players.length > 0 && gameState.state === PlayState.PLAYING) {
             if (!gameState.players.find(player => player.role?.type === PlayerType.WEREWOLF && player.alive)) {
                 gameState.state = PlayState.VICTORY;
@@ -246,6 +259,9 @@ function App() {
                                         isChecked={rolePool.includes(index)}
                                         onChange={active ? () => updateRolePool(index) : () => {}}
                                         disabled={!poolEnabled}
+                                        styles={{
+                                            cursor: active ? 'pointer' : 'help',
+                                        }}
                                     />
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -327,7 +343,7 @@ function App() {
     }
 
     function handleActionCall(index: number) {
-        handleAction(index, currentPlayer, gameState, selectedPlayers, setSelectedPlayers);
+        handleAction(index, currentPlayer, gameState, setGameState, selectedPlayers, setSelectedPlayers);
     }
 
     function handleSpecialAction(specialState: string) {
@@ -357,7 +373,11 @@ function App() {
             .find(name => !gameState.players.find(player => player.name === name))
             ?? `Player ${gameState.players.length + 1}`;
 
-        tempGameState.players.push({ name: playerName, alive: true, statuses: [], ghostVotes: 1, abilityUses: 0 });
+        tempGameState.players.push({
+            name: playerName, realName: `Player ${tempGameState.players.length + 1}`,
+            alive: true, statuses: [], ghostVotes: 1, abilityUses: 0,
+            knowledge: [],
+        });
         setGameState(tempGameState);
     }
 
@@ -390,13 +410,13 @@ function App() {
             />
 
             <Tooltip>
-                    <TooltipTrigger>
-                        <button className='dialogue-x' onClick={() => resetGameState()}>
-                            <i className='ra ra-cycle' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Reset</TooltipContent>
-                </Tooltip>
+                <TooltipTrigger>
+                    <button className='dialogue-x' onClick={() => resetGameState()}>
+                        <i className='ra ra-cycle' />
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>Reset</TooltipContent>
+            </Tooltip>
 
             {/* LEFT COLUMN */}
             <div className='verticalCentre'>
@@ -544,8 +564,8 @@ function App() {
                                                     className={styles.profilePicture}
                                                     src={`/red-minaret/characters/${player.name}.png`}
                                                     style={{
-                                                        width: '38px',
-                                                        height: '38px',
+                                                        width: '36px',
+                                                        height: '36px',
                                                     }}
                                                 />
                                             </TooltipTrigger>
@@ -559,14 +579,19 @@ function App() {
                                 >
                                     <div><strong>{player.name || player.realName}</strong> ({player.realName})</div>
 
-                                    <div>
-                                        <h2>Knowledge</h2>
-                                        <div>this area will show a player's knowledge (what they did at night, etc.)</div>
-                                    </div>
-
                                     { player.role?.name === 'Werewolf' &&
                                         <div>
-                                            <h2>Bluffs</h2>
+                                            <h2>
+                                                Bluffs
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <i className='ra ra-help help' />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        The Werewolf is given a list of possible roles to claim.
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </h2>
                                             <GridList columns={3}>
                                             {
                                                 /* TODO: currently, this re-selects on every update, but should persist */
@@ -600,14 +625,63 @@ function App() {
                                         </div>
                                     }
 
+                                    <div>
+                                        { player.knowledge?.length > 0 &&
+                                            <div>
+                                                <h2>Knowledge</h2>
+                                                <div className='log'>
+                                                    {
+                                                        player.knowledge?.map((knowledge, index) => (
+                                                            <div key={index} className='logMessage'>{knowledge.message}</div>
+                                                        ))
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
                                 </Tab>
                             ))}
                         </Tabs>
                     </div>
                     <hr />
                     <div>
-                        <h2>Game Log</h2>
-                        <span>TODO: put something actually useful here...</span>
+                        <h2>
+                            Game Log
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <i className='ra ra-help help' />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <span>
+                                        <span className='private'>Private messages</span> and <i className='private ra ra-help' style={{ margin: 2 }} /> are for your eyes only!
+                                    </span>
+                                </TooltipContent>
+                            </Tooltip>
+                        </h2>
+                        <div className='log'>
+                            { gameState.log.length > 0 ?
+                                gameState.log.map((entry, index) => (
+                                    <div key={index} className='logMessage'
+                                        style={{
+                                            marginLeft: entry.indent ? `${entry.indent * 20}px` : '0',
+                                        }}
+                                    >
+                                        <span className={entry.type}>{entry.message}</span>
+                                        { entry.extra &&
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <i className='private ra ra-help' style={{ margin: 10, cursor: 'help' }} />
+                                                </TooltipTrigger>
+                                                <TooltipContent>{entry.extra}</TooltipContent>
+                                            </Tooltip>
+                                        }
+                                    </div>
+                                ))
+                                :
+                                <div className='logMessage'><i>Nothing to report...</i></div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

@@ -35,6 +35,7 @@
     align-items: center;
     /* width: 100%; */
     background: #2f2f2faa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
     border-radius: 5px;
     padding: 3px;
 
@@ -49,6 +50,7 @@
     display: flex;
     flex-direction: column;
     background: #2f2f2faa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
     border-radius: 5px;
     padding: 16px;
 
@@ -139,4 +141,48 @@ button > i {
 
 .good {
     color: var(--green);
+}
+
+.alert {
+    color: var(--yellow);
+}
+
+.severe {
+    color: var(--red);
+}
+
+.heading {
+    font-weight: 700;
+}
+
+.private {
+    color: var(--grey);
+    font-style: italic;
+}
+
+.log {
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+}
+
+.logMessage {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.logMessage:last-child {
+    margin-bottom: 0;
+}
+
+.help {
+    margin:10px;
+    cursor: help;
+    font-size: 0.7em !important;
 }

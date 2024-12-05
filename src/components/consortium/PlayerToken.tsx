@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 
-import { GameState, Player } from "../../App";
-import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
-import StatusToken from "./StatusToken";
+import { GameState, Player } from '../../App';
+import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
+import StatusToken from './StatusToken';
 
 import styles from './Consortium.module.scss';
 import { PlayState, Team } from '../../enums';
@@ -141,12 +141,20 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
 
     function statusSettingsPanel(statuses: Status[]) {
         return statuses.map((status) => (
-            <CheckButton
-                key={status.name}
-                image={`/red-minaret/icons/${status.icon}.png`} altText={status.name}
-                isChecked={false}
-                onChange={() => assignStatusToPlayer(status)}
-            />
+            <Tooltip>
+                <TooltipTrigger>
+                    <CheckButton
+                        key={status.name}
+                        image={`/red-minaret/icons/${status.icon}.png`} altText={status.name}
+                        isChecked={false}
+                        onChange={() => assignStatusToPlayer(status)}
+                    />
+                </TooltipTrigger>
+                <TooltipContent maxWidth={300}>
+                    <strong>{status.name}</strong>
+                    <div>{status.description}</div>
+                </TooltipContent>
+            </Tooltip>
         ));
     }
 
@@ -187,18 +195,22 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                             key={index}
                             onClick={(e) => handleClick(e, index)}
                         >
-                            <img
-                                src={`/red-minaret/icons/${role?.icon}.png`}
-                                alt={`${role?.name ?? 'no role'}`}
-                                className={styles.circleButtonImg}
-                            />
+                            { role ?
+                                <img
+                                    src={`/red-minaret/icons/${role?.icon}.png`}
+                                    alt={`${role?.name ?? 'no role'}`}
+                                    className={styles.circleButtonImg}
+                                />
+                                :
+                                <i className='ra ra-help' />
+                            }
                         </button>
                         </TooltipTrigger>
                         <TooltipContent maxWidth={500}>
                             <TooltipHoverContent>
                                 <div>
                                     <div><strong>{player.role?.name}</strong></div>
-                                    <div>{player.role?.description}</div>
+                                    <div>{player.role?.description || <i>No Role Assigned</i>}</div>
                                 </div>
                                 { isPendingExecution &&
                                     <div className='evil'>

@@ -1,24 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { GameState, Player } from "../App";
-import { DialogClose, Tooltip, TooltipContent, TooltipTrigger, useDialogContext } from "./common";
-import { enactVote, togglePlayerAlive } from "../game/core";
-import { PlayerType, Team } from "../enums";
-import CheckButton from "./common/CheckButton/CheckButton";
-import GridList from "./common/GridList/GridList";
+import { GameState, Player } from '../App';
+import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
+import { DialogClose, useDialogContext } from './common/Dialog/Dialog';
+import { enactVote } from '../game/core';
+import { PlayerType, Team } from '../enums';
+import CheckButton from './common/CheckButton/CheckButton';
+import GridList from './common/GridList/GridList';
 
 import styles from './consortium/Consortium.module.scss';
 
 type VotingProps = {
     gameState: GameState;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+
     togglePlayerAlive: (index: string) => void;
     setVotingAllowed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProps) {
+export function Voting({
+    gameState, setGameState,
+    setVotingAllowed
+}: VotingProps) {
 
-    const [voting, setVoting] = useState(false);
+    const [voting, setVoting] = useState<boolean>(false);
 
     const [nominatedPlayer, setNominatedPlayer] = useState<string>();
     const [nominatingPlayer, setNominatingPlayer] = useState<string>();
@@ -28,7 +33,8 @@ export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProp
     const { setOpen } = useDialogContext();
 
     useEffect(() => {
-        if (voting) { // player nominated
+        if (voting && nominatedPlayer) { // player nominated
+
             // VRIGIN
             const nominated = gameState.players.find(player => player.name === nominatedPlayer);
             const isDrunk = nominated?.statuses.find(status => status.name === 'Drunk');
@@ -36,9 +42,10 @@ export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProp
                 if (nominated.role.abilityUses != undefined && nominated.abilityUses < nominated.role.abilityUses) {
                     const nominator = gameState.players.find(player => player.name === nominatingPlayer);
                     if (nominator?.role?.type === PlayerType.VILLAGER) {
+                        const tempGameState = { ...gameState };
+
                         endVote();
                         setVotingAllowed(false);
-                        const tempGameState = { ...gameState };
 
                         const nominatorIndex = gameState.players.findIndex(player => player.name === nominator.name);
                         tempGameState.players[nominatorIndex].alive = false;
@@ -46,11 +53,24 @@ export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProp
                         const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
                         tempGameState.players[nominatedIndex].abilityUses += 1;
 
-                        setGameState(tempGameState);
                         alert('virgin was nominated by a villager!');
+
+                        tempGameState.log.push({
+                            type: 'public',
+                            message: `${nominatingPlayer} nominated ${nominatedPlayer}`,
+                        })
+                        tempGameState.log.push({
+                            type: 'severe',
+                            message: `${nominatingPlayer} has died!`,
+                            indent: 1,
+                            extra: `${nominatedPlayer} was the Virgin.`,
+                        })
+
+                        setGameState(tempGameState);
                     }
                 }
             }
+
         }
     }, [voting]);
 
@@ -68,14 +88,6 @@ export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProp
         !nominatedPlayer || !nominatingPlayer
     );
 
-    function isPlayerEligibleToNominate(player: Player) {
-        return player.alive && !gameState.nominators.includes(player.name);
-    }
-
-    function isPlayerEligibleToBeNominated(player: Player) {
-        return player.alive && !gameState.nominations.includes(player.name);
-    }
-
     function getEligibleVoters() {
         const eligibleVoters: Record<string, boolean> = {};
         gameState.players.forEach(player => {
@@ -84,6 +96,14 @@ export function Voting({ gameState, setGameState, setVotingAllowed }: VotingProp
             }
         });
         return eligibleVoters;
+    }
+
+    function isPlayerEligibleToNominate(player: Player) {
+        return player.alive && !gameState.nominators.includes(player.name);
+    }
+
+    function isPlayerEligibleToBeNominated(player: Player) {
+        return player.alive && !gameState.nominations.includes(player.name);
     }
 
     function handleVote(playerName: string, vote: boolean) {

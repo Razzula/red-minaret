@@ -123,6 +123,11 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
         nominations: [...gameState.nominations, nominatedPlayer],
     };
 
+    tempGameState.log.push({
+        type: 'public',
+        message: `${nominatingPlayer} nominated ${nominatedPlayer}.`,
+    });
+
     // handle execution
     if (castVotes >= voteThreshold) {
         const priorVotes = tempGameState.choppingBlock?.votes || 0;
@@ -132,9 +137,21 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
                 playerName: nominatedPlayer,
                 votes: castVotes,
             };
+
+            tempGameState.log.push({
+                type: 'public',
+                message: `${nominatingPlayer} is facing execution.`,
+                indent: 1,
+            });
         }
         else if (priorVotes === castVotes) {
             // in the case of a tie, no one is executed
+            tempGameState.log.push({
+                type: 'public',
+                message: `Nobody is facing execution.`,
+                indent: 1,
+                extra: `The vote was tied with ${tempGameState.choppingBlock?.playerName}.`,
+            });
             tempGameState.choppingBlock = undefined;
         }
     }
@@ -165,29 +182,44 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
         // at night, advance through players
         // TODO: order should be role-based (use codenames), not 'chronological'
         if (currentPlayer === null) {
+            // start at the first player
             setCurrentPlayer(0);
             return;
         }
-        else if (currentPlayer < tempGameState.players.length - 1) {
-            // increment ability use counts, for night actions
-            const player = tempGameState.players[currentPlayer];
-            if (
-                player.role?.abilityUses !== undefined
-                && player.abilityUses < player.role?.abilityUses
-                && player.role?.night !== undefined
-                // some roles only increment under certain conditions
-                && (player.role?.condition === undefined || (
-                    (player.role?.condition === 'dead' && !player.alive)
-                ))
-            ) {
-                tempGameState.players[currentPlayer].abilityUses += 1;
-                setGameState(tempGameState);
-            }
-            setCurrentPlayer((currentPlayer + 1));
-            return;
-        }
         else {
-            setCurrentPlayer(null);
+            // gamelog
+            if (tempGameState.currentEvent) {
+                tempGameState.log.push(tempGameState.currentEvent);
+                tempGameState.players[currentPlayer].knowledge.push(tempGameState.currentEvent);
+                tempGameState.currentEvent = undefined;
+            }
+
+            if (currentPlayer < tempGameState.players.length - 1) {
+                // move to the next player
+
+
+                // increment ability use counts, for night actions
+                const player = tempGameState.players[currentPlayer];
+                if (
+                    player.role?.abilityUses !== undefined
+                    && player.abilityUses < player.role?.abilityUses
+                    && player.role?.night !== undefined
+                    // some roles only increment under certain conditions
+                    && (player.role?.condition === undefined || (
+                        (player.role?.condition === 'dead' && !player.alive)
+                    ))
+                ) {
+                    tempGameState.players[currentPlayer].abilityUses += 1;
+                    setGameState(tempGameState);
+                }
+
+                setCurrentPlayer((currentPlayer + 1));
+                setGameState(tempGameState);
+                return;
+            }
+            else {
+                setCurrentPlayer(null);
+            }
         }
     }
 
@@ -195,6 +227,9 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
     // MORNING
     if (time === 1) {
         // HANDLE MURDER
+        let murder = false;
+        let temp: string = '';
+
         tempGameState.players.forEach((player, index) => {
             const targetedStatus = player.statuses?.find(status => status.name === 'Targeted');
             const playerTargeted = targetedStatus !== undefined && !targetedStatus.drunk && !targetedStatus.poisoned;
@@ -202,17 +237,45 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             const protectedStatus = player.statuses?.find(status => status.name === 'Protected');
             const playerProtected = protectedStatus !== undefined && !protectedStatus.drunk && !protectedStatus.poisoned;
 
-            if (playerTargeted &&
-                !playerProtected &&
-                (
-                    player.role?.name !== 'Soldier'
-                    || player.statuses.find(status => status.name === 'Poisoned') !== undefined
-                )
-            ) {
-                // TODO: handle SAINT
-                tempGameState.players[index].alive = false;
+            if (playerTargeted) {
+                if (!playerProtected) {
+                    if ( player.role?.name !== 'Soldier'
+                        || player.statuses.find(status => status.name === 'Poisoned') !== undefined
+                    ) {
+                        murder = true;
+                        tempGameState.players[index].alive = false;
+                        // gamelog
+                        tempGameState.log.push({
+                            type: 'severe',
+                            message: `${tempGameState.players[index].name} was murdered in the night!`,
+                        });
+                    }
+                    else {
+                        temp = 'soldier';
+                    }
+                }
+                else {
+                    temp = 'protected';
+                }
             }
         });
+        if (!murder) {
+            // gamelog
+            tempGameState.log.push({
+                type: 'public',
+                message: 'Nobody was murdered in the night...',
+                extra: (() => {
+                    switch (temp) {
+                        case 'soldier':
+                            return 'The Soldier is immune to Werewolf kills.';
+                        case 'protected':
+                            return "The Doctor protected the Werewolf's target";
+                        default:
+                            return undefined;
+                    }
+                })()
+            });
+        }
     }
     // NEW DAY
     else if (time > 2) {
@@ -223,6 +286,11 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
             tempGameState.players[lynchedIndex].alive = false;
             tempGameState.choppingBlock = undefined;
+
+            tempGameState.log.push({
+                type: 'severe',
+                message: `${tempGameState.players[lynchedIndex].name} was lynched!`,
+            });
 
             // SAINT
             if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
@@ -244,6 +312,7 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
 
         time = 0;
         day++;
+        tempGameState.log.push({ type: 'heading', message: `Day ${day}` });
 
         setCurrentPlayer(0);
     }
@@ -269,7 +338,11 @@ function updateStatuses(statuses: Status[], time: number) {
     return newStatuses;
 }
 
-export function handleAction(playerIndex: number, currentPlayer: number | null, gameState: GameState, selectedPlayers: number[], setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>,) {
+export function handleAction(
+    playerIndex: number, currentPlayer: number | null,
+    gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+    selectedPlayers: number[], setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>,
+) {
     if (currentPlayer === null) {
         return;
     }
@@ -282,6 +355,8 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
         return;
     }
 
+    const tempGameState = { ...gameState };
+
     if (currentRole.name === 'Werewolf') {
         // WEREWOLF
         const statusToApply = statuses['Targeted'];
@@ -293,27 +368,38 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
             statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Werewolf');
         }
 
-        gameState.players[playerIndex].statuses?.push(statusToApply);
+        tempGameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
-            gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            console.log('selected player:', selectedPlayer);
+            tempGameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
         setSelectedPlayers([playerIndex]);
-        return;
+
+        // gamelog
+        tempGameState.currentEvent = {
+            type: 'private',
+            message: `${tempGameState.players[currentPlayer].name} targeted ${tempGameState.players[playerIndex].name}.`,
+        };
     }
 
-    if (currentRole.name === 'Poisoner') {
+    else if (currentRole.name === 'Poisoner') {
         // POISIONER
         const statusToApply = statuses['Poisoned'];
 
-        gameState.players[playerIndex].statuses?.push(statusToApply);
+        tempGameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
-            gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            tempGameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
         setSelectedPlayers([playerIndex]);
-        return;
+
+        // gamelog
+        tempGameState.currentEvent = {
+            type: 'private',
+            message: `${tempGameState.players[currentPlayer].name} poisioned ${tempGameState.players[playerIndex].name}.`,
+        };
     }
 
-    if (currentRole.name === 'Doctor') {
+    else if (currentRole.name === 'Doctor') {
         // DOCTOR
         const statusToApply = statuses['Protected'];
         if (isPlayerDrunk) {
@@ -325,15 +411,20 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
             statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Doctor');
         }
 
-        gameState.players[playerIndex].statuses?.push(statusToApply);
+        tempGameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
-            gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            tempGameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
         setSelectedPlayers([playerIndex]);
-        return;
+
+        // gamelog
+        tempGameState.currentEvent = {
+            type: 'private',
+            message: `${tempGameState.players[currentPlayer].name} protected ${tempGameState.players[playerIndex].name}.`,
+        };
     }
 
-    if (currentRole.name === 'Seer') {
+    else if (currentRole.name === 'Seer') {
         // SEER
         const newSelectedPlayers = [...selectedPlayers];
         if (newSelectedPlayers.includes(playerIndex)) {
@@ -350,25 +441,41 @@ export function handleAction(playerIndex: number, currentPlayer: number | null, 
         }
         // XXX: this does not allow the Seer to select themselves!
         setSelectedPlayers(newSelectedPlayers);
-        return;
+
+        // gamelog
+        tempGameState.currentEvent = {
+            type: 'private',
+            message: `${tempGameState.players[currentPlayer].name} learnt that x of ${newSelectedPlayers.map(
+                (index) => tempGameState.players[index].name
+            ).join(', ')} ${newSelectedPlayers.length > 1 ? 'are' : 'is'} evil.`,
+        };
     }
 
-    if (currentRole.name === 'Butler') {
+    else if (currentRole.name === 'Butler') {
         // BUTLER
         const statusToApply = statuses['Patron'];
         if (isPlayerPoisoned) {
             statusToApply.poisoned = true;
         }
 
-        gameState.players[playerIndex].statuses?.push(statuses['Patron']);
+        tempGameState.players[playerIndex].statuses?.push(statuses['Patron']);
         for (const selectedPlayer of selectedPlayers) {
-            gameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
+            tempGameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
         setSelectedPlayers([playerIndex]);
-        return;
+
+        // gamelog
+        tempGameState.currentEvent = {
+            type: 'private',
+            message: `${tempGameState.players[currentPlayer].name} chose to serve ${tempGameState.players[playerIndex].name}.`,
+        };
     }
 
-    setSelectedPlayers([playerIndex]);
+    else {
+        setSelectedPlayers([playerIndex]);
+    }
+
+    setGameState(tempGameState);
 }
 
 export function togglePlayerAlive(name: string, gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>) {
@@ -393,19 +500,49 @@ export function hunterAbility(
             if (hunter.role?.abilityUses === undefined || hunter.abilityUses < hunter.role?.abilityUses) {
                 const tempGameState = {...gameState};
 
+                const target = gameState.players[selectedPlayers[0]];
+
+                tempGameState.log.push({
+                    type: 'public',
+                    message: `${hunter.name} shot ${target.name}.`,
+                });
+
                 if (hunter.statuses?.find(status => status.name === 'Poisoned') !== undefined) {
                     // POISONED
-                    console.log('hunter is poisoned');
+                    tempGameState.log.push({
+                        type: 'alert',
+                        message: `${target.name} survived!`,
+                        indent: 1,
+                        extra: `${hunter.name} was poisioned.`,
+                    });
                 }
                 else if (hunter.statuses?.find(status => status.name === 'Drunk') !== undefined) {
                     // DRUNK
-                    console.log('hunter is drunk');
+                    tempGameState.log.push({
+                        type: 'alert',
+                        message: `${target.name} survived!`,
+                        indent: 1,
+                        extra: `${hunter.name} is drunk.`,
+                    });
                 }
                 else {
                     // kill the selected player, if they are evil
-                    const target = gameState.players[selectedPlayers[0]];
                     if (target.role?.team === Team.EVIL) {
                         tempGameState.players[selectedPlayers[0]].alive = false;
+
+                        tempGameState.log.push({
+                            type: 'severe',
+                            message: `${target.name} died!`,
+                            indent: 1,
+                        });
+                    }
+                    else {
+                        tempGameState.log.push({
+                            type: 'alert',
+                            message: `${target.name} survived!`,
+                            indent: 1,
+                            extra: 'They were not the Werewolf.',
+                        });
                     }
                 }
 

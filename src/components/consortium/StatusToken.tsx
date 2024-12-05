@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 
-import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
+import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 
 import { Status } from '../../data/statuses';
-import { Role } from "../../data/roles";
+import { Role } from '../../data/roles';
 
 import styles from './Consortium.module.scss';
 

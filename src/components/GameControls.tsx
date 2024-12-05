@@ -1,7 +1,7 @@
 import { GameState } from '../App';
 import { PlayState } from '../enums';
 import { assignRoles } from '../game/core';
-import { Tooltip, TooltipContent, TooltipTrigger } from './common';
+import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -21,7 +21,10 @@ type GameControlsProps = {
 function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, shuffleCodeNames, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
     function startGame() {
-        setGameState({ ...gameState, day: 1, time: 0, state: PlayState.PLAYING });
+        setGameState({ ...gameState,
+            day: 1, time: 0, state: PlayState.PLAYING,
+            log: [{ type: 'heading', message: 'Day 1' }]
+        });
         setCurrentPlayer(0);
     }
 
@@ -53,7 +56,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                             <i className='ra ra-stopwatch' />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>Start</TooltipContent>
+                    <TooltipContent>Begin Game</TooltipContent>
                 </Tooltip>
 
             </div>
@@ -76,7 +79,14 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
     }
 
     return (
-        <button onClick={resetGameState}>Restart</button>
+        <Tooltip>
+            <TooltipTrigger>
+                <button onClick={() => resetGameState()}>
+                    <i className='ra ra-cycle' />
+                </button>
+            </TooltipTrigger>
+            <TooltipContent>Restart</TooltipContent>
+        </Tooltip>
     );
 }
 

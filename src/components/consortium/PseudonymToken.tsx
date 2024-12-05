@@ -1,6 +1,6 @@
-import pseudonyms from "../../data/pseudonyms";
-import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from "../common";
-import GridList from "../common/GridList/GridList";
+import pseudonyms from '../../data/pseudonyms';
+import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
+import GridList from '../common/GridList/GridList';
 
 import styles from './Consortium.module.scss';
 

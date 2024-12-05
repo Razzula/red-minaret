@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState } from '../../App';
-import { Dialog, DialogContent, DialogTrigger, Tooltip, TooltipContent, TooltipTrigger } from '../common';
+import { Dialog, DialogContent, DialogTrigger } from '../common/Dialog/Dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
 
@@ -70,10 +71,10 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
             return;
         }
 
-        if (currentPlayer !== index) {
-            event.stopPropagation();
-            handleAction(index);
-        }
+        event.stopPropagation();
+        handleAction(index);
+        // if (currentPlayer !== index) {
+        // }
     }
 
     function cancelSpecialState() {
