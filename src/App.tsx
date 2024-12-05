@@ -75,7 +75,7 @@ export type PopupEvent = {
     events?: LogEvent[];
     extra?: string;
     override?: {
-        type: 'investigate';
+        type: 'investigate' | 'welcome';
         param?: string;
     };
 }
@@ -107,23 +107,9 @@ function App() {
     const [gameState, setGameState] = useState<GameState>(loadGameState() || {
         ...defaultGameState(),
         popupEvent: {
-            heading: 'Welcome to Blood on the Taj Mahal!',
-            message: (
-                <div className='welcome'>
-                    <img src="./public/logo.svg" alt="Blood on the Taj Mahal" width="128" />
-                    <p>
-                        A group of friends have gone on a trip to the breathtaking Taj Mahal, only to be thrown into a chilling mystery.
-                        A scream pierces the air, and one of the group is found lifeless, their blood staining the pristine marble.
-                        Among you lies a dark secret—deceit, danger, and deduction await.
-                    </p>
-                    <p>That poor soul was you. You are now a ghost, guiding the living to uncover the truth.</p>
-                    <p>
-                        As the Storyteller, guide the group through this game of deception and deduction to uncover the truth and restore justice.
-                        Use this virtual grimoire to orchestrate the experience.
-                    </p>
-                    <p><strong>Let the mystery begin!</strong></p>
-                </div>
-            ),
+            override: {
+                type: 'welcome',
+            }
         },
     });
 
