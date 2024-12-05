@@ -224,11 +224,12 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                     </div>
                                 }
                                 { !isAlive &&
-                                    <div className='evil'>
-                                        <hr />
-                                        <i>
-                                            This player is dead!
-                                        </i>
+                                    <div>
+                                        <div className='evil'>
+                                            <hr />
+                                            <i>This player is dead!</i>
+                                        </div>
+                                        <div className='private'>They have {player.ghostVotes} vote{player.ghostVotes === 1 ? '' : 's'} remaining.</div>
                                     </div>
                                 }
                             </TooltipHoverContent>
