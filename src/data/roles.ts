@@ -1,4 +1,4 @@
-import { PlayerType, Team } from "../enums";
+import { PlayerType, PlayerTypeType, Team } from "../enums";
 
 export type Role  = {
     name: string;
@@ -17,6 +17,11 @@ export type Role  = {
     condition?: string;
 
     order?: number; // low number = early
+    prereqRoles?: {
+        key: 'type' | 'name';
+        value: PlayerTypeType;
+        count: number;
+    }[];
 }
 
 export const roles: Role[] = [
@@ -88,6 +93,10 @@ export const roles: Role[] = [
         icon: 'roles/Leather Armour',
         night: 'Learn that one (of two) players is a particular Villager role.',
         abilityUses: 1,
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.VILLAGER, count: 1 },
+        ],
     },
     {
         name: 'Librarian',
@@ -96,6 +105,10 @@ export const roles: Role[] = [
         icon: 'roles/Book',
         night: 'Learn that one (of two) players is a particular Outsider role.',
         abilityUses: 1,
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.OUTSIDER, count: 1 },
+        ],
     },
     {
         name: 'Investigator',
@@ -104,6 +117,10 @@ export const roles: Role[] = [
         icon: 'roles/Scroll',
         night: 'Learn that one (of two) players is a particular Minion role.',
         abilityUses: 1,
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.MINION, count: 1 },
+        ],
     },
 
     // OUTSIDERS
@@ -115,7 +132,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Saint',
-        description: 'If you are lynched, you and the villagers lose.',
+        description: 'If you are lynched, you and the Villagers lose.',
         team: Team.GOOD, type: PlayerType.OUTSIDER,
         icon: 'roles/Ruby Staff',
     },

@@ -59,7 +59,6 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
 
     function renamePlayer() {
         const newName = prompt('Enter new name:', player.realName || player.name);
-        console.log(newName);
         if (newName) {
             const tempGameState = {...gameState};
             tempGameState.players[index].realName = newName;

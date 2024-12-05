@@ -412,7 +412,6 @@ export function handleAction(
 
         tempGameState.players[playerIndex].statuses?.push(statusToApply);
         for (const selectedPlayer of selectedPlayers) {
-            console.log('selected player:', selectedPlayer);
             tempGameState.players[selectedPlayer].statuses = []; // TODO: this clears 'Drunk', etc.
         }
         setSelectedPlayers([playerIndex]);

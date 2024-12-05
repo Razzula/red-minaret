@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { GameState } from '../../App';
+import { GameState, LogEvent } from '../../App';
 import { Dialog, DialogContent, DialogTrigger } from '../common/Dialog/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
@@ -8,7 +8,9 @@ import PlayerToken from './PlayerToken';
 
 import styles from './Consortium.module.scss';
 import { PlayState, Team } from '../../enums';
-import Log from '../../Log';
+import Log from '../Log';
+import InvestigationInterface from '../InvestigationInterface';
+import { advanceTime } from '../../game/core';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -86,6 +88,27 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
         }));
         setCurrentPlayer(null);
         setSelectedPlayers([]);
+    }
+
+    function handleInvestigate(selectedRole: string, selectedPlayers: string[], count: number) {
+        // UI
+        const selectedUIPlayers: number[] = [];
+        selectedPlayers.forEach((player) => {
+            selectedUIPlayers.push(gameState.players.findIndex((p) => p.name === player));
+        });
+        setSelectedPlayers(selectedUIPlayers);
+
+        // game log
+        const event: LogEvent = {
+            type: 'private',
+            message: `${currentPlayer ? gameState.players[currentPlayer].name : '...'} learnt that ${count} of ${selectedPlayers.join(' and ')} is the ${selectedRole}.`,
+        };
+        const tempGameState = {
+            ...gameState,
+            currentEvent: event,
+            popupEvent: undefined,
+        };
+        advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer);
     }
 
     const Centrepiece: React.FC = () => {
@@ -243,36 +266,56 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
         >
 
             {/* ALERT POPUP */}
-            { gameState.popupEvent &&
+            { gameState.popupEvent && (
                 <Dialog open={gameState.popupEvent !== undefined}>
                     <DialogContent>
-                        <div className='dialogue-content'
-                            style={{
-                                padding: '20px',
-                            }}
-                        >
-                            <div className='column'>
-                                { gameState.popupEvent.heading &&
-                                    <div className='dialogueHeading'>{gameState.popupEvent.heading}</div>
-                                }
-                                { gameState.popupEvent.message &&
-                                    <div>{gameState.popupEvent.message}</div>
-                                }
-                                { gameState.popupEvent.events && gameState.popupEvent.events?.length > 0 &&
-                                    <Log events={gameState.popupEvent.events} />
-                                }
-                                <Tooltip placement='top'>
-                                    <TooltipTrigger>
-                                        <button onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}>
-                                            <i className='ra ra-cancel' />
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Close</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
+                        {
+                            gameState.popupEvent.override ?
+                                // HANDLE OVERRIDES
+                                (() => {
+                                    switch (gameState.popupEvent?.override?.type) {
+                                        case 'investigate':
+                                            return <InvestigationInterface
+                                                title={gameState.popupEvent.override.param}
+                                                players={players}
+                                                setGameState={setGameState}
+                                                onInvestigate={handleInvestigate}
+                                            />;
+                                        default:
+                                            return null;
+                                    }
+                                })()
+                            :
+                                // HANDLE NORMAL POPUPS
+                                <div className='dialogue-content'
+                                    style={{
+                                        padding: '20px',
+                                    }}
+                                >
+                                    <div className='column'>
+                                        { gameState.popupEvent.heading &&
+                                            <div className='dialogueHeading'>{gameState.popupEvent.heading}</div>
+                                        }
+                                        { gameState.popupEvent.message &&
+                                            <div>{gameState.popupEvent.message}</div>
+                                        }
+                                        { gameState.popupEvent.events && gameState.popupEvent.events?.length > 0 &&
+                                            <Log events={gameState.popupEvent.events} />
+                                        }
+                                        <Tooltip placement='bottom'>
+                                            <TooltipTrigger>
+                                                <button onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}>
+                                                    <i className='ra ra-cancel' />
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Close</TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+                        }
                     </DialogContent>
                 </Dialog>
+                )
             }
 
             <div className='centrepiece'>

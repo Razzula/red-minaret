@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { GameState } from '../App';
-import { PlayState } from '../enums';
+import { PlayerType, PlayState } from '../enums';
 import { assignRoles } from '../game/core';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
 
@@ -20,6 +21,61 @@ type GameControlsProps = {
 
 function GameControls({ gameState, setGameState, resetGameState, advanceTime, setCurrentPlayer, shuffleCodeNames, villagerPool, outsiderPool, werewolfPool, minionPool }: GameControlsProps) {
 
+    const [canStartGame, setCanStartGame] = useState(false);
+    const [blocker, setBlocker] = useState<string[]>([]);
+
+    useEffect(() => {
+        const blockers: string[] = [];
+
+        // PRE-REQUISITES
+        // player count
+        const enoughPlayers = gameState.players.length >= 5;
+        if (!enoughPlayers) {
+            blockers.push('Not enough players');
+        }
+
+        const rolePreReqs = gameState.players.every((player) =>
+            player.role?.prereqRoles === undefined || player.role.prereqRoles.every((prereq) => {
+                const poolToSearch = gameState.players.map(p => p.role);
+                const valid = poolToSearch.filter(role => role?.[prereq.key] === prereq.value).length >= prereq.count;
+                if (!valid) {
+                    blockers.push(`${player.role?.name} needs >=${prereq.count} ${prereq.value}`);
+                }
+                return valid;
+            }
+        ));
+
+        const isWerewolf = gameState.players.find(x => x.role?.type === PlayerType.WEREWOLF) !== undefined;
+        if (!isWerewolf) {
+            blockers.push('No Werewolves');
+        }
+
+        // const duplicateRoles = gameState.players.every((player, index) => gameState.players.findIndex(p => p.role?.name === player.role?.name) === index);
+        // if (duplicateRoles) {
+        //     blockers.push('Duplicate Roles');
+        // }
+
+        const allRolesAssigned = gameState.players.find(p => p.role === undefined) === undefined;
+        if (!allRolesAssigned) {
+            blockers.push('Unassigned Roles');
+        }
+
+        if (blockers.length > 0) {
+            setBlocker(blockers);
+        }
+        else {
+            setBlocker([]);
+        }
+
+        setCanStartGame(
+            enoughPlayers
+            && isWerewolf
+            // && !duplicateRoles
+            && allRolesAssigned
+            && rolePreReqs
+        );
+    }, [gameState]);
+
     function startGame() {
         setGameState({ ...gameState,
             day: 1, time: 0, state: PlayState.PLAYING,
@@ -29,6 +85,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
     }
 
     if (gameState.state === PlayState.SETUP) {
+
         return (
             <div>
                 <Tooltip>
@@ -52,11 +109,24 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                 <Tooltip>
                     <TooltipTrigger>
 
-                    <button onClick={startGame} disabled={gameState.players.length < 5 || gameState.players.find(x => x.role === undefined) !== undefined}>
+                        <button onClick={startGame} disabled={!canStartGame}>
                             <i className='ra ra-stopwatch' />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>Begin Game</TooltipContent>
+                    <TooltipContent>
+                        Begin Game
+                        { blocker.length > 0 &&
+                            <div className='severe'>
+                                <hr />
+                                <div>Blocked by:</div>
+                                {
+                                    blocker.map((b, i) => (
+                                            <li key={i}><strong>{b}</strong></li>
+                                    ))
+                                }
+                            </div>
+                        }
+                    </TooltipContent>
                 </Tooltip>
 
             </div>

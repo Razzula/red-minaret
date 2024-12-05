@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { stringify, parse } from 'flatted';
 
 import 'rpg-awesome/css/rpg-awesome.min.css';
 
@@ -20,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Too
 import { Tab, Tabs } from './components/common/Tabs/Tabs'
 
 import styles from './components/consortium/Consortium.module.scss';
-import Log from './Log';
+import Log from './components/Log';
 
 export type GameState = {
     day: number;
@@ -70,9 +71,13 @@ export type LogEvent = {
 
 export type PopupEvent = {
     heading?: string;
-    message?: string;
+    message?: JSX.Element | string;
     events?: LogEvent[];
     extra?: string;
+    override?: {
+        type: 'investigate';
+        param?: string;
+    };
 }
 
 function defaultGameState(playerCount: number = 5): GameState  {
@@ -99,9 +104,30 @@ function defaultGameState(playerCount: number = 5): GameState  {
 
 function App() {
 
-    const [gameState, setGameState] = useState<GameState>(loadGameState() || defaultGameState())
+    const [gameState, setGameState] = useState<GameState>(loadGameState() || {
+        ...defaultGameState(),
+        popupEvent: {
+            heading: 'Welcome to Blood on the Taj Mahal!',
+            message: (
+                <div className='welcome'>
+                    <img src="./public/logo.svg" alt="Blood on the Taj Mahal" width="128" />
+                    <p>
+                        A group of friends have gone on a trip to the breathtaking Taj Mahal, only to be thrown into a chilling mystery.
+                        A scream pierces the air, and one of the group is found lifeless, their blood staining the pristine marble.
+                        Among you lies a dark secret—deceit, danger, and deduction await.
+                    </p>
+                    <p>That poor soul was you. You are now a ghost, guiding the living to uncover the truth.</p>
+                    <p>
+                        As the Storyteller, guide the group through this game of deception and deduction to uncover the truth and restore justice.
+                        Use this virtual grimoire to orchestrate the experience.
+                    </p>
+                    <p><strong>Let the mystery begin!</strong></p>
+                </div>
+            ),
+        },
+    });
 
-    const [gameSettings, /*setGameSettings*/] = useState({})
+    const [gameSettings, /*setGameSettings*/] = useState({});
 
     const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
@@ -115,7 +141,17 @@ function App() {
 
     useEffect(() => {
         if (gameState) {
-            localStorage.setItem('gameState', JSON.stringify(gameState));
+            const serialisedState = stringify(gameState);
+            const currentStoredState = localStorage.getItem('gameState');
+
+            if (currentStoredState !== serialisedState) {
+                try {
+                    localStorage.setItem('gameState', serialisedState);
+                }
+                catch (e) {
+                    console.error('Error saving to local storage:', e);
+                }
+            }
         }
     }, [gameState]);
 
@@ -149,8 +185,10 @@ function App() {
                     setGameState((prev) => ({
                         ...prev,
                         popupEvent: {
-                            heading: player.role?.name,
-                            message: 'this role requires information to be chosen and given to the player. as the storyteller, this is your choice!',
+                            override: {
+                                type: 'investigate',
+                                param: player.role?.name,
+                            }
                         }
                     }));
                 }
@@ -211,7 +249,7 @@ function App() {
     function loadGameState() {
         const cachedGameState = localStorage.getItem('gameState');
         if (cachedGameState) {
-            return JSON.parse(cachedGameState);
+            return parse(cachedGameState);
         }
         return null;
     }
@@ -305,6 +343,31 @@ function App() {
                         if (role.type !== roleType) {
                             return;
                         }
+
+                        const preReqsMet = role.prereqRoles === undefined || role.prereqRoles.every(
+                            prereq => {
+                                const poolToSearch = (() => {
+                                    switch (prereq.value) {
+                                        case PlayerType.VILLAGER:
+                                            return villagerPool;
+                                        case PlayerType.OUTSIDER:
+                                            return outsiderPool;
+                                        case PlayerType.WEREWOLF:
+                                            return werewolfPool;
+                                        case PlayerType.MINION:
+                                            return minionPool;
+                                        default:
+                                            return [];
+                                    }
+                                })();
+                                return poolToSearch.length >= prereq.count;
+                            }
+                        );
+                        const valid = preReqsMet && poolEnabled;
+                        if (!valid && rolePool.includes(index)) {
+                            updateRolePool(index);
+                        }
+
                         return (
                             <Tooltip key={index}>
                                 <TooltipTrigger>
@@ -313,9 +376,9 @@ function App() {
                                         altText={role.name}
                                         isChecked={rolePool.includes(index)}
                                         onChange={active ? () => updateRolePool(index) : () => {}}
-                                        disabled={!poolEnabled}
+                                        disabled={!valid}
                                         styles={{
-                                            cursor: active ? 'pointer' : 'help',
+                                            cursor: valid ? (active ? 'pointer' : 'help') : 'not-allowed',
                                         }}
                                     />
                                 </TooltipTrigger>
@@ -414,7 +477,7 @@ function App() {
 
     function shuffleCodeNames() {
         const tempGameState = {...gameState};
-        const shuffledNames = pseudonyms.sort(() => Math.random() - 0.5);
+        const shuffledNames = [...pseudonyms].sort(() => Math.random() - 0.5);
         tempGameState.players.forEach((player, index) => {
             player.name = shuffledNames[index];
         });

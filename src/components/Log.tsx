@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Tooltip/Tooltip';
-import { LogEvent } from './App';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../components/common/Tooltip/Tooltip';
+import { LogEvent } from '../App';
 
 interface LogProps {
     events: LogEvent[];
