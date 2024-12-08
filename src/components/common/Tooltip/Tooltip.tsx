@@ -24,6 +24,7 @@ interface TooltipOptions {
     onOpenChange?: (open: boolean) => void;
     enableHover?: boolean;
     enableClick?: boolean;
+    restMs?: number;
 }
 
 function useTooltip({
@@ -33,6 +34,7 @@ function useTooltip({
     onOpenChange: setControlledOpen,
     enableHover = true,
     enableClick = false,
+    restMs = 1,
 }: TooltipOptions = {}) {
 
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen);
@@ -65,7 +67,6 @@ function useTooltip({
         ]
     });
 
-
     const dismiss = useDismiss(data.context);
     const role = useRole(data.context, { role: 'tooltip' });
 
@@ -76,6 +77,7 @@ function useTooltip({
     const hover = useHover(data.context, {
         move: false,
         enabled: enableHover,
+        restMs: restMs,
     });
 
     const interactions = useInteractions([dismiss, role, click, hover]);

@@ -12,6 +12,7 @@ import roles from '../../data/roles';
 import CheckButton from '../common/CheckButton/CheckButton';
 import statuses, { Status } from '../../data/statuses';
 import { getWerewolfBluffs } from '../../game/utils';
+import IconButton from '../common/IconButton/IconButton';
 
 type PlayerTokenProps = {
     player: Player;
@@ -259,12 +260,11 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                             <TooltipContent>Assign Role</TooltipContent>
                                         </Tooltip>
 
-                                        <Tooltip>
-                                            <TooltipTrigger>
-                                                <button onClick={() => removePlayer(player.name)}><i className='ra ra-cancel' /></button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Remove Player</TooltipContent>
-                                        </Tooltip>
+                                        <IconButton
+                                            icon={<i className='ra ra-cancel' />}
+                                            onClick={() => removePlayer(player.name)}
+                                            label='Remove Player'
+                                        />
                                     </span>
                                 }
 
@@ -285,27 +285,19 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 </Tooltip>
 
                                 { gameState.state !== PlayState.SETUP &&
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <button onClick={() => togglePlayerAlive(player.name)}>
-                                                <i className={player.alive ? 'ra ra-skull' : 'ra ra-angel-wings'} />
-                                            </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>{player.alive ? 'Kill' : 'Revive'}</TooltipContent>
-                                    </Tooltip>
+                                    <IconButton
+                                        icon={<i className={player.alive ? 'ra ra-skull' : 'ra ra-angel-wings'} />}
+                                        onClick={() => togglePlayerAlive(player.name)}
+                                        label={player.alive ? 'Kill' : 'Revive'}
+                                    />
                                 }
                                 { gameState.state !== PlayState.SETUP && gameState.time !== 0 && player.role?.name === 'Hunter' &&
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <button
-                                                onClick={() => enterSpecialState('Hunter')}
-                                                disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
-                                            >
-                                                <img src={`/red-minaret/icons/${player.role.icon}.png`} alt='Hunter Ability' />
-                                            </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Shoot</TooltipContent>
-                                    </Tooltip>
+                                    <IconButton
+                                        icon={<img src={`/red-minaret/icons/${player.role.icon}.png`} alt='Hunter Ability' />}
+                                        onClick={() => enterSpecialState('Hunter')}
+                                        disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
+                                        label='Shoot'
+                                    />
                                 }
                             </div>
                         </TooltipContent>

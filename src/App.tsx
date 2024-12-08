@@ -22,6 +22,7 @@ import { Tab, Tabs } from './components/common/Tabs/Tabs'
 
 import styles from './components/consortium/Consortium.module.scss';
 import Log from './components/Log';
+import IconButton from './components/common/IconButton/IconButton';
 
 export type GameState = {
     day: number;
@@ -513,14 +514,13 @@ function App() {
                 }}
             />
 
-            <Tooltip>
-                <TooltipTrigger>
-                    <button className='dialogue-x' onClick={() => resetGameState()}>
-                        <i className='ra ra-cycle' />
-                    </button>
-                </TooltipTrigger>
-                <TooltipContent>Reset</TooltipContent>
-            </Tooltip>
+            <div className='dialogue-x'>
+                <IconButton
+                    icon={<i className='ra ra-cycle' />}
+                    onClick={() => resetGameState()}
+                    label='Reset'
+                />
+            </div>
 
             {/* LEFT COLUMN */}
             <div className='verticalCentre'>

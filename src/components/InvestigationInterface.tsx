@@ -6,6 +6,7 @@ import { Role } from '../data/roles';
 import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 import { PlayerType, PlayerTypeType } from '../enums';
+import IconButton from './common/IconButton/IconButton';
 
 interface InvestigationProps {
     title?: string;
@@ -152,14 +153,12 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                                 </Tooltip>
                             ))
                         }
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <button onClick={() => setSelectedRole(getRandomElement(roles).name)}>
-                                    <i className='ra ra-perspective-dice-one' />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>Random</TooltipContent>
-                        </Tooltip>
+
+                        <IconButton
+                            icon={<i className='ra ra-perspective-dice-one' />}
+                            onClick={() => setSelectedRole(getRandomElement(roles).name)}
+                            label='Random'
+                        />
                     </GridList>
 
                     <hr style={{
@@ -188,14 +187,12 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                                 </Tooltip>
                             ))
                         }
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <button onClick={() => shufflePlayerSelection()}>
-                                    <i className='ra ra-perspective-dice-one' />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>Random</TooltipContent>
-                        </Tooltip>
+
+                        <IconButton
+                            icon={<i className='ra ra-perspective-dice-one' />}
+                            onClick={() => shufflePlayerSelection()}
+                            label='Random'
+                        />
                     </GridList>
                 </div>
 
@@ -209,17 +206,12 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                     }
                 </div>
 
-                <Tooltip placement='bottom'>
-                    <TooltipTrigger>
-                        <button
-                            onClick={() => investigate()}
-                            disabled={!selectedRole || selectedPlayers.length !== 2}
-                        >
-                            <i className='ra ra-hourglass' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Done</TooltipContent>
-                </Tooltip>
+                <IconButton
+                    icon={<i className='ra ra-hourglass' />}
+                    onClick={() => investigate()}
+                    disabled={!selectedRole || selectedPlayers.length !== 2}
+                    label='Done'
+                />
 
             </div>
         </div>

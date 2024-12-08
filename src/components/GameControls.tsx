@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { GameState } from '../App';
 import { PlayerType, PlayState } from '../enums';
 import { assignRoles } from '../game/core';
-import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
+import IconButton from './common/IconButton/IconButton';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -88,75 +88,60 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
 
         return (
             <div>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}>
-                            <i className='ra ra-spades-card' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Assign Roles</TooltipContent>
-                </Tooltip>
+                <IconButton
+                    icon={<i className='ra ra-spades-card' />}
+                    onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}
+                    label='Assign Roles'
+                />
 
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button onClick={shuffleCodeNames}>
-                            <i className='ra ra-perspective-dice-six' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Shuffle Codenames</TooltipContent>
-                </Tooltip>
+                <IconButton
+                    icon={<i className='ra ra-perspective-dice-six' />}
+                    onClick={shuffleCodeNames}
+                    label='Shuffle Codenames'
+                />
 
-                <Tooltip>
-                    <TooltipTrigger>
-
-                        <button onClick={startGame} disabled={!canStartGame}>
-                            <i className='ra ra-stopwatch' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        Begin Game
-                        { blocker.length > 0 &&
-                            <div className='severe'>
-                                <hr />
-                                <div>Blocked by:</div>
-                                {
-                                    blocker.map((b, i) => (
-                                            <li key={i}><strong>{b}</strong></li>
-                                    ))
-                                }
-                            </div>
-                        }
-                    </TooltipContent>
-                </Tooltip>
-
+                <IconButton
+                    icon={<i className='ra ra-stopwatch' />}
+                    onClick={startGame}
+                    disabled={!canStartGame}
+                    label={(
+                        <div>
+                            Begin Game
+                            { blocker.length > 0 &&
+                                <div className='severe'>
+                                    <hr />
+                                    <div>Blocked by:</div>
+                                    {
+                                        blocker.map((b, i) => (
+                                                <li key={i}><strong>{b}</strong></li>
+                                        ))
+                                    }
+                                </div>
+                            }
+                        </div>
+                    )}
+                />
             </div>
         );
     }
 
     if (gameState.state === PlayState.PLAYING || gameState.state === PlayState.SPECIAL) {
         return (
-            <div>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button onClick={advanceTime} disabled={gameState.state !== PlayState.PLAYING}>
-                            <i className='ra ra-hourglass' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Continue</TooltipContent>
-                </Tooltip>
-            </div>
+            <IconButton
+                icon={<i className='ra ra-hourglass' />}
+                onClick={advanceTime}
+                disabled={gameState.state !== PlayState.PLAYING}
+                label='Continue'
+            />
         );
     }
 
     return (
-        <Tooltip>
-            <TooltipTrigger>
-                <button onClick={() => resetGameState()}>
-                    <i className='ra ra-cycle' />
-                </button>
-            </TooltipTrigger>
-            <TooltipContent>Restart</TooltipContent>
-        </Tooltip>
+        <IconButton
+            icon={<i className='ra ra-cycle' />}
+            onClick={resetGameState}
+            label='Restart'
+        />
     );
 }
 

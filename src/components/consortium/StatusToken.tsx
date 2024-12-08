@@ -6,6 +6,7 @@ import { Status } from '../../data/statuses';
 import { Role } from '../../data/roles';
 
 import styles from './Consortium.module.scss';
+import IconButton from '../common/IconButton/IconButton';
 
 type StatusTokenProps = {
     status: Status;
@@ -70,14 +71,11 @@ const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centre
                         </div>
                     </TooltipHoverContent>
                     <hr />
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <button onClick={() => removeStatus(status)}>
-                                <i className='ra ra-cancel' />
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent>Remove Status</TooltipContent>
-                    </Tooltip>
+                    <IconButton
+                        icon={<i className='ra ra-cancel' />}
+                        onClick={() => removeStatus(status)}
+                        label='Remove Status'
+                    />
                 </TooltipContent>
             </Tooltip>
         </div>

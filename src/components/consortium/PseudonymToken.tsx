@@ -3,6 +3,7 @@ import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, Tool
 import GridList from '../common/GridList/GridList';
 
 import styles from './Consortium.module.scss';
+import IconButton from '../common/IconButton/IconButton';
 
 type PseudonymTokenProps = {
     pseudonym: string;
@@ -45,18 +46,12 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                         <div><strong>{pseudonym}</strong> ({realName})</div>
                     </TooltipHoverContent>
                     <TooltipClickContent>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <button onClick={() => renamePlayer()}
-                                    style={{
-                                        width: '100%',
-                                    }}
-                                ><i className='ra ra-quill-ink' /></button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                Rename
-                            </TooltipContent>
-                        </Tooltip>
+                        <IconButton
+                            icon={<i className='ra ra-quill-ink' />}
+                            onClick={() => renamePlayer()}
+                            label='Rename'
+                            className='wide'
+                        />
                         <hr />
                         <GridList columns={3}>
                             {
