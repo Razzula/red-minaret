@@ -1,10 +1,15 @@
 import { Howl } from 'howler';
+import sounds from '../data/sounds';
 
-const sounds = {
-    meow: new Howl({ src: ['/red-minaret/audio/meow.mp3'], preload: true }),
-    squeak: new Howl({ src: ['/red-minaret/audio/squeak.mp3'], preload: true }),
-};
+const howls = sounds.reduce((acc, sound) => {
+    acc[sound.name] = new Howl({
+        src: [`/red-minaret/audio/${sound.name}.mp3`],
+        preload: true,
+    });
+    return acc;
+}, {} as Record<string, Howl>);
+console.log(howls);
 
-export const playSound = (key: keyof typeof sounds) => {
-    sounds[key]?.play();
+export const playSound = (key: keyof typeof howls) => {
+    howls[key]?.play();
 };

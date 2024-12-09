@@ -2,10 +2,10 @@ import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip/Tooltip';
 
 interface IconButtonProps {
-    icon: JSX.Element;
+    icon: string | JSX.Element;
     onClick?: () => void;
     disabled?: boolean;
-    label: string | JSX.Element;
+    label: string | JSX.Element | JSX.Element[];
     className?: string;
 }
 
@@ -17,7 +17,7 @@ const IconButton: React.FC<IconButtonProps> = ({
     className,
 }) => {
     return (
-        <Tooltip enableHover={true} restMs={100}>
+        <Tooltip enableClick={true} enableHover={true} restMs={100}>
             <TooltipTrigger>
                 <button
                     className={className || ''}

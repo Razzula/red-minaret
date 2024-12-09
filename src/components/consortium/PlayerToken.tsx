@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 
 import { GameState, Player } from '../../App';
-import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
+import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import StatusToken from './StatusToken';
 
 import styles from './Consortium.module.scss';
@@ -238,27 +238,21 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 {/* HOTBAR */}
                                 { gameState.state === PlayState.SETUP &&
                                     <span>
-                                        <Tooltip>
-                                            <TooltipTrigger>
-
-                                                <Tooltip enableClick={true} enableHover={false}>
-                                                    <TooltipTrigger>
-                                                        <button onClick={() => {}}><i className='ra ra-spades-card' /></button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <GridList columns={6}>{ roleSelectionPanel(villagerPool) }</GridList>
-                                                        <hr />
-                                                        <GridList columns={6}>{ roleSelectionPanel(outsiderPool) }</GridList>
-                                                        <hr />
-                                                        <GridList columns={6}>{ roleSelectionPanel(werewolfPool) }</GridList>
-                                                        <hr />
-                                                        <GridList columns={6}>{ roleSelectionPanel(minionPool) }</GridList>
-                                                    </TooltipContent>
-                                                </Tooltip>
-
-                                            </TooltipTrigger>
-                                            <TooltipContent>Assign Role</TooltipContent>
-                                        </Tooltip>
+                                        <IconButton
+                                            icon={<i className='ra ra-spades-card' />}
+                                            label={[
+                                                    <TooltipHoverContent>Assign Role</TooltipHoverContent>,
+                                                    <TooltipClickContent>
+                                                            <GridList columns={6}>{ roleSelectionPanel(villagerPool) }</GridList>
+                                                            <hr />
+                                                            <GridList columns={6}>{ roleSelectionPanel(outsiderPool) }</GridList>
+                                                            <hr />
+                                                            <GridList columns={6}>{ roleSelectionPanel(werewolfPool) }</GridList>
+                                                            <hr />
+                                                            <GridList columns={6}>{ roleSelectionPanel(minionPool) }</GridList>
+                                                    </TooltipClickContent>
+                                            ]}
+                                        />
 
                                         <IconButton
                                             icon={<i className='ra ra-cancel' />}
@@ -268,21 +262,17 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                     </span>
                                 }
 
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Tooltip enableClick={true} enableHover={false}>
-                                            <TooltipTrigger>
-                                                <button onClick={() => {}}><i className='ra ra-round-bottom-flask' /></button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <GridList columns={6}>
-                                                    { statusSettingsPanel(Object.values(statuses)) }
-                                                </GridList>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Assign Status</TooltipContent>
-                                </Tooltip>
+                                <IconButton
+                                    icon={<i className='ra ra-round-bottom-flask' />}
+                                    label={[
+                                        <TooltipHoverContent>Assign Status</TooltipHoverContent>,
+                                        <TooltipClickContent>
+                                            <GridList columns={6}>
+                                                { statusSettingsPanel(Object.values(statuses)) }
+                                            </GridList>
+                                        </TooltipClickContent>
+                                    ]}
+                                />
 
                                 { gameState.state !== PlayState.SETUP &&
                                     <IconButton

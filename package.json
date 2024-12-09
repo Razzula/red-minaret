@@ -21,6 +21,7 @@
         "sass": "^1.80.4"
     },
     "devDependencies": {
+        "@types/howler": "^2.2.12",
         "@types/react": "^18.2.66",
         "@types/react-dom": "^18.2.22",
         "@typescript-eslint/eslint-plugin": "^7.2.0",
