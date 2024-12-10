@@ -52,10 +52,14 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
             blockers.push('No Werewolves');
         }
 
-        // const duplicateRoles = gameState.players.every((player, index) => gameState.players.findIndex(p => p.role?.name === player.role?.name) === index);
-        // if (duplicateRoles) {
-        //     blockers.push('Duplicate Roles');
-        // }
+        const duplicatedRoles = gameState.players.some((player, i) =>
+            gameState.players.findIndex((p, ii) =>
+                p.role?.name === player.role?.name && ii !== i
+            ) !== -1
+        );
+        if (duplicatedRoles) {
+            blockers.push('Duplicate Roles');
+        }
 
         const allRolesAssigned = gameState.players.find(p => p.role === undefined) === undefined;
         if (!allRolesAssigned) {
@@ -72,7 +76,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         setCanStartGame(
             enoughPlayers
             && isWerewolf
-            // && !duplicateRoles
+            && !duplicatedRoles
             && allRolesAssigned
             && rolePreReqs
         );
@@ -109,7 +113,17 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                 <IconButton
                     icon={<i className='ra ra-spades-card' />}
                     onClick={() => assignRoles(gameState, setGameState, villagerPool, outsiderPool, werewolfPool, minionPool)}
-                    label='Assign Roles'
+                    label={(
+                        <div>
+                            Assign Roles
+                            { gameState.players.length > 5 && minionPool.length <= 0 &&
+                                <div className='error'>
+                                    <hr />
+                                    You require a <strong className='evil'>Minion</strong>, but none are available.
+                                </div>
+                            }
+                        </div>
+                    )}
                 />
 
                 <IconButton
@@ -126,12 +140,11 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                         <div>
                             Begin Game
                             { blocker.length > 0 &&
-                                <div className='severe'>
+                                <div className='error'>
                                     <hr />
-                                    <div>Blocked by:</div>
                                     {
                                         blocker.map((b, i) => (
-                                                <li key={i}><strong>{b}</strong></li>
+                                            <div key={i}>{b}</div>
                                         ))
                                     }
                                 </div>

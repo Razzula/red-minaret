@@ -11,6 +11,9 @@ import { PlayState, Team } from '../../enums';
 import Log from '../Log';
 import InvestigationInterface from '../InvestigationInterface';
 import { advanceTime } from '../../game/core';
+import pseudonyms from '../../data/pseudonyms';
+import IconButton from '../common/IconButton/IconButton';
+import { offset } from '@floating-ui/react';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -302,14 +305,120 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                                                         </p>
                                                         <p><strong>Let the mystery begin!</strong></p>
 
-                                                        <Tooltip placement='bottom'>
-                                                            <TooltipTrigger>
-                                                                <button onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}>
-                                                                    <i className='ra ra-cancel' />
-                                                                </button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>Begin!</TooltipContent>
-                                                        </Tooltip>
+                                                        <div>
+                                                            <IconButton
+                                                                icon={<i className='ra ra-book' />}
+                                                                onClick={() => setGameState((prev) => ({ ...prev, popupEvent: { override: { type: 'help' } } }))}
+                                                                label='How to Play'
+                                                            />
+                                                            <IconButton
+                                                                icon={<i className='ra ra-cancel' />}
+                                                                onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}
+                                                                label='Begin!'
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            );
+                                        case 'help':
+                                            return (
+                                                <div className='dialogue-content' style={{ padding: '20px' }}>
+                                                    <div className='centreContents'>
+                                                        <div className='howto'>
+                                                            <h1>Help</h1>
+                                                            <p>
+                                                                This application is a virtual 'grimoire' for the <strong>Blood on the Taj Mahal</strong> social deduction game.
+                                                                It is a tool for you, the <span className='storyteller'>Storyteller</span>, to guide a group of friends through the game.
+                                                            </p>
+
+                                                            <h2>Configuration</h2>
+                                                            <p>
+                                                                The game is designed for 5+ players (excluding the <span className='storyteller'>Storyteller</span>).
+                                                                You can add players by clicking the <i className='storyteller ra ra-health' /> button on the setup screen.
+                                                                To remove a player, select their token, then click the <i className='storyteller ra ra-cancel' /> button.
+                                                            </p>
+                                                            <p>
+                                                                Players are split into two teams:
+                                                                <ul>
+                                                                    <li className='good'>Good (Villagers and Outsiders)</li>
+                                                                    <li className='evil'>Evil (Werewolves and Minions)</li>
+                                                                </ul>
+                                                                The <span className='evil'>Evil</span> team aims to eliminate enough <span className='good'>Good</span> players to take control of the group.
+                                                            </p>
+                                                            <p>
+                                                                The <span className='good'>Good</span> team’s goal is to eliminate the <strong className='evil'>Werewolves</strong> to restore peace.
+                                                            </p>
+                                                            <p>
+                                                                You can assign roles by clicking the <i className='storyteller ra ra-spades-card' /> button.
+                                                            </p>
+
+                                                            <h3>Codenames</h3>
+                                                            <p>
+                                                                Each player is assigned a codename, a pseudonym for their character.
+                                                            </p>
+                                                            <p>
+                                                                During a player's turn at night, ensure it remains concealed from the group who is awake and when.
+                                                            </p>
+                                                            <p>
+                                                                You can:
+                                                                <ul>
+                                                                    <li>Use these secret names to identify players</li>
+                                                                    <li>Awaken players using secret numbers (e.g., "x o'clock")</li>
+                                                                </ul>
+                                                            </p>
+
+                                                            <h2>Gameplay</h2>
+
+                                                            <h3>Phases</h3>
+                                                            <p>
+                                                                The game is divided into three phases: <strong>Night</strong>, <strong>Day</strong>, and <strong>Evening</strong>.
+                                                            </p>
+
+                                                            <h4>Night</h4>
+                                                            <p>
+                                                                During the
+                                                                <Tooltip>
+                                                                    <TooltipTrigger> Night*</TooltipTrigger>
+                                                                    <TooltipContent>Except the first night!</TooltipContent>
+                                                                </Tooltip>,
+                                                                the <strong className='evil'>Werewolves</strong> select a player to kill. Unless interrupted, that player dies.
+                                                            </p>
+                                                            <p>
+                                                                Other roles may perform actions at night, aiding their respective teams. Follow the action order provided in the app to ensure fairness.
+                                                            </p>
+                                                            <p>
+                                                                Once a player dies, they lose their ability but can continue participating in discussions and voting.
+                                                            </p>
+
+                                                            <h4>Day</h4>
+                                                            <p>
+                                                                During the day, players discuss and attempt to identify the <strong className='evil'>Evil</strong> team.
+                                                            </p>
+                                                            <p>
+                                                                Players can freely discuss for as long as you allow, even splitting into separate rooms for private conversations. Encourage dialogue and cooperation.
+                                                            </p>
+
+                                                            <h4>Evening</h4>
+                                                            <p>
+                                                                At the end of the day, the group votes to lynch a player. The player with the most votes is eliminated.
+                                                            </p>
+                                                            <p>
+                                                                If votes are tied or no majority is reached, no player is lynched.
+                                                            </p>
+                                                            <p>
+                                                                Each player can only nominate and be nominated each once per day.
+                                                            </p>
+                                                            <p>
+                                                                Once a player becomes a ghost, they can vote only <strong>once</strong> for the remainder of the game.
+                                                            </p>
+                                                        </div>
+
+                                                        <IconButton
+                                                            icon={<i className='ra ra-cancel' />}
+                                                            onClick={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}
+                                                            label='Close'
+                                                        />
                                                     </div>
                                                 </div>
                                             );

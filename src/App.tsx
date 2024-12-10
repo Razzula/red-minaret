@@ -14,7 +14,7 @@ import { Status } from './data/statuses'
 import './App.css'
 import './globals.css'
 import { PlayerType, PlayState, PlayStateType, Team } from './enums'
-import pseudonyms from './data/pseudonyms'
+import pseudonyms from './data/pseudonyms';
 import GridList from './components/common/GridList/GridList'
 import CheckButton from './components/common/CheckButton/CheckButton'
 import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Tooltip/Tooltip'
@@ -76,7 +76,7 @@ export type PopupEvent = {
     events?: LogEvent[];
     extra?: string;
     override?: {
-        type: 'investigate' | 'welcome';
+        type: 'investigate' | 'welcome' | 'help';
         param?: string;
     };
 }
@@ -86,10 +86,10 @@ function defaultGameState(playerCount: number = 5): GameState  {
         day: 0,
         time: 0,
         state: PlayState.SETUP,
-        players: pseudonyms
+        players: [...pseudonyms]
             .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, playerCount).map((name, index) => ({
-                name,
+            .slice(0, playerCount).map((pseudonym, index) => ({
+                name: pseudonym.name,
                 realName: `Player ${index + 1}`,
                 alive: true,
                 statuses: [],
@@ -331,6 +331,14 @@ function App() {
                             return;
                         }
 
+                        const blockers: string[] = []; // reasons why this role is disabled
+
+                        // check role pool
+                        if (!poolEnabled) {
+                            blockers.push('Not enough players');
+                        }
+
+                        // role pre-requires
                         const preReqsMet = role.prereqRoles === undefined || role.prereqRoles.every(
                             prereq => {
                                 const poolToSearch = (() => {
@@ -347,11 +355,17 @@ function App() {
                                             return [];
                                     }
                                 })();
-                                return poolToSearch.length >= prereq.count;
+                                const isPreRqMet = poolToSearch.length >= prereq.count;
+                                if (!isPreRqMet) {
+                                    blockers.push(`Requires ${prereq.count} ${prereq.value}`);
+                                }
+                                return isPreRqMet;
                             }
                         );
                         const valid = preReqsMet && poolEnabled;
+
                         if (!valid && rolePool.includes(index)) {
+                            // remove this role from the pool if it's no longer valid
                             updateRolePool(index);
                         }
 
@@ -377,12 +391,15 @@ function App() {
                                     >
                                         <div><strong>{role.name}</strong></div>
                                         <div>{role.description}</div>
-                                        { !poolEnabled &&
-                                            <div
-                                                style={{
-                                                    color: '#ff5338',
-                                                }}
-                                            ><i>Not enough players to use this role!</i></div>
+                                        { blockers.length > 0 &&
+                                            <div className='error'>
+                                                {
+                                                    // explain why this role is disabled, if so
+                                                    blockers.map((blocker, index) => (
+                                                        <div key={index}>{blocker}</div>
+                                                    ))
+                                                }
+                                            </div>
                                         }
                                     </div>
                                 </TooltipContent>
@@ -466,16 +483,16 @@ function App() {
         const tempGameState = {...gameState};
         const shuffledNames = [...pseudonyms].sort(() => Math.random() - 0.5);
         tempGameState.players.forEach((player, index) => {
-            player.name = shuffledNames[index];
+            player.name = shuffledNames[index].name;
         });
         setGameState(tempGameState);
     }
 
     function addPlayer() {
         const tempGameState = {...gameState};
-        const playerName = pseudonyms
+        const playerName = [...pseudonyms]
             .sort(() => Math.random() - 0.5)
-            .find(name => !gameState.players.find(player => player.name === name))
+            .find(pseudonym => !gameState.players.find(player => player.name === pseudonym.name))?.name
             ?? `Player ${gameState.players.length + 1}`;
 
         tempGameState.players.push({
@@ -515,6 +532,12 @@ function App() {
             />
 
             <div className='dialogue-x'>
+                <IconButton
+                    icon={<i className='ra ra-book' />}
+                    onClick={() => setGameState((prev) => ({...prev, popupEvent: { override: { type: 'help' } } }))}
+                    label='How to Play'
+                />
+
                 <IconButton
                     icon={<i className='ra ra-cycle' />}
                     onClick={() => resetGameState()}

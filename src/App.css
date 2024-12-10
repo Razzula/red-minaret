@@ -150,6 +150,10 @@ button > i {
     color: var(--green);
 }
 
+.storyteller {
+    color: var(--purple);
+}
+
 .alert {
     color: var(--yellow);
 }
@@ -196,6 +200,21 @@ button > i {
     font-size: 0.7em !important;
 }
 
+.centreContents {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.howto {
+    margin: 10px;
+    font-size: 0.8em !important;
+    overflow-y: scroll;
+    max-height: 700px;
+    text-align: left;
+}
+
 .dialogueHeading {
     font-weight: 700;
     margin-bottom: 10px;
@@ -213,4 +232,8 @@ button > i {
 
 .wide {
     width: 100%;
+}
+
+.error {
+    color: #ff5338;
 }

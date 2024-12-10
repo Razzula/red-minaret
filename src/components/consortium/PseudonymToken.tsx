@@ -23,6 +23,8 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
     const newX = centreX + (radius - 50) * Math.sin(angle);
     const newY = centreY - (radius - 50) * Math.cos(angle);
 
+    const meta = pseudonyms.find(p => p.name === pseudonym);
+
     function handleClick(event: React.MouseEvent<HTMLImageElement, MouseEvent>) {
         event.preventDefault();
         if (event.ctrlKey) {
@@ -30,11 +32,8 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
             event.stopPropagation();
         }
         else if (event.button !== 0) {
-            if (['Graham White', 'Marvin'].includes(pseudonym)) {
-                playSound('meow');
-            }
-            else if ('Steve' ===  pseudonym) {
-                playSound('squeak');
+            if (meta?.sound) {
+                playSound(meta.sound);
             }
         }
     }
@@ -71,25 +70,25 @@ const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, cen
                             className='wide'
                         />
                         <hr />
-                        <GridList columns={3}>
+                        <GridList columns={4}>
                             {
                                 pseudonyms.map((newPseudonym) => (
-                                    <Tooltip key={newPseudonym}
+                                    <Tooltip key={newPseudonym.name}
                                         enableHover={true}
                                     >
                                         <TooltipTrigger>
-                                            <img key={newPseudonym}
-                                                src={`/red-minaret/characters/${newPseudonym}.png`}
-                                                alt={newPseudonym}
+                                            <img key={newPseudonym.name}
+                                                src={`/red-minaret/characters/${newPseudonym.name}.png`}
+                                                alt={newPseudonym.name}
                                                 className={styles.profilePicture}
                                                 style={{
                                                     borderRadius: '20%',
                                                 }}
-                                                onClick={() => setPseudonym(newPseudonym)}
+                                                onClick={() => setPseudonym(newPseudonym.name)}
                                             />
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <div><strong>{newPseudonym}</strong></div>
+                                            <div><strong>{newPseudonym.name}</strong></div>
                                         </TooltipContent>
                                     </Tooltip>
                                 ))

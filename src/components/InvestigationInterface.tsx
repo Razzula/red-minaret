@@ -201,9 +201,11 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                 </div>
 
                 <div className='alert'>
-                    { investigator && selectedPlayers.includes(investigator) &&
-                        <li>Including the investigating player ({investigator}) is permitted, <i>although</i> it could be unfairly powerful.</li>
-                    }
+                    <ul>
+                        { investigator && selectedPlayers.includes(investigator) &&
+                            <li>Including the investigating player ({investigator}) is permitted, <i>although</i> it could be unfairly powerful.</li>
+                        }
+                    </ul>
                 </div>
 
                 <IconButton
