@@ -11,9 +11,7 @@ import { PlayState, Team } from '../../enums';
 import Log from '../Log';
 import InvestigationInterface from '../InvestigationInterface';
 import { advanceTime } from '../../game/core';
-import pseudonyms from '../../data/pseudonyms';
 import IconButton from '../common/IconButton/IconButton';
-import { offset } from '@floating-ui/react';
 
 type ConsortiumProps = {
     gameState: GameState;
