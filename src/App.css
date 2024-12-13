@@ -82,6 +82,11 @@
     position: relative;
 }
 
+.dialogue-header {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
 .dialogue-x {
     position: absolute;
     top: 10px;

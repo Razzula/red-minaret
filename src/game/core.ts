@@ -1,9 +1,10 @@
 import { GameState, PopupEvent, LogEvent } from "../App";
+import { PromptOptions } from "../components/common/Prompt/Prompt";
 
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
-import { PlayState, Team } from "../enums";
-import { getWerewolfBluffs } from "./utils";
+import { PlayState } from "../enums";
+import { getWerewolfBluffs, isPlayerWerewolf, Result } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -529,9 +530,10 @@ export function togglePlayerAlive(name: string, gameState: GameState, setGameSta
     setGameState(tempGameState);
 }
 
-export function hunterAbility(
+export function handleHunterAbility(
     gameState: GameState, selectedPlayers: number[],
-    setGameState: React.Dispatch<React.SetStateAction<GameState>>, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>
+    setGameState: React.Dispatch<React.SetStateAction<GameState>>, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>, setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>,
+    showPrompt: (opts: PromptOptions) => void
 ) {
     // HUNTER
     if (gameState.state === PlayState.SPECIAL && gameState.special?.state === 'Hunter') {
@@ -568,7 +570,8 @@ export function hunterAbility(
                 }
                 else {
                     // kill the selected player, if they are evil
-                    if (target.role?.team === Team.EVIL) {
+                    const isTargetWerewolf = isPlayerWerewolf(target);
+                    if (isTargetWerewolf === Result.TRUE) {
                         tempGameState.players[selectedPlayers[0]].alive = false;
 
                         tempGameState.log.push({
@@ -576,6 +579,42 @@ export function hunterAbility(
                             message: `${target.name} died!`,
                             indent: 1,
                         });
+                    }
+                    else if (isTargetWerewolf === Result.STORYTELLER) {
+                        showPrompt({
+                            type: 'bool',
+                            title: 'Storyteller Decision',
+                            message: `The Hunter shot the ${target.role?.name}. Do they ping as a Werewolf?`,
+                            cancelText: 'Werewolf',
+                            onCancel: () => {
+                                tempGameState.players[selectedPlayers[0]].alive = false;
+
+                                tempGameState.log.push({
+                                    type: 'severe',
+                                    message: `${target.name} died!`,
+                                    indent: 1,
+                                    extra: `They pinged as a Werewolf.`,
+                                });
+
+                                setGameState(tempGameState);
+                                setCurrentPlayer(null);
+                                setSelectedPlayers([]);
+                            },
+                            confirmText: 'Not Werewolf',
+                            onConfirm: () => {
+                                tempGameState.log.push({
+                                    type: 'alert',
+                                    message: `${target.name} survived!`,
+                                    indent: 1,
+                                    extra: `They did not ping as a Werewolf.`,
+                                });
+
+                                setGameState(tempGameState);
+                                setCurrentPlayer(null);
+                                setSelectedPlayers([]);
+                            },
+                        });
+                        console.log('Storyteller');
                     }
                     else {
                         tempGameState.log.push({

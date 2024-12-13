@@ -3,8 +3,6 @@ import { GameState } from '../App';
 import { PlayerType, PlayState } from '../enums';
 import { assignRoles } from '../game/core';
 import IconButton from './common/IconButton/IconButton';
-import { TooltipClickContent, TooltipHoverContent } from './common';
-import Soundboard from './SoundBoard';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -94,21 +92,6 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
 
         return (
             <div className='row'>
-
-                <IconButton
-                    icon={<i className='ra ra-ocarina' />}
-                    label={[
-                        <TooltipHoverContent key='hover'>Soundboard</TooltipHoverContent>,
-                        <TooltipClickContent key='click'><Soundboard /></TooltipClickContent>
-                    ]}
-                />
-
-                <hr style={{
-                    width: '1px',
-                    height: '32px',
-                    backgroundColor: '#505050',
-                    margin: '0 10px',
-                }}/>
 
                 <IconButton
                     icon={<i className='ra ra-spades-card' />}

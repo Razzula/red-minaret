@@ -5,7 +5,7 @@ import 'rpg-awesome/css/rpg-awesome.min.css';
 
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
-import { advanceTime, handleAction, hunterAbility, togglePlayerAlive } from './game/core'
+import { advanceTime, handleAction, handleHunterAbility, togglePlayerAlive } from './game/core'
 import { findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
@@ -17,12 +17,14 @@ import { PlayerType, PlayState, PlayStateType, Team } from './enums'
 import pseudonyms from './data/pseudonyms';
 import GridList from './components/common/GridList/GridList'
 import CheckButton from './components/common/CheckButton/CheckButton'
-import { Tooltip, TooltipContent, TooltipTrigger } from './components/common/Tooltip/Tooltip'
+import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from './components/common/Tooltip/Tooltip'
 import { Tab, Tabs } from './components/common/Tabs/Tabs'
 
 import styles from './components/consortium/Consortium.module.scss';
 import Log from './components/Log';
 import IconButton from './components/common/IconButton/IconButton';
+import { usePrompt } from './components/common/Prompt/Prompt';
+import Soundboard from './components/SoundBoard';
 
 export type GameState = {
     day: number;
@@ -123,6 +125,8 @@ function App() {
     const [outsiderPool, setOutsiderPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.OUTSIDER ? index : null).filter(i => i !== null));
     const [werewolfPool, setWerewolfPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.WEREWOLF ? index : null).filter(i => i !== null));
     const [minionPool, setMinionPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.MINION ? index : null).filter(i => i !== null));
+
+    const { showPrompt, PromptDialog } = usePrompt();
 
     const timeSymbol = getTimeSymbol();
 
@@ -471,7 +475,7 @@ function App() {
     function handleSpecialAction(specialState: string) {
         switch (specialState) {
             case 'Hunter':
-                hunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers);
+                handleHunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers, showPrompt);
         }
     }
 
@@ -531,6 +535,10 @@ function App() {
                 }}
             />
 
+            {/* PROMPT */}
+            { PromptDialog }
+
+            {/* TOP-RIGHT */}
             <div className='dialogue-x'>
                 <IconButton
                     icon={<i className='ra ra-book' />}
@@ -666,6 +674,21 @@ function App() {
                         flex: '0 0 auto',
                     }}
                 >
+                    <IconButton
+                        icon={<i className='ra ra-ocarina' />}
+                        label={[
+                            <TooltipHoverContent key='hover'>Soundboard</TooltipHoverContent>,
+                            <TooltipClickContent key='click'><Soundboard /></TooltipClickContent>
+                        ]}
+                    />
+
+                    <hr style={{
+                        width: '1px',
+                        height: '32px',
+                        backgroundColor: '#505050',
+                        margin: '0 10px',
+                    }}/>
+
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}

@@ -1,6 +1,13 @@
-import { GameState } from "../App";
+import { GameState, Player } from "../App";
 import { Role } from "../data/roles";
-import { Team } from "../enums";
+import { PlayerType, Team } from "../enums";
+
+export enum Result {
+    TRUE,
+    FALSE,
+    STORYTELLER, // sometimes, the storyteller has to make a decision
+    NULL,
+}
 
 export function findPlayersNeighbours(gameState: GameState, currentPlayer: number): number[] {
 
@@ -33,4 +40,58 @@ export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
             !gameState.players.find(p => p.role?.name === role.name)
         )
         .slice(0, 3)
+}
+
+export function isPlayerEvil(player: Player): Result {
+
+    if (player.role) {
+        if (player.role.team === Team.EVIL) {
+            return Result.TRUE;
+        }
+
+        // RECLUSE
+        if (player.role.name === 'Recluse') {
+            return Result.STORYTELLER;
+        }
+
+        return Result.FALSE;
+    }
+
+    return Result.NULL;
+}
+
+export function isPlayerWerewolf(player: Player): Result {
+
+    if (player.role) {
+        if (player.role.type === PlayerType.WEREWOLF) {
+            return Result.TRUE;
+        }
+
+        // RECLUSE
+        if (player.role.name === 'Recluse') {
+            return Result.STORYTELLER;
+        }
+
+        return Result.FALSE;
+    }
+
+    return Result.NULL;
+}
+
+export function isPlayerMinion(player: Player): Result {
+
+    if (player.role) {
+        if (player.role.type === PlayerType.MINION) {
+            return Result.TRUE;
+        }
+
+        // RECLUSE
+        if (player.role.name === 'Recluse') {
+            return Result.STORYTELLER;
+        }
+
+        return Result.FALSE;
+    }
+
+    return Result.NULL;
 }

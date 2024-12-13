@@ -145,7 +145,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Recluse',
-        description: 'You might register as evil - as a Minion or Wereolf - even if dead.',
+        description: 'You might register as evil - as a Minion or Werewolf - even if dead.',
         team: Team.GOOD, type: PlayerType.OUTSIDER,
         icon: 'roles/Candle',
     },
