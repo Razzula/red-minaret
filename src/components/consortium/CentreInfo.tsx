@@ -1,6 +1,6 @@
 import { GameState, Player } from "../../App";
 import { Team } from "../../enums";
-import { findPlayersNeighbours } from "../../game/utils";
+import { countEvilPairs, findPlayersNeighbours } from "../../game/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip/Tooltip";
 
 import styles from './Consortium.module.scss';
@@ -54,6 +54,10 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         // UNDERTAKER
         else if (player.role?.name === 'Undertaker') {
             playerResult = gameState.lastNight.lynched ? (players[gameState.lastNight.lynched].role?.name ?? '') : '';
+        }
+        // CHEF
+        else if (player.role?.name === 'Chef') {
+            playerResult = countEvilPairs(gameState).toString();
         }
         else {
             return null;

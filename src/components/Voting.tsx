@@ -9,6 +9,7 @@ import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 
 import styles from './consortium/Consortium.module.scss';
+import { isPlayerEvil, isPlayerVillager, Result } from '../game/utils';
 
 type VotingProps = {
     gameState: GameState;
@@ -35,7 +36,7 @@ export function Voting({
     useEffect(() => {
         if (voting && nominatedPlayer) { // player nominated
 
-            // VRIGIN
+            // VIRGIN
             const nominated = gameState.players.find(player => player.name === nominatedPlayer);
             const isDrunk = nominated?.statuses.find(status => status.name === 'Drunk');
             if (!isDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
@@ -46,7 +47,7 @@ export function Voting({
                     const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
                     tempGameState.players[nominatedIndex].abilityUses += 1;
 
-                    if (nominator?.role?.type === PlayerType.VILLAGER) {
+                    if (nominator && isPlayerVillager(nominator) === Result.TRUE) {
 
                         endVote();
                         setVotingAllowed(false);

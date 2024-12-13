@@ -360,6 +360,12 @@ function App() {
                                             return werewolfPool;
                                         case PlayerType.MINION:
                                             return minionPool;
+
+                                        case Team.GOOD:
+                                            return [...villagerPool, ...outsiderPool];
+                                        case Team.EVIL:
+                                            return [...werewolfPool, ...minionPool];
+
                                         default:
                                             return [];
                                     }

@@ -185,6 +185,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         return (
             canPlayerActTonight(player, gameState)
             && player.role?.name !== 'Empath'
+            && player.role?.name !== 'Chef'
         );
     }
 

@@ -1,4 +1,4 @@
-import { PlayerType, PlayerTypeType, Team } from "../enums";
+import { PlayerType, PlayerTypeType, Team, TeamType } from "../enums";
 
 export type Role  = {
     name: string;
@@ -19,8 +19,8 @@ export type Role  = {
 
     order?: number; // low number = early
     prereqRoles?: {
-        key: 'type' | 'name';
-        value: PlayerTypeType;
+        key: 'type' | 'name' | 'team';
+        value: PlayerTypeType | TeamType;
         count: number;
     }[];
 }
@@ -122,6 +122,18 @@ export const roles: Role[] = [
 
         prereqRoles: [
             { key: 'type', value: PlayerType.MINION, count: 1 },
+        ],
+    },
+    {
+        name: 'Chef',
+        description: 'Start with knowledge of how many pairs of evil players there are.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Cheese',
+        night: 'Learn how many pairs of evil players there are.',
+        abilityUses: 1,
+
+        prereqRoles: [
+            { key: 'team', value: Team.EVIL, count: 2 },
         ],
     },
 

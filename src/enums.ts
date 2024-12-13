@@ -21,3 +21,5 @@ export const Team = {
     GOOD: 'Good',
     EVIL: 'Evil',
 } as const;
+
+export type TeamType = typeof Team[keyof typeof Team];

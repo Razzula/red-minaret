@@ -31,6 +31,44 @@ export function findPlayersNeighbours(gameState: GameState, currentPlayer: numbe
     return neighbours;
 }
 
+export function countEvilPairs(gameState: GameState): number {
+
+    let evilPairs = (
+        gameState.players[0].role?.team === Team.EVIL &&
+        gameState.players[gameState.players.length - 1].role?.team === Team.EVIL
+    ) ? 1 : 0;
+
+    let evil = Result.NULL;
+    gameState.players.forEach(player => {
+        if (player.alive) {
+            const playerIsEvil = isPlayerEvil(player);
+            if (playerIsEvil === Result.TRUE) {
+                if (evil === Result.TRUE) {
+                    evilPairs++;
+                }
+                evil = Result.TRUE;
+            }
+            else if (playerIsEvil === Result.STORYTELLER) {
+                // XXX: in-built prompt; multiple triggers
+                const decision = prompt(`Is ${player.name} evil? (Y/N)`);
+                if (decision?.toLowerCase() === 'y') {
+                    if (evil === Result.TRUE) {
+                        evilPairs++;
+                    }
+                    evil = Result.TRUE;
+                }
+                else {
+                    evil = Result.FALSE;
+                }
+            }
+            else {
+                evil = Result.FALSE;
+            }
+        }
+    });
+    return evilPairs;
+}
+
 export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
     return [...roles]
         .sort(() => Math.random() - 0.5)
@@ -88,6 +126,19 @@ export function isPlayerMinion(player: Player): Result {
         // RECLUSE
         if (player.role.name === 'Recluse') {
             return Result.STORYTELLER;
+        }
+
+        return Result.FALSE;
+    }
+
+    return Result.NULL;
+}
+
+export function isPlayerVillager(player: Player): Result {
+
+    if (player.role) {
+        if (player.role.type === PlayerType.VILLAGER) {
+            return Result.TRUE;
         }
 
         return Result.FALSE;
