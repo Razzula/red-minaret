@@ -177,3 +177,15 @@ export function canPlayerActTonight(player: Player, gameState: GameState): boole
     }
 
 }
+
+export function isPlayerDrunk(player: Player): boolean {
+    return player.statuses.find(status => status.name === 'Drunk') !== undefined;
+}
+
+export function isPlayerPoisoned(player: Player): boolean {
+    return player.statuses.find(status => status.name === 'Poisoned') !== undefined;
+}
+
+export function isPlayerIntoxicated(player: Player): boolean {
+    return isPlayerDrunk(player) || isPlayerPoisoned(player);
+}

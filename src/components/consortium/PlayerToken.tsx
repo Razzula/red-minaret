@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 
-import { GameState, Player } from '../../App';
+import { GameState, Player, Settings } from '../../App';
 import { Tooltip, TooltipClickContent, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import StatusToken from './StatusToken';
 
@@ -24,6 +24,7 @@ type PlayerTokenProps = {
     radius: number;
     currentPlayer: number | null;
     selectedPlayers: number[];
+    settings: Settings;
     togglePlayerAlive: (name: string) => void;
     handleClick: (event: React.MouseEvent<HTMLElement>, index: number) => void;
     removePlayer: (name: string) => void;
@@ -37,11 +38,13 @@ type PlayerTokenProps = {
 
 const PlayerToken: React.FC<PlayerTokenProps> = ({
     player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers,
+    settings,
     togglePlayerAlive, handleClick, removePlayer, setCurrentPlayer,
     villagerPool, outsiderPool, werewolfPool, minionPool,
 }) => {
 
     const role = gameState.players[index].role;
+    const roleDisplayName = settings.useOriginalNames ? (role?.altName ?? role?.name) : role?.name;
     const circleDiameter = 100;
 
     const angle = (index * 2 * Math.PI) / (gameState.players?.length || 0);
@@ -230,7 +233,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                         <TooltipContent maxWidth={500}>
                             <TooltipHoverContent>
                                 <div>
-                                    <div><strong>{player.role?.name}</strong></div>
+                                    <div><strong>{roleDisplayName}</strong></div>
                                     <div>{player.role?.description || <i>No Role Assigned</i>}</div>
                                 </div>
                                 { isPendingExecution &&

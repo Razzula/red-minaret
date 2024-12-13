@@ -1,10 +1,10 @@
-import { GameState, PopupEvent, LogEvent } from "../App";
+import { GameState, PopupEvent, LogEvent } from '../App';
 import { PromptOptions } from "../components/common/Prompt/Prompt";
 
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayState } from "../enums";
-import { getWerewolfBluffs, isPlayerWerewolf, Result } from "./utils";
+import { getWerewolfBluffs, isPlayerDrunk, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -241,6 +241,19 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             const playerProtected = protectedStatus !== undefined && !protectedStatus.drunk && !protectedStatus.poisoned;
 
             if (playerTargeted) {
+                // MAYOR
+                if (player.role?.name === 'Mayor') {
+                    if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
+                        alert('Note: the Mayor has been killed. As the Storyteller, you can choose to select another player. (Currently you have to do this manually.)');
+                    }
+                    else {
+                        log.push({
+                            type: 'alert',
+                            message: `Mayor ability failed to protect ${player.name}.`,
+                        });
+                    }
+                }
+
                 if (!playerProtected) {
                     if ( player.role?.name !== 'Soldier'
                         || player.statuses.find(status => status.name === 'Poisoned') !== undefined
@@ -352,6 +365,36 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
                 type: 'public',
                 message: 'Nobody was lynched.',
             });
+
+            // MAYOR
+            const mayorIndex = tempGameState.players.findIndex(player => player.role?.name === 'Mayor');
+            if (mayorIndex !== -1) {
+                // only three players
+                const numberOfLivingPlayers = tempGameState.players.reduce((count, player) => (player.alive ? count + 1 : count), 0);
+                if (tempGameState.players[mayorIndex].alive && numberOfLivingPlayers === 3) {
+
+                    // not nullified
+                    if (tempGameState.players[mayorIndex].statuses?.find(status => status.name === 'Poisoned') === undefined
+                        && tempGameState.players[mayorIndex].statuses?.find(status => status.name === 'Drunk') === undefined
+                    ) {
+                        // villager victory
+                        tempGameState.state = PlayState.VICTORY;
+
+                        tempGameState.log.push({
+                            type: 'alert',
+                            message: 'Mayor victory conditions met!',
+                            indent: 1,
+                        });
+                    }
+                    else {
+                        tempGameState.popupEvent = {
+                            heading: 'Mayor ability blocked.',
+                            message: 'The Mayor ability would have activated, but they are incapacitated.',
+                        };
+                    }
+
+                }
+            }
         }
         tempGameState.nominations = [];
         tempGameState.nominators = [];

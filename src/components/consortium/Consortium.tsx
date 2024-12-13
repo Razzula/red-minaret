@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { GameState, LogEvent } from '../../App';
+import { GameState, LogEvent, Settings } from '../../App';
 import { Dialog, DialogContent, DialogTrigger } from '../common/Dialog/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
@@ -20,6 +20,7 @@ type ConsortiumProps = {
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
     currentPlayer: number | null;
     selectedPlayers: number[];
+    settings: Settings;
     handleAction: (index: number) => void;
     togglePlayerAlive: (name: string) => void;
     addPlayer: () => void;
@@ -34,7 +35,9 @@ type ConsortiumProps = {
     minionPool: number[];
 };
 
-const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, currentPlayer, selectedPlayers,
+const Consortium: React.FC<ConsortiumProps> = ({
+    gameState, setGameState, currentPlayer, selectedPlayers,
+    settings,
     handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction,
     villagerPool, outsiderPool, werewolfPool, minionPool
 }) => {
@@ -423,6 +426,7 @@ const Consortium: React.FC<ConsortiumProps> = ({ gameState, setGameState, curren
                         radius={radius}
                         currentPlayer={currentPlayer}
                         selectedPlayers={selectedPlayers}
+                        settings={settings}
                         togglePlayerAlive={togglePlayerAlive}
                         handleClick={handleClick}
                         removePlayer={removePlayer}

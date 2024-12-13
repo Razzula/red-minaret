@@ -58,6 +58,10 @@ export type GameState = {
     };
 }
 
+export type Settings = {
+    useOriginalNames: boolean;
+}
+
 export type Player = {
     name: string; // this is the player's codename (mandatory)
     realName?: string; // this is the player's real name (optional)
@@ -121,7 +125,9 @@ function App() {
         },
     });
 
-    const [gameSettings, /*setGameSettings*/] = useState({});
+    const [gameSettings, setGameSettings] = useState<Settings>({
+        useOriginalNames: false,
+    });
 
     const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
@@ -340,6 +346,7 @@ function App() {
                             return;
                         }
 
+                        const displayName = gameSettings.useOriginalNames ? (role.altName ?? role.name) : role.name;
                         const blockers: string[] = []; // reasons why this role is disabled
 
                         // check role pool
@@ -389,7 +396,7 @@ function App() {
                                 <TooltipTrigger>
                                     <CheckButton
                                         image={`/red-minaret/icons/${role.icon}.png`}
-                                        altText={role.name}
+                                        altText={displayName}
                                         isChecked={rolePool.includes(index)}
                                         onChange={active ? () => updateRolePool(index) : () => {}}
                                         disabled={!valid}
@@ -404,7 +411,7 @@ function App() {
                                             maxWidth: '400px',
                                         }}
                                     >
-                                        <div><strong>{role.name}</strong></div>
+                                        <div><strong>{displayName}</strong></div>
                                         <div>{role.description}</div>
                                         { blockers.length > 0 &&
                                             <div className='error'>
@@ -563,7 +570,18 @@ function App() {
                                     </div>
                                 </Tab>
                                 <Tab label='Settings'>
-                                    <span>🦗 chirp chirp</span>
+                                    <ul>
+                                        <li>
+                                            <input type='checkbox'
+                                                checked={gameSettings.useOriginalNames}
+                                                onChange={() => setGameSettings((prev) => ({...prev, useOriginalNames: !prev.useOriginalNames}))}
+                                            /> Use original names
+                                            <Tooltip>
+                                                <TooltipTrigger><i className='ra ra-help help' /></TooltipTrigger>
+                                                <TooltipContent>Blood on the Clocktower</TooltipContent>
+                                            </Tooltip>
+                                        </li>
+                                    </ul>
                                 </Tab>
                             </Tabs>
                         </div>
@@ -641,6 +659,7 @@ function App() {
                     <Consortium
                         gameState={gameState} setGameState={setGameState}
                         currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
+                        settings={gameSettings}
                         handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
                         addPlayer={addPlayer} removePlayer={removePlayer}
                         setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}

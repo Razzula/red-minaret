@@ -4,12 +4,12 @@ import { GameState, LogEvent, Player } from '../App';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
 import { DialogClose, useDialogContext } from './common/Dialog/Dialog';
 import { enactVote } from '../game/core';
-import { PlayerType, Team } from '../enums';
+import { Team } from '../enums';
 import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 
 import styles from './consortium/Consortium.module.scss';
-import { isPlayerEvil, isPlayerVillager, Result } from '../game/utils';
+import { isPlayerVillager, Result } from '../game/utils';
 
 type VotingProps = {
     gameState: GameState;
