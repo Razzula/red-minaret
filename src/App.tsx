@@ -52,6 +52,10 @@ export type GameState = {
     currentEvent?: LogEvent;
     popupEvent?: PopupEvent;
     bluffs?: Role[];
+
+    lastNight: {
+        lynched?: number;
+    };
 }
 
 export type Player = {
@@ -102,6 +106,7 @@ function defaultGameState(playerCount: number = 5): GameState  {
         nominations: [],
         nominators: [],
         log: [],
+        lastNight: {},
     };
 }
 
@@ -421,22 +426,9 @@ function App() {
         }
 
         const player = gameState.players[currentPlayer];
-        const playerCanAct = canPlayerActTonight(player, gameState.day);
+        const playerCanAct = canPlayerActTonight(player, gameState);
 
         let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
-
-        // EMPATH
-        // if (player.role?.name === 'Empath') {
-        //     let evilCount = 0;
-        //     // check neighbours (skip over dead players)
-        //     const neighbours = findPlayersNeighbours(gameState, currentPlayer);
-        //     for (const neighbour of neighbours) {
-        //         if (gameState.players[neighbour].role?.team === Team.EVIL) {
-        //             evilCount++;
-        //         }
-        //     }
-        //     instruction = `${instruction} (${evilCount}).`;
-        // }
 
         // DRUNK
         if (player.statuses?.find(status => status.name === 'Drunk')) {

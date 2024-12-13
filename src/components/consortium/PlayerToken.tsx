@@ -103,7 +103,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                 gameState.time !== 0 || currentPlayerRole?.night !== undefined
             )
         ) {
-            const playerCanAct = canPlayerActTonight(gameState.players[currentPlayer], gameState.day);
+            const playerCanAct = canPlayerSelectTonight(gameState.players[currentPlayer]);
             return playerCanAct ? `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), pointer` : 'not-allowed';
         }
         return 'not-allowed';
@@ -175,11 +175,17 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         if (currentPlayer === null) {
             return;
         }
-        const playerCanAct = canPlayerActTonight(gameState.players[currentPlayer], gameState.day);
-        if (playerCanAct) {
+        if (canPlayerSelectTonight(gameState.players[currentPlayer])) {
             event.stopPropagation();
             handleClick(event, index);
         }
+    }
+
+    function canPlayerSelectTonight(player: Player) {
+        return (
+            canPlayerActTonight(player, gameState)
+            && player.role?.name !== 'Empath'
+        );
     }
 
     return (

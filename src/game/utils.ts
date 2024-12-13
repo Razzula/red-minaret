@@ -96,7 +96,7 @@ export function isPlayerMinion(player: Player): Result {
     return Result.NULL;
 }
 
-export function canPlayerActTonight(player: Player, day: number): boolean {
+export function canPlayerActTonight(player: Player, gameState: GameState): boolean {
 
     const roleDelay = (player.role?.delay ?? 0) + 1;
 
@@ -112,9 +112,13 @@ export function canPlayerActTonight(player: Player, day: number): boolean {
     }
 
     if (player.role?.night
-        && (roleDelay <= day)
+        && (roleDelay <= gameState.day)
         && (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses)
     ) {
+        // UNDERTAKER
+        if (player.role?.name === 'Undertaker') {
+            return gameState.lastNight.lynched !== undefined;
+        }
         return true;
     }
     else {

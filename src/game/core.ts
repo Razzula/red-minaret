@@ -305,6 +305,7 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             const log: LogEvent[] = [];
 
             tempGameState.players[lynchedIndex].alive = false;
+            tempGameState.lastNight.lynched = lynchedIndex;
             tempGameState.choppingBlock = undefined;
 
             log.push({
@@ -345,6 +346,8 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
             });
         }
         else {
+            tempGameState.lastNight.lynched = undefined;
+
             tempGameState.log.push({
                 type: 'public',
                 message: 'Nobody was lynched.',

@@ -220,16 +220,16 @@ export function Voting({
                         <div>
                             <Tooltip placement='bottom'>
                                 <TooltipTrigger>
-                                    <button onClick={() => setVoting(true)} disabled={invalidSelection}><i className='ra ra-large-hammer' /></button>
+                                    <DialogClose><i className='ra ra-cancel' /></DialogClose>
                                 </TooltipTrigger>
-                                <TooltipContent>Begin Voting</TooltipContent>
+                                <TooltipContent>Close</TooltipContent>
                             </Tooltip>
 
                             <Tooltip placement='bottom'>
                                 <TooltipTrigger>
-                                    <DialogClose><i className='ra ra-cancel' /></DialogClose>
+                                    <button onClick={() => setVoting(true)} disabled={invalidSelection}><i className='ra ra-large-hammer' /></button>
                                 </TooltipTrigger>
-                                <TooltipContent>Close</TooltipContent>
+                                <TooltipContent>Begin Voting</TooltipContent>
                             </Tooltip>
                         </div>
                     </div>
