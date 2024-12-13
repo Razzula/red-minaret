@@ -397,10 +397,11 @@ export function handleAction(
     if (!currentRole) {
         return;
     }
+    const currentRoleDelay = currentRole.delay || 0;
 
     const tempGameState = { ...gameState };
 
-    if (currentRole.name === 'Werewolf') {
+    if (currentRole.name === 'Werewolf' && gameState.day > currentRoleDelay) {
         // WEREWOLF
         const statusToApply = statuses['Targeted'];
         if (isPlayerPoisoned) {

@@ -11,7 +11,7 @@ import GridList from '../common/GridList/GridList';
 import roles from '../../data/roles';
 import CheckButton from '../common/CheckButton/CheckButton';
 import statuses, { Status } from '../../data/statuses';
-import { getWerewolfBluffs } from '../../game/utils';
+import { canPlayerActTonight, getWerewolfBluffs } from '../../game/utils';
 import IconButton from '../common/IconButton/IconButton';
 
 type PlayerTokenProps = {
@@ -103,7 +103,8 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                 gameState.time !== 0 || currentPlayerRole?.night !== undefined
             )
         ) {
-            return `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), pointer`;
+            const playerCanAct = canPlayerActTonight(gameState.players[currentPlayer], gameState.day);
+            return playerCanAct ? `url('/red-minaret/icons/${currentPlayerRole.icon}.png'), pointer` : 'not-allowed';
         }
         return 'not-allowed';
     }
@@ -170,6 +171,17 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         }
     }
 
+    function onClick(event: React.MouseEvent<HTMLElement>,  index: number) {
+        if (currentPlayer === null) {
+            return;
+        }
+        const playerCanAct = canPlayerActTonight(gameState.players[currentPlayer], gameState.day);
+        if (playerCanAct) {
+            event.stopPropagation();
+            handleClick(event, index);
+        }
+    }
+
     return (
         <div>
             <div className={styles.player}
@@ -195,7 +207,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 cursor: getCursorIconFromCurrentPlayer(),
                             }}
                             key={index}
-                            onClick={(e) => handleClick(e, index)}
+                            onClick={(e) => onClick(e, index)}
                         >
                             { role ?
                                 <img

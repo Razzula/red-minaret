@@ -6,7 +6,7 @@ import 'rpg-awesome/css/rpg-awesome.min.css';
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
 import { advanceTime, handleAction, handleHunterAbility, togglePlayerAlive } from './game/core'
-import { findPlayersNeighbours } from './game/utils'
+import { canPlayerActTonight, findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
 import { Status } from './data/statuses'
@@ -420,52 +420,34 @@ function App() {
             return null;
         }
 
-        let instruction;
         const player = gameState.players[currentPlayer];
+        const playerCanAct = canPlayerActTonight(player, gameState.day);
 
-        // RAVENKEEPER
-        if (player.role?.name === 'Ravenkeeper') {
-            if (player.alive || player.role?.abilityUses && player.abilityUses >= player.role?.abilityUses) {
-                return 'There is nothing for this player to do, right now...';
-            }
-        }
-        // DEATH
-        else if (!player.alive) {
-            return 'This player is dead.';
-        }
-
-        if (player.role?.night
-            && (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses)
-        ) {
-            instruction = player.role?.night;
-        }
-        else {
-            return 'There is nothing for this player to do, right now...';
-        }
+        let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
 
         // EMPATH
-        if (player.role?.name === 'Empath') {
-            let evilCount = 0;
-            // check neighbours (skip over dead players)
-            const neighbours = findPlayersNeighbours(gameState, currentPlayer);
-            for (const neighbour of neighbours) {
-                if (gameState.players[neighbour].role?.team === Team.EVIL) {
-                    evilCount++;
-                }
-            }
-            instruction = `${instruction} (${evilCount}).`;
-        }
+        // if (player.role?.name === 'Empath') {
+        //     let evilCount = 0;
+        //     // check neighbours (skip over dead players)
+        //     const neighbours = findPlayersNeighbours(gameState, currentPlayer);
+        //     for (const neighbour of neighbours) {
+        //         if (gameState.players[neighbour].role?.team === Team.EVIL) {
+        //             evilCount++;
+        //         }
+        //     }
+        //     instruction = `${instruction} (${evilCount}).`;
+        // }
 
         // DRUNK
         if (player.statuses?.find(status => status.name === 'Drunk')) {
             instruction = `${instruction} Remember, this player is the Drunk!`;
         }
+        // POISONED
         else if (player.statuses?.find(status => status.name === 'Poisoned')) {
             instruction = `${instruction} Remember, this player has been poisoned!`;
         }
 
         return instruction;
-
     }
 
     function handleActionCall(index: number) {

@@ -15,6 +15,7 @@ export type Role  = {
     abilityUses?: number;
     useType?: string;
     condition?: string;
+    delay?: number;
 
     order?: number; // low number = early
     prereqRoles?: {
@@ -84,6 +85,7 @@ export const roles: Role[] = [
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Shovel',
         night: 'Learn which role was lynched today (if any).',
+        delay: 1,
 
     },
     {
@@ -153,10 +155,11 @@ export const roles: Role[] = [
     // WEREWOLVES
     {
         name: 'Werewolf',
-        description: 'do murders and stuff',
+        description: 'Each night*, choose a player to kill.',
         team: Team.EVIL, type: PlayerType.WEREWOLF,
         icon: 'roles/Monster Meat',
         night: 'Choose a player to kill.',
+        delay: 1,
     },
 
     // MINIONS

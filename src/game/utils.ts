@@ -95,3 +95,30 @@ export function isPlayerMinion(player: Player): Result {
 
     return Result.NULL;
 }
+
+export function canPlayerActTonight(player: Player, day: number): boolean {
+
+    const roleDelay = (player.role?.delay ?? 0) + 1;
+
+    // RAVENKEEPER
+    if (player.role?.name === 'Ravenkeeper') {
+        if (player.alive || player.role?.abilityUses && player.abilityUses >= player.role?.abilityUses) {
+            return false;
+        }
+    }
+    // DEATH
+    else if (!player.alive) {
+        return false;
+    }
+
+    if (player.role?.night
+        && (roleDelay <= day)
+        && (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses)
+    ) {
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}
