@@ -209,14 +209,27 @@ function App() {
 
     useEffect(() => {
         if (gameState.players.length > 0 && gameState.state === PlayState.PLAYING) {
+            // check game-over conditions
             if (!gameState.players.find(player => player.role?.type === PlayerType.WEREWOLF && player.alive)) {
+                // no Werewolves alive
                 gameState.state = PlayState.VICTORY;
             }
-            else if (
-                gameState.players.filter(player => player.role?.team === Team.EVIL && player.alive).length
-                    >= gameState.players.filter(player => player.role?.team === Team.GOOD && player.alive).length
-            ) {
-                gameState.state = PlayState.DEFEAT;
+            else {
+                const remainingGoodPlayers = gameState.players.filter(player => player.role?.team === Team.GOOD && player.alive).length;
+
+                const remainingVotes = gameState.players.reduce((acc, player) => acc + (player.alive ? 1 : player.ghostVotes), 0);
+                const remainingEvilVotes = gameState.players
+                    .filter(player => player.role?.team === Team.EVIL && player.alive)
+                    .reduce((acc, player) => acc + (player.alive ? 1 : player.ghostVotes), 0);
+                const voteMajority = Math.ceil(remainingVotes / 2);
+
+                if (
+                    remainingGoodPlayers === 0 // Werewolf nomination impossible
+                    || remainingEvilVotes >= voteMajority // Werewolf lynch infeasible
+                ) {
+                    // Evil outnumber Good
+                    gameState.state = PlayState.DEFEAT;
+                }
             }
         }
     }, [gameState]);
