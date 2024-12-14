@@ -204,14 +204,23 @@ export const roles: Role[] = [
         description: 'At night, learn the role of a player. Also, you might register as good & as a Townsfolk or Outsider, even if dead.', // BotC's Spy is too overpowered; this version is nerfed.
         team: Team.EVIL, type: PlayerType.MINION,
         icon: 'roles/Leather Helmet',
-        night: 'TBD',
+        night: 'Learn which role a player has.',
+    },
+    {
+        name: 'Baron',
+        description: 'There are extra (+2) Outsiders in play.',
+        team: Team.EVIL, type: PlayerType.MINION,
+        icon: 'roles/Silver Key',
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.OUTSIDER, count: 3 },
+        ],
     },
     {
         name: 'Scarlet Woman',
         description: 'If there are 5 or more players alive & the Werewolf dies, you become the Werewolf.',
         team: Team.EVIL, type: PlayerType.MINION,
         icon: 'roles/Cut Ruby',
-        night: 'TBD',
     },
 ]
 

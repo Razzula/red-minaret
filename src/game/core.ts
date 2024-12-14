@@ -47,54 +47,66 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     }
     let drunkIndex: number | null = null;
 
+    // determine Villagers (remainder)
+    const villagerIndicies = players.map((_player, index) => index).filter(index => !evilIndicies.includes(index) && !outsiderIndicies.includes(index));
+
     // assign roles
-    players.forEach((player, index) => {
-        if (evilIndicies.includes(index)) {
+    evilIndicies.forEach(index => {
+        const player = players[index];
 
-            if (werewolfIndicies.includes(index)) {
-                // WEREWOLF
-                const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
-                player.role = roles[role];
-                tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
-            }
-            else {
-                // MINION
-                const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
-                player.role = roles[role];
-                tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
-            }
-
+        if (werewolfIndicies.includes(index)) {
+            // WEREWOLF
+            const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
+            player.role = roles[role];
+            tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
         }
         else {
+            // MINION
+            const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
+            player.role = roles[role];
+            tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
 
-            if (outsiderIndicies.includes(index)) {
-                // OUTSIDER
-                const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
-                player.role = roles[role];
-                tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
-
-                // DRUNK
-                if (roles[role].name === 'Drunk') {
-                    drunkIndex = index;
-                }
+            // BARON
+            if (player.role.name === 'Baron') {
+                // transfer two Villagers to the Outsider pool
+                const transferedVillagers = villagerIndicies.splice(0, 2);
+                outsiderIndicies.push(...transferedVillagers);
+                console.log(outsiderIndicies);
             }
-            else {
-                // VILLAGER
-                const role = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]
-                player.role = roles[role];
-                tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
+        }
+    });
 
-                if (player.role) {
-                    // SEER
-                    if (roles[role].name === 'Seer') {
-                        let redHerringIndex = Math.floor(Math.random() * numPlayers);
-                        while (evilIndicies.includes(redHerringIndex)) {
-                            // an evil player cannot be the red herring
-                            redHerringIndex = Math.floor(Math.random() * numPlayers);
-                        }
-                        players[redHerringIndex].statuses?.push(statuses['Red Herring']);
-                    }
+    outsiderIndicies.forEach(index => {
+        const player = players[index];
+
+        // OUTSIDER
+        const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
+        player.role = roles[role];
+        tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
+
+        // DRUNK
+        if (roles[role].name === 'Drunk') {
+            drunkIndex = index;
+        }
+    });
+
+    villagerIndicies.forEach(index => {
+        const player = players[index];
+
+        // VILLAGER
+        const role = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]
+        player.role = roles[role];
+        tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
+
+        if (player.role) {
+            // SEER
+            if (roles[role].name === 'Seer') {
+                let redHerringIndex = Math.floor(Math.random() * numPlayers);
+                while (evilIndicies.includes(redHerringIndex)) {
+                    // an evil player cannot be the red herring
+                    redHerringIndex = Math.floor(Math.random() * numPlayers);
                 }
+                players[redHerringIndex].statuses?.push(statuses['Red Herring']);
             }
         }
     });
