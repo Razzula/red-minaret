@@ -65,7 +65,6 @@ export async function countEvilPairs(gameState: GameState, showPrompt: (opts: Pr
                         cancelText: 'Evil',
                     });
 
-                    console.log(directStorytellerChoice);
                     if (directStorytellerChoice === null) {
                         storytellerChoice = true;
                     }

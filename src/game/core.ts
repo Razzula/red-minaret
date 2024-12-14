@@ -4,7 +4,7 @@ import { PromptOptions } from '../components/common/Prompt/Prompt';
 import roles from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayerType, PlayState } from "../enums";
-import { getWerewolfBluffs, isPlayerDrunk, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
+import { getWerewolfBluffs, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -185,65 +185,90 @@ async function handleNightKill(
     const hasProtectedStatus = player.statuses?.find(status => status.name === 'Protected');
     const playerProtected = hasProtectedStatus !== undefined && !hasProtectedStatus.drunk && !hasProtectedStatus.poisoned;
 
-    if (!playerProtected) {
-        if ( player.role?.name !== 'Soldier'
-            || player.statuses.find(status => status.name === 'Poisoned') !== undefined
-        ) {
+    if (player.alive) {
+        if (!playerProtected) {
+            if ( player.role?.name !== 'Soldier'
+                || isPlayerIntoxicated(player)
+            ) {
 
-            // MAYOR
-            if (player.role?.name === 'Mayor') {
-                if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
-                    const storytellerChoice = await showPrompt({
-                        type: 'select',
-                        title: 'Mayor Ability',
-                        message: 'The Mayor has been killed. You can choose to let them die, or to kill another player instead.',
-                        extras: ['You should choose what would be most interesting for the story.'],
-                        cancelText: 'Kill Mayor',
-                        confirmText: 'Kill Another Player',
-                        options: tempGameState.players.filter(player => player.alive).map(player => player.name),
-                    });
-                    console.log(storytellerChoice);
+                // WEREWOLF (IMP)
+                if (player.role?.name === 'Werewolf') {
+                    // a self-kill for a Werewolf, converts their Minion to the Werewolf
+                    const minions = tempGameState.players.filter(player => player.role?.type === PlayerType.MINION && player.alive);
+                    if (minions) {
+                        const minion = minions.sort(() => Math.random() - 0.5).pop();
+                        if (minion) {
+                            const werewolfRole = roles.find(role => role.name === 'Werewolf');
+                            const minionIndex = tempGameState.players.findIndex(player => player.name === minion.name);
+                            if (minion.role) {
+                                tempGameState.players[minionIndex].oldRoles.push(minion.role);
+                            }
+                            tempGameState.players[minionIndex].role = werewolfRole;
 
-                    if (storytellerChoice !== null && storytellerChoice !== player.name) {
-                        // protect Mayor
-                        log.push({
-                            type: 'alert',
-                            message: `Mayor ability protected ${player.name}.`,
+                            log.push({
+                                type: 'alert',
+                                message: `${minion.name} is now the Werewolf!`,
+                            });
+                        }
+                    }
+                }
+
+                // MAYOR
+                if (player.role?.name === 'Mayor') {
+                    if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
+                        const storytellerChoice = await showPrompt({
+                            type: 'select',
+                            title: 'Mayor Ability',
+                            message: 'The Mayor has been killed. You can choose to let them die, or to kill another player instead.',
+                            extras: ['You should choose what would be most interesting for the story.'],
+                            cancelText: 'Kill Mayor',
+                            confirmText: 'Kill Another Player',
+                            options: tempGameState.players.filter(player => player.alive).map(player => player.name),
                         });
 
-                        const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
-                        console.log(mayorChoice, tempGameState.players[mayorChoice]);
-                        return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+                        if (storytellerChoice !== null && storytellerChoice !== player.name) {
+                            // protect Mayor
+                            log.push({
+                                type: 'alert',
+                                message: `Mayor ability protected ${player.name}.`,
+                            });
+
+                            const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
+                            return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+                        }
+
+                        log.push({
+                            type: 'alert',
+                            message: `Mayor ability did not protect ${player.name}.`,
+                        });
                     }
+                    else {
+                        log.push({
+                            type: 'alert',
+                            message: `Mayor ability failed to protect ${player.name}.`,
+                            extra: 'The Mayor was intoxicated.',
+                        });
+                    }
+                }
 
-                    log.push({
-                        type: 'alert',
-                        message: `Mayor ability did not protect ${player.name}.`,
-                    });
-                }
-                else {
-                    log.push({
-                        type: 'alert',
-                        message: `Mayor ability failed to protect ${player.name}.`,
-                        extra: 'The Mayor was intoxicated.',
-                    });
-                }
+                murder = true;
+                tempGameState.players[playerIndex].alive = false;
+                // gamelog
+                log.push({
+                    type: 'severe',
+                    message: `${player.name} was murdered in the night!`,
+                });
             }
-
-            murder = true;
-            tempGameState.players[playerIndex].alive = false;
-            // gamelog
-            log.push({
-                type: 'severe',
-                message: `${player.name} was murdered in the night!`,
-            });
+            else {
+                temp = 'soldier';
+            }
         }
         else {
-            temp = 'soldier';
+            temp = 'protected';
         }
     }
     else {
-        temp = 'protected';
+        temp = 'dead';
     }
 
     return [tempGameState, murder, temp];
@@ -336,6 +361,8 @@ export async function advanceTime(
                             return 'The Soldier is immune to Werewolf kills.';
                         case 'protected':
                             return "The Doctor protected the Werewolf's target";
+                        case 'dead':
+                            return "An already-dead player was targeted...";
                         default:
                             return undefined;
                     }

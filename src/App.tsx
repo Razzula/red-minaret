@@ -67,6 +67,7 @@ export type Player = {
     realName?: string; // this is the player's real name (optional)
     alive: boolean;
     role?: Role;
+    oldRoles: Role[];
     statuses: Status[];
     ghostVotes: number;
     abilityUses: number;
@@ -107,6 +108,7 @@ function defaultGameState(playerCount: number = 5): GameState  {
                 ghostVotes: 1,
                 abilityUses: 0,
                 knowledge: [],
+                oldRoles: [],
             })),
         nominations: [],
         nominators: [],
@@ -490,7 +492,7 @@ function App() {
         tempGameState.players.push({
             name: playerName, realName: `Player ${tempGameState.players.length + 1}`,
             alive: true, statuses: [], ghostVotes: 1, abilityUses: 0,
-            knowledge: [],
+            knowledge: [], oldRoles: [],
         });
         setGameState(tempGameState);
     }

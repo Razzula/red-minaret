@@ -270,6 +270,21 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 }
                             </TooltipHoverContent>
                             <div>
+                                { player.oldRoles.length > 0 &&
+                                    <div>
+                                        <hr />
+                                        <div><strong>Previous Roles:</strong></div>
+                                        <div>{player.oldRoles.map(role=>
+                                            <img
+                                                key={role.name}
+                                                src={`/red-minaret/icons/${role.icon}.png`}
+                                                alt={role.name}
+                                                className={styles.circleButtonImg}
+                                            />
+                                        )}</div>
+                                    </div>
+                                }
+
                                 <hr />
                                 {/* HOTBAR */}
                                 { gameState.state === PlayState.SETUP &&

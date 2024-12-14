@@ -71,7 +71,17 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
         }
     }, [selectedPlayers, players, selectedRole]);
 
+    useEffect(() => {
+        if (roles.length === 1) {
+            setSelectedRole(roles[0].name);
+        }
+    }, [roles]);
+
     function selectRole(role: string) {
+        if (roles.length === 1) {
+            return;
+        }
+
         if (selectedRole === role) {
             setSelectedRole(undefined);
         }
@@ -137,6 +147,7 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                 </div>
 
                 <div className='row'>
+                    {/* ROLES */}
                     <GridList columns={3}>
                         {
                             roles.map((role, index) => (
@@ -154,11 +165,13 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                             ))
                         }
 
-                        <IconButton
-                            icon={<i className='ra ra-perspective-dice-one' />}
-                            onClick={() => setSelectedRole(getRandomElement(roles).name)}
-                            label='Random'
-                        />
+                        { roles.length > 1 &&
+                            <IconButton
+                                icon={<i className='ra ra-perspective-dice-one' />}
+                                onClick={() => setSelectedRole(getRandomElement(roles).name)}
+                                label='Random'
+                            />
+                        }
                     </GridList>
 
                     <hr style={{
@@ -168,6 +181,7 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                         margin: '0 10px',
                     }}/>
 
+                    {/* PLAYERS */}
                     <GridList columns={3}>
                         {
                             players.map((player, index) => (

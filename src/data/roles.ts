@@ -173,8 +173,8 @@ export const roles: Role[] = [
 
     // WEREWOLVES
     {
-        name: 'Werewolf',
-        description: 'Each night*, choose a player to kill.',
+        name: 'Werewolf', altName: 'Imp',
+        description: 'Each night*, choose a player to kill. If you kill yourself this way, a Minion becomes the Werewolf.',
         team: Team.EVIL, type: PlayerType.WEREWOLF,
         icon: 'roles/Monster Meat',
         night: 'Choose a player to kill.',
