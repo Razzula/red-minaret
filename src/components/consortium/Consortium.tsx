@@ -118,7 +118,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
             currentEvent: event,
             popupEvent: undefined,
         };
-        advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer);
+        advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt);
     }
 
     const players = gameState.players;
@@ -477,7 +477,7 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
 
         setCentrepiece(null);
 
-    }, [gameState, players, currentPlayer, selectedPlayers]);
+    }, [gameState, players, currentPlayer, selectedPlayers, votingAllowed]);
 
     return centrepiece;
 };

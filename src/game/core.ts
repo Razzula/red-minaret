@@ -1,4 +1,4 @@
-import { GameState, PopupEvent, LogEvent } from '../App';
+import { GameState, PopupEvent, LogEvent, Player } from '../App';
 import { PromptOptions } from '../components/common/Prompt/Prompt';
 
 import roles from '../data/roles';
@@ -175,8 +175,86 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
     setGameState(tempGameState);
 }
 
-export function advanceTime(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, currentPlayer: number | null, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>) {
-    const tempGameState = { ...gameState };
+async function handleNightKill(
+    playerIndex: number, player: Player, tempGameState: GameState, log: LogEvent[],
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
+): Promise<[GameState, boolean, string]> {
+    let murder = false;
+    let temp  = '';
+
+    const hasProtectedStatus = player.statuses?.find(status => status.name === 'Protected');
+    const playerProtected = hasProtectedStatus !== undefined && !hasProtectedStatus.drunk && !hasProtectedStatus.poisoned;
+
+    if (!playerProtected) {
+        if ( player.role?.name !== 'Soldier'
+            || player.statuses.find(status => status.name === 'Poisoned') !== undefined
+        ) {
+
+            // MAYOR
+            if (player.role?.name === 'Mayor') {
+                if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
+                    const storytellerChoice = await showPrompt({
+                        type: 'select',
+                        title: 'Mayor Ability',
+                        message: 'The Mayor has been killed. You can choose to let them die, or to kill another player instead.',
+                        extras: ['You should choose what would be most interesting for the story.'],
+                        cancelText: 'Kill Mayor',
+                        confirmText: 'Kill Another Player',
+                        options: tempGameState.players.filter(player => player.alive).map(player => player.name),
+                    });
+                    console.log(storytellerChoice);
+
+                    if (storytellerChoice !== null && storytellerChoice !== player.name) {
+                        // protect Mayor
+                        log.push({
+                            type: 'alert',
+                            message: `Mayor ability protected ${player.name}.`,
+                        });
+
+                        const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
+                        console.log(mayorChoice, tempGameState.players[mayorChoice]);
+                        return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+                    }
+
+                    log.push({
+                        type: 'alert',
+                        message: `Mayor ability did not protect ${player.name}.`,
+                    });
+                }
+                else {
+                    log.push({
+                        type: 'alert',
+                        message: `Mayor ability failed to protect ${player.name}.`,
+                        extra: 'The Mayor was intoxicated.',
+                    });
+                }
+            }
+
+            murder = true;
+            tempGameState.players[playerIndex].alive = false;
+            // gamelog
+            log.push({
+                type: 'severe',
+                message: `${player.name} was murdered in the night!`,
+            });
+        }
+        else {
+            temp = 'soldier';
+        }
+    }
+    else {
+        temp = 'protected';
+    }
+
+    return [tempGameState, murder, temp];
+}
+
+export async function advanceTime(
+    gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+    currentPlayer: number | null, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>,
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
+) {
+    let tempGameState = { ...gameState };
     let { day, time } = tempGameState;
 
     if (time === 0) {
@@ -229,54 +307,22 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
     if (time === 1) {
         // HANDLE MURDER
         let murder = false;
-        let temp: string = '';
+        let temp = '';
+
         const popupEvent: PopupEvent = { message: 'It is a new day!' };
         const log: LogEvent[] = [];
 
-        tempGameState.players.forEach((player, index) => {
-            const targetedStatus = player.statuses?.find(status => status.name === 'Targeted');
-            const playerTargeted = targetedStatus !== undefined && !targetedStatus.drunk && !targetedStatus.poisoned;
-
-            const protectedStatus = player.statuses?.find(status => status.name === 'Protected');
-            const playerProtected = protectedStatus !== undefined && !protectedStatus.drunk && !protectedStatus.poisoned;
+        for (const [index, player] of tempGameState.players.entries()) {
+            const hasTargetedStatus = player.statuses?.find(status => status.name === 'Targeted');
+            const playerTargeted = hasTargetedStatus !== undefined && !hasTargetedStatus.drunk && !hasTargetedStatus.poisoned;
 
             if (playerTargeted) {
-                // MAYOR
-                if (player.role?.name === 'Mayor') {
-                    if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
-                        alert('Note: the Mayor has been killed. As the Storyteller, you can choose to select another player. (Currently you have to do this manually.)');
-                    }
-                    else {
-                        log.push({
-                            type: 'alert',
-                            message: `Mayor ability failed to protect ${player.name}.`,
-                        });
-                    }
-                }
-
-                if (!playerProtected) {
-                    if ( player.role?.name !== 'Soldier'
-                        || player.statuses.find(status => status.name === 'Poisoned') !== undefined
-                    ) {
-                        murder = true;
-                        tempGameState.players[index].alive = false;
-                        // alert
-                        popupEvent.heading = 'A red sun rises, blood has been spilled this night...';
-                        // gamelog
-                        log.push({
-                            type: 'severe',
-                            message: `${tempGameState.players[index].name} was murdered in the night!`,
-                        });
-                    }
-                    else {
-                        temp = 'soldier';
-                    }
-                }
-                else {
-                    temp = 'protected';
-                }
+                [tempGameState, murder, temp] = await handleNightKill(
+                    index, player, tempGameState, log, showPrompt
+                );
             }
-        });
+        }
+
         if (!murder) {
             // alert
             popupEvent.heading = 'Day drops, day rises. Dusk is sweet, the sunrise sweeter.';
@@ -295,6 +341,9 @@ export function advanceTime(gameState: GameState, setGameState: React.Dispatch<R
                     }
                 })()
             });
+        }
+        else {
+            popupEvent.heading = 'A red sun rises, blood has been spilled this night...';
         }
 
         if (log.length > 0) {

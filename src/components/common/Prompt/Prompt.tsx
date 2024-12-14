@@ -5,9 +5,10 @@ export type PromptOptions = {
     title: string;
     message: string;
     extras?: string[];
-    type: 'text' | 'bool';
+    type: 'text' | 'bool' | 'select';
     confirmText?: string;
     cancelText?: string;
+    options?: string[];
 };
 
 export function usePrompt() {
@@ -27,10 +28,22 @@ export function usePrompt() {
     };
 
     const confirm = () => {
-        const result = options?.type === 'text' ? inputValue : true;
-        resolver?.(result); // resolve with input value or true if no input
+        const result = (() => {
+            switch (options?.type) {
+                case 'text':
+                case 'select':
+                    return inputValue;
+                case 'bool':
+                    return true;
+                default:
+                    return null;
+            }
+        })();
+
+        resolver?.(result); // resolve with the determined result
         setIsOpen(false);
     };
+
 
     const cancel = () => {
         resolver?.(null); // resolve with null if cancelled
@@ -43,12 +56,16 @@ export function usePrompt() {
                 <div className='dialogue-content column'>
                     <div className='dialogue-header'>{options.title}</div>
                     <div className='dialogue-body'>{options.message}</div>
+
+                    {/* EXTRAS */}
                     { options.extras &&
                         options.extras.map((extra, index) => (
                             <div key={index} className='dialogue-body private'>{extra}</div>
                         ))
                     }
-                    {options.type === 'text' && (
+
+                    {/* INPUT */}
+                    { options.type === 'text' && (
                         <input
                             type='text'
                             value={inputValue}
@@ -56,6 +73,19 @@ export function usePrompt() {
                             className='dialogue-input'
                         />
                     )}
+                    { options.type === 'select' && (
+                        <select
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            className='dialogue-input'
+                        >
+                            {options.options?.map((option, index) => (
+                                <option key={index} value={option}>{option}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    {/* BUTTONS */}
                     <div className='dialogue-footer'>
                         <button className='good' onClick={confirm}>
                             {options.confirmText ?? 'Confirm'}

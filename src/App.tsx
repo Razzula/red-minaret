@@ -693,7 +693,7 @@ function App() {
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
-                        advanceTime={() => advanceTime(gameState, setGameState, currentPlayer, setCurrentPlayer)} setCurrentPlayer={setCurrentPlayer}
+                        advanceTime={() => advanceTime(gameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt)} setCurrentPlayer={setCurrentPlayer}
                         shuffleCodeNames={shuffleCodeNames}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />
