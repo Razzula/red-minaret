@@ -30,6 +30,8 @@ export type GameState = {
     day: number;
     time: number;
     state: PlayStateType;
+    turn?: number;
+    turnOrder?: number[];
 
     /* special state used to handle certain game cases */
     special?: {
@@ -329,7 +331,7 @@ function App() {
                 if (currentPlayer === null) {
                     return 'Configure the game.';
                 }
-                return `It is ${currentPlayer + 1} a.m. (${gameState.players[currentPlayer].name}'s turn)`;
+                return `It is ${gameState.turn ? gameState.turn + 1 : 1} o'clock (${gameState.players[currentPlayer].name}'s turn)`;
             case 1:
                 return 'Disscussion';
             case 2:
@@ -575,7 +577,7 @@ function App() {
                                         {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool, true)}
                                     </div>
 
-                                    <h3>Werewolves</h3>
+                                    <h3>{ gameSettings.useOriginalNames ? 'Imps' : 'Werewolves' }</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool, true)}
                                     </div>
@@ -615,7 +617,7 @@ function App() {
                                 {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
                             </div>
 
-                            <h3>Werewolves</h3>
+                            <h3>{ gameSettings.useOriginalNames ? 'Imps' : 'Werewolves' }</h3>
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
                             </div>

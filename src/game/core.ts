@@ -108,7 +108,57 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     // bluffs
     gameState.bluffs = getWerewolfBluffs(gameState, roles);
 
+    gameState.turnOrder = determineTurnOrder(players);
+
     setGameState({ ...gameState, players });
+}
+
+function determineTurnOrder(players: Player[]) {
+    const bags: Record<string, number[]> = {};
+
+    function pushToBag(playerIndex: number, bag: string) {
+        if (bags[bag] === undefined) {
+            bags[bag] = [];
+        }
+        bags[bag].push(playerIndex);
+    }
+
+    players.forEach((player, index) => {
+        if (player.role?.order) {
+            switch (player.role.order.type) {
+                case 'first':
+                    pushToBag(index, 'first');
+                    break;
+                case 'early':
+                    pushToBag(index, 'early');
+                    break;
+                case 'late':
+                    pushToBag(index, 'late');
+                    break;
+                case 'last':
+                    pushToBag(index, 'last');
+                    break;
+                default:
+                    pushToBag(index, 'default');
+                    break;
+            }
+        }
+        else {
+            pushToBag(index, 'default');
+        }
+    });
+
+    const turnOrder: number[] = [];
+    for (const bag of ['first', 'early', 'default', 'late', 'last']) {
+        if (bags[bag] !== undefined && bags[bag].length > 0) {
+            // bags[bag].sort(() => Math.random() - 0.5); // shuffle
+            bags[bag].forEach(playerIndex => {
+                turnOrder.push(playerIndex);
+            });
+        }
+    }
+
+    return turnOrder;
 }
 
 export function enactVote(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, nominatingPlayer: string, nominatedPlayer: string, votes: Record<string, boolean>) {
@@ -284,11 +334,8 @@ export async function advanceTime(
 
     if (time === 0) {
         // at night, advance through players
-        // TODO: order should be role-based (use codenames), not 'chronological'
         if (currentPlayer === null) {
-            // start at the first player
-            setCurrentPlayer(0);
-            return;
+            console.error('currentPlayer cannot be null');
         }
         else {
             // gamelog
@@ -298,9 +345,8 @@ export async function advanceTime(
                 tempGameState.currentEvent = undefined;
             }
 
-            if (currentPlayer < tempGameState.players.length - 1) {
+            if (tempGameState.turn !== undefined && tempGameState.turn < tempGameState.players.length - 1) {
                 // move to the next player
-
 
                 // increment ability use counts, for night actions
                 const player = tempGameState.players[currentPlayer];
@@ -317,11 +363,19 @@ export async function advanceTime(
                     setGameState(tempGameState);
                 }
 
-                setCurrentPlayer((currentPlayer + 1));
+                console.log(tempGameState.turnOrder, tempGameState.turn);
+                if (tempGameState.turnOrder !== undefined && tempGameState.turn !== undefined) {
+                    setCurrentPlayer(tempGameState.turnOrder[tempGameState.turn + 1]);
+                    tempGameState.turn += 1;
+                }
+                else {
+                    setCurrentPlayer(currentPlayer + 1); // fallback to 'chronological' order
+                }
                 setGameState(tempGameState);
                 return;
             }
             else {
+                tempGameState.turn = undefined;
                 setCurrentPlayer(null);
             }
         }
@@ -479,7 +533,14 @@ export async function advanceTime(
         day++;
         tempGameState.log.push({ type: 'heading', message: `Day ${day}` });
 
-        setCurrentPlayer(0);
+        // start at the first player
+        if (tempGameState.turnOrder !== undefined && tempGameState.turnOrder.length > 0) {
+            tempGameState.turn = 0;
+            setCurrentPlayer(tempGameState.turnOrder[0]);
+        }
+        else {
+            setCurrentPlayer(0); // fallback to 'chronological' order
+        }
     }
 
     tempGameState.players.forEach((player, index) => {

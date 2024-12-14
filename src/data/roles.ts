@@ -18,12 +18,20 @@ export type Role  = {
     condition?: string;
     delay?: number;
 
-    order?: number; // low number = early
+    order?: RoleOrder;
     prereqRoles?: {
         key: 'type' | 'name' | 'team';
         value: PlayerTypeType | TeamType;
         count: number;
     }[];
+}
+
+export type RoleOrder = {
+    type:
+        'first' | 'last'
+        | 'early' | 'late'
+        | 'before' | 'after';
+    relative?: string;
 }
 
 export const roles: Role[] = [
@@ -176,6 +184,7 @@ export const roles: Role[] = [
         name: 'Werewolf', altName: 'Imp',
         description: 'Each night*, choose a player to kill. If you kill yourself this way, a Minion becomes the Werewolf.',
         team: Team.EVIL, type: PlayerType.WEREWOLF,
+        order: { type: 'early' },
         icon: 'roles/Monster Meat',
         night: 'Choose a player to kill.',
         delay: 1,
@@ -186,7 +195,7 @@ export const roles: Role[] = [
         name: 'Poisoner',
         description: 'Each night, choose a player: they are poisoned tonight and tomorrow day.',
         team: Team.EVIL, type: PlayerType.MINION,
-        order: 10,
+        order: { type: 'first' },
         icon: 'roles/Green Potion 2',
         night: 'Choose a player to poison.',
     },

@@ -83,9 +83,10 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
     function startGame() {
         setGameState({ ...gameState,
             day: 1, time: 0, state: PlayState.PLAYING,
+            turn: 0,
             log: [{ type: 'heading', message: 'Day 1' }]
         });
-        setCurrentPlayer(0);
+        setCurrentPlayer(gameState.turnOrder ? gameState.turnOrder[0] : 0);
     }
 
     if (gameState.state === PlayState.SETUP) {
