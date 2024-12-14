@@ -264,7 +264,7 @@ async function handleNightKill(
                 }
 
                 // MAYOR
-                if (player.role?.name === 'Mayor') {
+                else if (player.role?.name === 'Mayor') {
                     if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
                         const storytellerChoice = await showPrompt({
                             type: 'select',
@@ -302,7 +302,7 @@ async function handleNightKill(
                 }
 
                 murder = true;
-                tempGameState.players[playerIndex].alive = false;
+                tempGameState = killPlayerByIndex(playerIndex, tempGameState);
                 // gamelog
                 log.push({
                     type: 'severe',
@@ -447,7 +447,7 @@ export async function advanceTime(
             const popupEvent: PopupEvent = {}
             const log: LogEvent[] = [];
 
-            tempGameState.players[lynchedIndex].alive = false;
+            tempGameState = killPlayerByIndex(lynchedIndex, tempGameState);
             tempGameState.lastNight.lynched = lynchedIndex;
             tempGameState.choppingBlock = undefined;
 
@@ -824,4 +824,40 @@ export async function handleHunterAbility(
             }
         }
     }
+}
+
+export function killPlayer(playerName: string, gameState: GameState) {
+    return killPlayerByIndex(gameState.players.findIndex(player => player.name === playerName), gameState);
+}
+
+export function killPlayerByIndex(playerIndex: number, gameState: GameState) {
+    const tempGameState = { ...gameState };
+    tempGameState.players[playerIndex].alive = false;
+
+    // SCARLET WOMAN
+    if (tempGameState.players[playerIndex].role?.type === PlayerType.WEREWOLF) {
+        if (tempGameState.players.length >= 5) {
+            const scarletWomanIndex = tempGameState.players.findIndex(player => player.role?.name === 'Scarlet Woman');
+            if (scarletWomanIndex !== -1) {
+
+                // valid case
+                const scarletWomanRole = tempGameState.players[scarletWomanIndex].role;
+                if (scarletWomanRole !== undefined) {
+                    tempGameState.players[scarletWomanIndex].oldRoles.push(scarletWomanRole);
+                }
+                const werewolfRole = roles.find(role => role.name === tempGameState.players[playerIndex].role?.name);
+                if (werewolfRole !== undefined) {
+                    // Scarlet Woman becomes the Werewolf
+                    tempGameState.players[scarletWomanIndex].role = werewolfRole;
+                }
+
+                tempGameState.log.push({
+                    type: 'alert',
+                    message: `${tempGameState.players[scarletWomanIndex].name} is now the Werewolf!`,
+                });
+            }
+        }
+    }
+
+    return tempGameState;
 }

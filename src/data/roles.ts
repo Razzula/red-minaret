@@ -206,6 +206,13 @@ export const roles: Role[] = [
         icon: 'roles/Leather Helmet',
         night: 'TBD',
     },
+    {
+        name: 'Scarlet Woman',
+        description: 'If there are 5 or more players alive & the Werewolf dies, you become the Werewolf.',
+        team: Team.EVIL, type: PlayerType.MINION,
+        icon: 'roles/Cut Ruby',
+        night: 'TBD',
+    },
 ]
 
 export default roles;

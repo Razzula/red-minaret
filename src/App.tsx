@@ -577,7 +577,7 @@ function App() {
                                         {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool, true)}
                                     </div>
 
-                                    <h3>{ gameSettings.useOriginalNames ? 'Imps' : 'Werewolves' }</h3>
+                                    <h3>{ gameSettings.useOriginalNames ? 'Demons' : 'Werewolves' }</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool, true)}
                                     </div>
@@ -617,7 +617,7 @@ function App() {
                                 {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
                             </div>
 
-                            <h3>{ gameSettings.useOriginalNames ? 'Imps' : 'Werewolves' }</h3>
+                            <h3>{ gameSettings.useOriginalNames ? 'Demons' : 'Werewolves' }</h3>
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
                             </div>
