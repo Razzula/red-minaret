@@ -201,7 +201,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Spy',
-        description: 'TBD',
+        description: 'At night, learn the role of a player. Also, you might register as good & as a Townsfolk or Outsider, even if dead.', // BotC's Spy is too overpowered; this version is nerfed.
         team: Team.EVIL, type: PlayerType.MINION,
         icon: 'roles/Leather Helmet',
         night: 'TBD',

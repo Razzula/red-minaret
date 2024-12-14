@@ -68,7 +68,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
 
         // SEER
         if (player.role?.name === 'Seer') {
-            countEvilSubset(selectedPlayers, 'Seer').then((result) => {
+            countEvilSubset(selectedPlayers, player.role?.name).then((result) => {
                 setPlayerResult(result.toString());
             });
         }
@@ -81,13 +81,13 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         // RAVENKEEPER
         else if (player.role?.name === 'Ravenkeeper') {
             playerResult = selectedPlayers.length > 0 ? (
-                players[selectedPlayers[0]].role?.name ?? ''
+                players[selectedPlayers[0]].role?.name ?? 'Select Player'
             ) : '';
             setPlayerResult(playerResult);
         }
         // UNDERTAKER
         else if (player.role?.name === 'Undertaker') {
-            playerResult = gameState.lastNight.lynched ? (players[gameState.lastNight.lynched].role?.name ?? '') : '';
+            playerResult = gameState.lastNight.lynched ? (players[gameState.lastNight.lynched].role?.name ?? 'Select Player') : 'Select Player';
             setPlayerResult(playerResult);
         }
         // CHEF
@@ -96,8 +96,13 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
                 setPlayerResult(result.toString());
             });
         }
+        // SPY
+        else if (player.role?.name === 'Spy') {
+            playerResult = selectedPlayers.length === 1 ? (gameState.players[selectedPlayers[0]].role?.name ?? 'Select Player') : 'Select Player';
+            setPlayerResult(playerResult);
+        }
         else {
-            return;
+            setPlayerResult('Select Player');
         }
 
     }, [currentPlayer, gameState, players, selectedPlayers, showPrompt]);

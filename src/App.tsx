@@ -567,7 +567,7 @@ function App() {
                             <h2>Configuration</h2>
                             <Tabs>
                                 <Tab label='Roster'>
-                                    <h3>Villagers</h3>
+                                    <h3>{ gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers' }</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool, true)}
                                     </div>
@@ -607,7 +607,7 @@ function App() {
                         <div>
                             <h2><u>Roster</u></h2>
 
-                            <h3>Villagers</h3>
+                            <h3>{ gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers' }</h3>
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool)}
                             </div>

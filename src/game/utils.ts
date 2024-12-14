@@ -106,12 +106,17 @@ export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
 export function isPlayerEvil(player: Player, includeRedHerring: boolean = false): Result {
 
     if (player.role) {
-        if (player.role.team === Team.EVIL) {
-            return Result.TRUE;
-        }
         if (includeRedHerring && player.statuses.find(status => status.name === 'Red Herring') !== undefined) {
             // SEER
             // a Red Herring player always pings as Evil to the Seer
+            return Result.TRUE;
+        }
+
+        if (player.role.team === Team.EVIL) {
+            // SPY
+            if (player.role?.name === 'Spy') {
+                return Result.STORYTELLER;
+            }
             return Result.TRUE;
         }
 
@@ -148,6 +153,10 @@ export function isPlayerMinion(player: Player): Result {
 
     if (player.role) {
         if (player.role.type === PlayerType.MINION) {
+            // SPY
+            if (player.role?.name === 'Spy') {
+                return Result.STORYTELLER;
+            }
             return Result.TRUE;
         }
 
@@ -167,6 +176,33 @@ export function isPlayerVillager(player: Player): Result {
     if (player.role) {
         if (player.role.type === PlayerType.VILLAGER) {
             return Result.TRUE;
+        }
+
+        // SPY
+        if (player.role?.name === 'Spy') {
+            return Result.STORYTELLER;
+        }
+
+        return Result.FALSE;
+    }
+
+    return Result.NULL;
+}
+
+export function isPlayerOutsider(player: Player): Result {
+
+    if (player.role) {
+        if (player.role.type === PlayerType.OUTSIDER) {
+            // RECLUSE
+            if (player.role?.name === 'Recluse') {
+                return Result.STORYTELLER;
+            }
+            return Result.TRUE;
+        }
+
+        // SPY
+        if (player.role?.name === 'Spy') {
+            return Result.STORYTELLER;
         }
 
         return Result.FALSE;
