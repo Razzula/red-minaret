@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { GameState, Player } from "../../App";
 import { PlayerType } from "../../enums";
-import { countEvilPairs, findPlayersNeighbours, isPlayerEvil, Result } from "../../game/utils";
+import { countEvilPairs, findPlayersNeighbours, isPlayerDrunk, isPlayerEvil, isPlayerPoisoned, Result } from "../../game/utils";
 import { PromptOptions } from "../common/Prompt/Prompt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip/Tooltip";
 
 import styles from './Consortium.module.scss';
+import classNames from "classnames";
 
 type CentreInfoProps = {
     gameState: GameState;
@@ -65,63 +66,75 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         const player = players[currentPlayer];
         let playerResult: string;
 
-        if (player.statuses.find((status) => status.name === 'Drunk')) {
-            setPlayerResult('Drunk!');
+        // SEER
+        if (player.role?.name === 'Seer') {
+            countEvilSubset(selectedPlayers, 'Seer').then((result) => {
+                setPlayerResult(result.toString());
+            });
         }
-        else if (player.statuses.find((status) => status.name === 'Poisoned')) {
-            setPlayerResult('Poisoned!');
+        // EMPATH
+        else if (player.role?.name === 'Empath') {
+            countEvilNeighbours().then((result) => {
+                setPlayerResult(result.toString());
+            });
+        }
+        // RAVENKEEPER
+        else if (player.role?.name === 'Ravenkeeper') {
+            playerResult = selectedPlayers.length > 0 ? (
+                players[selectedPlayers[0]].role?.name ?? ''
+            ) : '';
+            setPlayerResult(playerResult);
+        }
+        // UNDERTAKER
+        else if (player.role?.name === 'Undertaker') {
+            playerResult = gameState.lastNight.lynched ? (players[gameState.lastNight.lynched].role?.name ?? '') : '';
+            setPlayerResult(playerResult);
+        }
+        // CHEF
+        else if (player.role?.name === 'Chef') {
+            countEvilPairs(gameState, showPrompt).then((result) => {
+                setPlayerResult(result.toString());
+            });
         }
         else {
-            // SEER
-            if (player.role?.name === 'Seer') {
-                countEvilSubset(selectedPlayers, 'Seer').then((result) => {
-                    setPlayerResult(result.toString());
-                });
-            }
-            // EMPATH
-            else if (player.role?.name === 'Empath') {
-                countEvilNeighbours().then((result) => {
-                    setPlayerResult(result.toString());
-                });
-            }
-            // RAVENKEEPER
-            else if (player.role?.name === 'Ravenkeeper') {
-                playerResult = selectedPlayers.length > 0 ? (
-                    players[selectedPlayers[0]].role?.name ?? ''
-                ) : '';
-                setPlayerResult(playerResult);
-            }
-            // UNDERTAKER
-            else if (player.role?.name === 'Undertaker') {
-                playerResult = gameState.lastNight.lynched ? (players[gameState.lastNight.lynched].role?.name ?? '') : '';
-                setPlayerResult(playerResult);
-            }
-            // CHEF
-            else if (player.role?.name === 'Chef') {
-                countEvilPairs(gameState, showPrompt).then((result) => {
-                    setPlayerResult(result.toString());
-                });
-            }
-            else {
-                return;
-            }
+            return;
         }
 
     }, [currentPlayer, gameState, players, selectedPlayers, showPrompt]);
 
+    const isDrunk = isPlayerDrunk(players[currentPlayer]);
+    const isPoisoned = isPlayerPoisoned(players[currentPlayer]);
+
     const token = (
         <span
-            className={styles.circleButton}
+            className={classNames(
+                styles.circleButton,
+                {
+                    [styles.drunk]: isDrunk,
+                    [styles.poisoned]: isPoisoned,
+                }
+            )}
             style={{
                 width: '100px',
                 height: '100px',
             }}
         >
-            {playerResult}
+            { isDrunk &&
+                <div><strong>Drunk!</strong></div>
+            }
+            { isPoisoned &&
+                <div><strong>Poisoned!</strong></div>
+            }
+
+            <div className={classNames(
+                { 'severe': isDrunk || isPoisoned }
+            )}>
+                {playerResult}
+            </div>
         </span>
     );
 
-    if (playerResult !== 'Drunk!' && playerResult !== 'Poisoned!') {
+    if (!isDrunk && !isPoisoned) {
         return token;
     }
 
@@ -132,7 +145,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
                 {token}
             </TooltipTrigger>
             <TooltipContent>
-                This player is {playerResult} You should give them intentionally unhelpful information.
+                You should give this player intentionally unhelpful information.
             </TooltipContent>
         </Tooltip>
     );

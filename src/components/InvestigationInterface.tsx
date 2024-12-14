@@ -7,6 +7,7 @@ import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 import { PlayerType, PlayerTypeType } from '../enums';
 import IconButton from './common/IconButton/IconButton';
+import { isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from '../game/utils';
 
 interface InvestigationProps {
     title?: string;
@@ -20,11 +21,14 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     const [roleFilter, setRoleFilter] = useState<PlayerTypeType>();
     const [roles, setRoles] = useState<Role[]>([]);
     const [relaventRole, setRelaventRole] = useState<Role>();
+    const [investigator, setInvestigator] = useState<Player>();
 
     const [selectedRole, setSelectedRole] = useState<string>();
     const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
     const count = 1;
+
+    const isInvestigatorIntoxicated = investigator ? isPlayerIntoxicated(investigator) : false;
 
     useEffect(() => {
         const definedRoles = players.flatMap((player) => (player.role ? [player.role] : []));
@@ -60,13 +64,20 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                 setRoleFilter(undefined);
                 break;
         }
-    }, [relaventRole]);
+
+        setInvestigator(players.find((p) => p.role?.name === relaventRole?.name));
+    }, [relaventRole, players]);
 
     useEffect(() => {
         const mandatoryPlayer = players.find((p) => p.role?.name === selectedRole);
-        if (mandatoryPlayer) {
-            if (!selectedPlayers.includes(mandatoryPlayer.name)) {
-                setSelectedPlayers([mandatoryPlayer.name]);
+        if (mandatoryPlayer && investigator) {
+            if (isPlayerIntoxicated(investigator)) {
+                setSelectedPlayers(prev => prev.filter((p) => p !== mandatoryPlayer.name));
+            }
+            else {
+                if (!selectedPlayers.includes(mandatoryPlayer.name)) {
+                    setSelectedPlayers([mandatoryPlayer.name]);
+                }
             }
         }
     }, [selectedPlayers, players, selectedRole]);
@@ -107,7 +118,15 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     function shufflePlayerSelection() {
         const mandatoryPlayer = players.find((p) => p.role?.name === selectedRole);
         if (mandatoryPlayer) {
-            setSelectedPlayers([mandatoryPlayer.name, getRandomElement(players.filter(p => p.name !== mandatoryPlayer.name)).name]);
+            if (isInvestigatorIntoxicated) {
+                setSelectedPlayers([
+                    getRandomElement(players.filter(p => p.name !== mandatoryPlayer.name)).name,
+                    getRandomElement(players.filter(p => p.name !== mandatoryPlayer.name)).name
+                ]);
+            }
+            else {
+                setSelectedPlayers([mandatoryPlayer.name, getRandomElement(players.filter(p => p.name !== mandatoryPlayer.name)).name]);
+            }
         }
         else {
             const randomPlayer = getRandomElement(players).name;
@@ -121,8 +140,6 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
             setGameState((prev) => ({ ...prev, popupEvent: undefined }));
         }
     }
-
-    const investigator = players.find((p) => p.role?.name === relaventRole?.name)?.name;
 
     return (
         <div className='dialogue-content'
@@ -184,22 +201,27 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                     {/* PLAYERS */}
                     <GridList columns={3}>
                         {
-                            players.map((player, index) => (
-                                <Tooltip key={index} placement='top'>
-                                    <TooltipTrigger>
-                                        <CheckButton
-                                            key={index}
-                                            image={`/red-minaret/characters/${player.name}.png`} altText={player.name}
-                                            isChecked={selectedPlayers.includes(player.name)}
-                                            onChange={() => selectPlayer(player.name)}
-                                            styles={{
-                                                width: '50px',
-                                            }}
-                                        />
-                                    </TooltipTrigger>
-                                    <TooltipContent>{player.name}</TooltipContent>
-                                </Tooltip>
-                            ))
+                            players.map((player, index) => {
+                                // const
+                                const mandatoryPlayer = players.find((p) => p.role?.name === selectedRole);
+                                return (
+                                    <Tooltip key={index} placement='top'>
+                                        <TooltipTrigger>
+                                            <CheckButton
+                                                key={index}
+                                                image={`/red-minaret/characters/${player.name}.png`} altText={player.name}
+                                                isChecked={selectedPlayers.includes(player.name)}
+                                                onChange={() => selectPlayer(player.name)}
+                                                styles={{
+                                                    width: '50px',
+                                                }}
+                                                disabled={isInvestigatorIntoxicated && player.name === mandatoryPlayer?.name}
+                                            />
+                                        </TooltipTrigger>
+                                        <TooltipContent>{player.name}</TooltipContent>
+                                    </Tooltip>
+                                );
+                            })
                         }
 
                         <IconButton
@@ -216,10 +238,19 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
 
                 <div className='alert'>
                     <ul>
-                        { investigator && selectedPlayers.includes(investigator) &&
-                            <li>Including the investigating player ({investigator}) is permitted, <i>although</i> it could be unfairly powerful.</li>
+                        { investigator && selectedPlayers.includes(investigator.name) &&
+                            <li>Including the investigating player ({investigator.name}) is permitted, <i>although</i> it could be unfairly powerful.</li>
                         }
                     </ul>
+                </div>
+
+                <div className='storyteller'>
+                    { investigator && isPlayerDrunk(investigator) &&
+                        <li>{investigator.name} is drunk!</li>
+                    }
+                    { investigator && isPlayerPoisoned(investigator) &&
+                        <li>{investigator.name} is poisoned!</li>
+                    }
                 </div>
 
                 <IconButton
