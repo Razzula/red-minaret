@@ -1,4 +1,5 @@
 import { GameState, Player } from "../App";
+import { PromptOptions } from "../components/common/Prompt/Prompt";
 import { Role } from "../data/roles";
 import { PlayerType, Team } from "../enums";
 
@@ -31,7 +32,9 @@ export function findPlayersNeighbours(gameState: GameState, currentPlayer: numbe
     return neighbours;
 }
 
-export function countEvilPairs(gameState: GameState): number {
+export async function countEvilPairs(gameState: GameState, showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>): Promise<number> {
+
+    const storytellerChoices: Record<string, boolean> = {}
 
     let evilPairs = (
         gameState.players[0].role?.team === Team.EVIL &&
@@ -39,7 +42,7 @@ export function countEvilPairs(gameState: GameState): number {
     ) ? 1 : 0;
 
     let evil = Result.NULL;
-    gameState.players.forEach(player => {
+    for (const player of gameState.players) {
         if (player.alive) {
             const playerIsEvil = isPlayerEvil(player);
             if (playerIsEvil === Result.TRUE) {
@@ -49,9 +52,30 @@ export function countEvilPairs(gameState: GameState): number {
                 evil = Result.TRUE;
             }
             else if (playerIsEvil === Result.STORYTELLER) {
-                // XXX: in-built prompt; multiple triggers
-                const decision = prompt(`Is ${player.name} evil? (Y/N)`);
-                if (decision?.toLowerCase() === 'y') {
+                // sometimes it is the storyteller's choice whether a player is evil
+                let storytellerChoice = storytellerChoices[player.name];
+                if (storytellerChoice === undefined) {
+                    // if the storyteller has not already made a choice, prompt them
+                    const directStorytellerChoice = await showPrompt({
+                        title: 'Storyteller Decision',
+                        message: `${player.name} is the ${player.role?.name}. Do they ping as Evil?`,
+                        extras: ['This may affect the number of Evil pairs detected by the Chef.'],
+                        type: 'bool',
+                        confirmText: 'Not Evil',
+                        cancelText: 'Evil',
+                    });
+
+                    console.log(directStorytellerChoice);
+                    if (directStorytellerChoice === null) {
+                        storytellerChoice = true;
+                    }
+                    else {
+                        storytellerChoice = false;
+                    }
+                    storytellerChoices[player.name] = storytellerChoice;
+                }
+
+                if (storytellerChoice === true) {
                     if (evil === Result.TRUE) {
                         evilPairs++;
                     }
@@ -65,7 +89,7 @@ export function countEvilPairs(gameState: GameState): number {
                 evil = Result.FALSE;
             }
         }
-    });
+    }
     return evilPairs;
 }
 
@@ -80,10 +104,15 @@ export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
         .slice(0, 3)
 }
 
-export function isPlayerEvil(player: Player): Result {
+export function isPlayerEvil(player: Player, includeRedHerring: boolean = false): Result {
 
     if (player.role) {
         if (player.role.team === Team.EVIL) {
+            return Result.TRUE;
+        }
+        if (includeRedHerring && player.statuses.find(status => status.name === 'Red Herring') !== undefined) {
+            // SEER
+            // a Red Herring player always pings as Evil to the Seer
             return Result.TRUE;
         }
 

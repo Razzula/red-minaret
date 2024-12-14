@@ -97,8 +97,9 @@ function defaultGameState(playerCount: number = 5): GameState  {
         time: 0,
         state: PlayState.SETUP,
         players: [...pseudonyms]
-            .sort(() => Math.random() - 0.5) // shuffle
-            .slice(0, playerCount).map((pseudonym, index) => ({
+            // .sort(() => Math.random() - 0.5) // shuffle
+            .slice(4, 4 + playerCount)
+            .map((pseudonym, index) => ({
                 name: pseudonym.name,
                 realName: `Player ${index + 1}`,
                 alive: true,
@@ -664,6 +665,7 @@ function App() {
                         addPlayer={addPlayer} removePlayer={removePlayer}
                         setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
+                        showPrompt={showPrompt}
                     />
                 </div>
 

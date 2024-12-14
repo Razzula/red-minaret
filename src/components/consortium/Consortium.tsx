@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { GameState, LogEvent, Settings } from '../../App';
+import { GameState, LogEvent, Player, Settings } from '../../App';
 import { Dialog, DialogContent, DialogTrigger } from '../common/Dialog/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
@@ -14,6 +14,7 @@ import { advanceTime } from '../../game/core';
 import IconButton from '../common/IconButton/IconButton';
 import { canPlayerActTonight } from '../../game/utils';
 import CentreInfo from './CentreInfo';
+import { PromptOptions } from '../common/Prompt/Prompt';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -33,13 +34,16 @@ type ConsortiumProps = {
     outsiderPool: number[];
     werewolfPool: number[];
     minionPool: number[];
+
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>;
 };
 
 const Consortium: React.FC<ConsortiumProps> = ({
     gameState, setGameState, currentPlayer, selectedPlayers,
     settings,
     handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction,
-    villagerPool, outsiderPool, werewolfPool, minionPool
+    villagerPool, outsiderPool, werewolfPool, minionPool,
+    showPrompt,
 }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -116,97 +120,6 @@ const Consortium: React.FC<ConsortiumProps> = ({
         };
         advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer);
     }
-
-    const Centrepiece: React.FC = () => {
-
-        if (gameState.state === PlayState.SETUP) {
-            // Add Player button
-            return (
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button
-                            className={styles.circleButton}
-                            style={{
-                                width: '100px',
-                                height: '100px',
-                            }}
-                            onClick={addPlayer}
-                        >
-                            <i className='ra ra-health' />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Add Player</TooltipContent>
-                </Tooltip>
-            );
-        }
-
-        if (gameState.state === PlayState.SPECIAL) {
-            // Cancel
-            return (
-                <div>
-                    <button
-                        className={styles.circleButton}
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                        }}
-                        onClick={() => handleSpecialAction('Hunter')}
-                    >
-                        Shoot
-                    </button>
-                    <button
-                        className={styles.circleButton}
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                        }}
-                        onClick={cancelSpecialState}
-                    >
-                        Cancel
-                    </button>
-                </div>
-            );
-        }
-
-        if (gameState.time === 2) {
-            // Voting Dialog
-            return (
-                <Dialog>
-                    <DialogTrigger>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <button
-                                    className={styles.circleButton}
-                                    style={{
-                                        width: '100px',
-                                        height: '100px',
-                                    }}
-                                    disabled={!votingAllowed}
-                                >
-                                    <i className='ra ra-noose' />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>Nominate for Lynching</TooltipContent>
-                        </Tooltip>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <Voting
-                            gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive}
-                            setVotingAllowed={setVotingAllowed}
-                        />
-                    </DialogContent>
-                </Dialog>
-            );
-        }
-
-        if (gameState.time === 0 && currentPlayer !== null) {
-            const playerCanAct = canPlayerActTonight(players[currentPlayer], gameState);
-            if (playerCanAct) {
-                return <CentreInfo gameState={gameState} currentPlayer={currentPlayer} players={players} selectedPlayers={selectedPlayers} />
-            }
-            return null;
-        }
-    };
 
     const players = gameState.players;
 
@@ -411,7 +324,12 @@ const Consortium: React.FC<ConsortiumProps> = ({
             }
 
             <div className='centrepiece'>
-                <Centrepiece />
+                <Centrepiece
+                    gameState={gameState} players={players} currentPlayer={currentPlayer} selectedPlayers={selectedPlayers}
+                    showPrompt={showPrompt} addPlayer={addPlayer} handleSpecialAction={handleSpecialAction}
+                    cancelSpecialState={cancelSpecialState} togglePlayerAlive={togglePlayerAlive}
+                    votingAllowed={votingAllowed} setVotingAllowed={setVotingAllowed} setGameState={setGameState}
+                />
             </div>
 
             {
@@ -432,12 +350,136 @@ const Consortium: React.FC<ConsortiumProps> = ({
                         removePlayer={removePlayer}
                         setCurrentPlayer={setCurrentPlayer}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
+                        showPrompt={showPrompt}
                     />
                 ))
             }
 
         </div>
     );
+};
+
+type CentrepieceProps = {
+    gameState: GameState;
+    players: Player[];
+    currentPlayer: number | null;
+    selectedPlayers: number[];
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>;
+    addPlayer: () => void;
+    handleSpecialAction: (specialState: string) => void;
+    cancelSpecialState: () => void;
+    togglePlayerAlive: (name: string) => void;
+    votingAllowed: boolean;
+    setVotingAllowed: React.Dispatch<React.SetStateAction<boolean>>;
+    setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+};
+
+const Centrepiece: React.FC<CentrepieceProps> = ({
+    gameState, players, currentPlayer, selectedPlayers, showPrompt,
+    addPlayer, handleSpecialAction, cancelSpecialState, togglePlayerAlive, votingAllowed, setVotingAllowed,
+    setGameState,
+}) => {
+
+    const [centrepiece, setCentrepiece] = useState<JSX.Element | null>(null);
+
+    useEffect(() => {
+
+        if (gameState.state === PlayState.SETUP) {
+            // Add Player button
+            setCentrepiece(
+                <Tooltip>
+                    <TooltipTrigger>
+                        <button
+                            className={styles.circleButton}
+                            style={{
+                                width: '100px',
+                                height: '100px',
+                            }}
+                            onClick={addPlayer}
+                        >
+                            <i className='ra ra-health' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add Player</TooltipContent>
+                </Tooltip>
+            );
+            return;
+        }
+
+        if (gameState.state === PlayState.SPECIAL) {
+            // Cancel
+            setCentrepiece(
+                <div>
+                    <button
+                        className={styles.circleButton}
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                        onClick={() => handleSpecialAction('Hunter')}
+                    >
+                        Shoot
+                    </button>
+                    <button
+                        className={styles.circleButton}
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                        onClick={cancelSpecialState}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            );
+            return;
+        }
+
+        if (gameState.time === 2) {
+            // Voting Dialog
+            setCentrepiece(
+                <Dialog>
+                    <DialogTrigger>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <button
+                                    className={styles.circleButton}
+                                    style={{
+                                        width: '100px',
+                                        height: '100px',
+                                    }}
+                                    disabled={!votingAllowed}
+                                >
+                                    <i className='ra ra-noose' />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>Nominate for Lynching</TooltipContent>
+                        </Tooltip>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <Voting
+                            gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive}
+                            setVotingAllowed={setVotingAllowed}
+                        />
+                    </DialogContent>
+                </Dialog>
+            );
+            return;
+        }
+
+        if (gameState.time === 0 && currentPlayer !== null) {
+            const playerCanAct = canPlayerActTonight(players[currentPlayer], gameState);
+            if (playerCanAct) {
+                setCentrepiece(<CentreInfo gameState={gameState} currentPlayer={currentPlayer} players={players} selectedPlayers={selectedPlayers} showPrompt={showPrompt} />);
+                return;
+            }
+        }
+
+        setCentrepiece(null);
+
+    }, [gameState, players, currentPlayer, selectedPlayers]);
+
+    return centrepiece;
 };
 
 export default Consortium;

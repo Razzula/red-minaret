@@ -107,6 +107,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                             }
                         </div>
                     )}
+                    disabled={gameState.players.length > 5 && minionPool.length <= 0}
                 />
 
                 <IconButton

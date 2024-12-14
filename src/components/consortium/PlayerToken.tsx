@@ -13,6 +13,7 @@ import CheckButton from '../common/CheckButton/CheckButton';
 import statuses, { Status } from '../../data/statuses';
 import { canPlayerActTonight, getWerewolfBluffs } from '../../game/utils';
 import IconButton from '../common/IconButton/IconButton';
+import { PromptOptions } from '../common/Prompt/Prompt';
 
 type PlayerTokenProps = {
     player: Player;
@@ -34,6 +35,8 @@ type PlayerTokenProps = {
     outsiderPool: number[];
     werewolfPool: number[];
     minionPool: number[];
+
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>;
 }
 
 const PlayerToken: React.FC<PlayerTokenProps> = ({
@@ -41,6 +44,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
     settings,
     togglePlayerAlive, handleClick, removePlayer, setCurrentPlayer,
     villagerPool, outsiderPool, werewolfPool, minionPool,
+    showPrompt,
 }) => {
 
     const role = gameState.players[index].role;
@@ -61,9 +65,16 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         ? (role.team === Team.EVIL ? styles.evil : styles.good)
         : null;
 
-    function renamePlayer() {
-        const newName = prompt('Enter new name:', player.realName || player.name);
-        if (newName) {
+    async function renamePlayer() {
+        const newName = await showPrompt({
+            title: 'Enter new name:',
+            type: 'text',
+            confirmText: 'Rename',
+            cancelText: 'Cancel',
+            message: player.realName || player.name,
+        });
+
+        if (newName !== null && typeof newName === 'string') {
             const tempGameState = {...gameState};
             tempGameState.players[index].realName = newName;
             setGameState(tempGameState);
@@ -185,11 +196,14 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
     }
 
     function canPlayerSelectTonight(player: Player) {
-        return (
-            canPlayerActTonight(player, gameState)
-            && player.role?.name !== 'Empath'
-            && player.role?.name !== 'Chef'
-        );
+        if (gameState.time === 0) { // night
+            return (
+                canPlayerActTonight(player, gameState)
+                && player.role?.name !== 'Empath'
+                && player.role?.name !== 'Chef'
+            );
+        }
+        return true;
     }
 
     return (

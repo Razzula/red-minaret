@@ -8,7 +8,6 @@ const howls = sounds.reduce((acc, sound) => {
     });
     return acc;
 }, {} as Record<string, Howl>);
-console.log(howls);
 
 export const playSound = (key: keyof typeof howls) => {
     howls[key]?.play();
