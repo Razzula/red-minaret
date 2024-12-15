@@ -51,37 +51,33 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     const villagerIndicies = players.map((_player, index) => index).filter(index => !evilIndicies.includes(index) && !outsiderIndicies.includes(index));
 
     // assign roles
+    // debugger;
     evilIndicies.forEach(index => {
-        const player = players[index];
-
         if (werewolfIndicies.includes(index)) {
             // WEREWOLF
             const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
-            player.role = roles[role];
+            gameState.players[index].role = roles[role];
             tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
         }
         else {
             // MINION
             const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
-            player.role = roles[role];
+            gameState.players[index].role = roles[role];
             tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
 
             // BARON
-            if (player.role.name === 'Baron') {
+            if (gameState.players[index].role.name === 'Baron') {
                 // transfer two Villagers to the Outsider pool
                 const transferedVillagers = villagerIndicies.splice(0, 2);
                 outsiderIndicies.push(...transferedVillagers);
-                console.log(outsiderIndicies);
             }
         }
     });
 
     outsiderIndicies.forEach(index => {
-        const player = players[index];
-
         // OUTSIDER
         const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
-        player.role = roles[role];
+        gameState.players[index].role = roles[role];
         tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
 
         // DRUNK
@@ -91,14 +87,12 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     });
 
     villagerIndicies.forEach(index => {
-        const player = players[index];
-
         // VILLAGER
         const role = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]
-        player.role = roles[role];
+        gameState.players[index].role = roles[role];
         tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
 
-        if (player.role) {
+        if (gameState.players[index].role) {
             // SEER
             if (roles[role].name === 'Seer') {
                 let redHerringIndex = Math.floor(Math.random() * numPlayers);
@@ -375,7 +369,6 @@ export async function advanceTime(
                     setGameState(tempGameState);
                 }
 
-                console.log(tempGameState.turnOrder, tempGameState.turn);
                 if (tempGameState.turnOrder !== undefined && tempGameState.turn !== undefined) {
                     setCurrentPlayer(tempGameState.turnOrder[tempGameState.turn + 1]);
                     tempGameState.turn += 1;
@@ -440,11 +433,13 @@ export async function advanceTime(
         }
 
         if (log.length > 0) {
-            popupEvent.events = log;
             log.forEach(logEvent => {
                 tempGameState.log.push(logEvent);
+                tempGameState.logBuffer.push(logEvent);
             })
         }
+        popupEvent.events = tempGameState.logBuffer;
+        tempGameState.logBuffer = [];
         if (popupEvent) {
             tempGameState.popupEvent = popupEvent;
         }
@@ -577,16 +572,18 @@ function updateStatuses(statuses: Status[], time: number) {
 }
 
 export function handleAction(
-    playerIndex: number, currentPlayer: number | null,
+    playerIndex: number,
+    currentPlayer: number | null, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>,
     gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>,
     selectedPlayers: number[], setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>,
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
 ) {
     if (currentPlayer === null) {
         return;
     }
 
-    const isPlayerDrunk = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Drunk') ? true : false;
-    const isPlayerPoisoned = gameState.players[currentPlayer].statuses?.find(status => status.name === 'Poisoned') ? true : false;
+    const playerIsDrunk = isPlayerDrunk(gameState.players[currentPlayer]);
+    const playerIsPoisoned = isPlayerPoisoned(gameState.players[currentPlayer]);
 
     const currentRole = gameState.players[currentPlayer].role;
     if (!currentRole) {
@@ -594,12 +591,12 @@ export function handleAction(
     }
     const currentRoleDelay = currentRole.delay || 0;
 
-    const tempGameState = { ...gameState };
+    let tempGameState = { ...gameState };
 
     if (currentRole.name === 'Werewolf' && gameState.day > currentRoleDelay) {
         // WEREWOLF
         const statusToApply = statuses['Targeted'];
-        if (isPlayerPoisoned) {
+        if (playerIsPoisoned) {
             // POISONED
             // note: it is strange that a poisioner would ever target a Werewolf,
             // however, the BotCT rules do not prevent this...
@@ -640,11 +637,11 @@ export function handleAction(
     else if (currentRole.name === 'Doctor') {
         // DOCTOR
         const statusToApply = statuses['Protected'];
-        if (isPlayerDrunk) {
+        if (playerIsDrunk) {
             statusToApply.drunk = true;
             statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Drunk');
         }
-        else if (isPlayerPoisoned) {
+        else if (playerIsPoisoned) {
             statusToApply.poisoned = true;
             statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Doctor');
         }
@@ -677,7 +674,6 @@ export function handleAction(
             }
             newSelectedPlayers.push(playerIndex);
         }
-        // XXX: this does not allow the Seer to select themselves!
         setSelectedPlayers(newSelectedPlayers);
 
         // gamelog
@@ -692,7 +688,7 @@ export function handleAction(
     else if (currentRole.name === 'Butler') {
         // BUTLER
         const statusToApply = statuses['Patron'];
-        if (isPlayerPoisoned) {
+        if (playerIsPoisoned) {
             statusToApply.poisoned = true;
         }
 
@@ -707,6 +703,53 @@ export function handleAction(
             type: 'private',
             message: `${tempGameState.players[currentPlayer].name} chose to serve ${tempGameState.players[playerIndex].name}.`,
         };
+    }
+
+    else if (currentRole.name === 'Gambler') {
+        // GAMBLER
+        showPrompt({
+            type: 'select',
+            title: 'Gambler Ability',
+            message: `What role do you think ${gameState.players[playerIndex].name} is?`,
+            options: [...gameState.players.map(player => player.role?.name).filter(role => role !== undefined), 'Other'],
+        }).then((result) => {
+            if (result !== null) {
+                tempGameState.log.push({
+                    type: 'private',
+                    message: `${gameState.players[currentPlayer].name} gambled that ${gameState.players[playerIndex].name} is a ${result}.`,
+                });
+                // tempGameState.currentEvent = {
+                //     type: 'private',
+                //     message: `${gameState.players[currentPlayer].name} gambled that ${gameState.players[playerIndex].name} is a ${result}.`,
+                // };
+                setSelectedPlayers([playerIndex]);
+
+                if (playerIsDrunk || playerIsPoisoned) {
+                    console.log('gambler was intoxicated');
+                }
+                else {
+                    tempGameState.logBuffer.push({
+                        type: 'private',
+                        message: `${gameState.players[currentPlayer].name} gambled that ${gameState.players[playerIndex].name} is a ${result}.`,
+                    });
+                    if (result !== gameState.players[playerIndex].role?.name) {
+                        // failed gamble
+                        tempGameState = killPlayerByIndex(currentPlayer, tempGameState);
+                        advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt);
+                        tempGameState.log.push({
+                            type: 'severe',
+                            message: `${gameState.players[currentPlayer].name} died!`,
+                            indent: 1,
+                        });
+                        tempGameState.logBuffer.push({
+                            type: 'severe',
+                            message: `${gameState.players[currentPlayer].name} died!`,
+                            indent: 1,
+                        });
+                    }
+                }
+            }
+        });
     }
 
     else {

@@ -152,6 +152,15 @@ export const roles: Role[] = [
         icon: 'roles/Golden Key',
     },
 
+    {
+        name: 'Gambler',
+        description: 'Each night*, choose a player & guess their role: if you guess wrong, you die.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Copper Coin',
+        night: "Guess a player's role.",
+        delay: 1,
+    },
+
     // OUTSIDERS
     {
         name: 'Butler',
@@ -210,7 +219,7 @@ export const roles: Role[] = [
         name: 'Baron',
         description: 'There are extra (+2) Outsiders in play.',
         team: Team.EVIL, type: PlayerType.MINION,
-        icon: 'roles/Silver Key',
+        icon: 'roles/Iron Key',
 
         prereqRoles: [
             { key: 'type', value: PlayerType.OUTSIDER, count: 3 },

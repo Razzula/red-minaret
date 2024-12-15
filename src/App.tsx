@@ -51,6 +51,7 @@ export type GameState = {
 
     /* extras */
     log: LogEvent[];
+    logBuffer: LogEvent[];
     currentEvent?: LogEvent;
     popupEvent?: PopupEvent;
     bluffs?: Role[];
@@ -114,7 +115,7 @@ function defaultGameState(playerCount: number = 5): GameState  {
             })),
         nominations: [],
         nominators: [],
-        log: [],
+        log: [], logBuffer: [],
         lastNight: {},
     };
 }
@@ -474,7 +475,7 @@ function App() {
     }
 
     function handleActionCall(index: number) {
-        handleAction(index, currentPlayer, gameState, setGameState, selectedPlayers, setSelectedPlayers);
+        handleAction(index, currentPlayer, setCurrentPlayer, gameState, setGameState, selectedPlayers, setSelectedPlayers, showPrompt);
     }
 
     function handleSpecialAction(specialState: string) {

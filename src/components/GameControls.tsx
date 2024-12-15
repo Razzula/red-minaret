@@ -3,6 +3,8 @@ import { GameState } from '../App';
 import { PlayerType, PlayState } from '../enums';
 import { assignRoles } from '../game/core';
 import IconButton from './common/IconButton/IconButton';
+import { isPlayerDrunk } from '../game/utils';
+import roles from '../data/roles';
 
 type GameControlsProps = {
     gameState: GameState;
@@ -36,7 +38,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
 
         const rolePreReqs = gameState.players.every((player) =>
             player.role?.prereqRoles === undefined || player.role.prereqRoles.every((prereq) => {
-                const poolToSearch = gameState.players.map(p => p.role);
+                const poolToSearch = gameState.players.map(p => isPlayerDrunk(p) ? roles.find(r => r.name === 'Drunk') : p.role);
                 const valid = poolToSearch.filter(role => role?.[prereq.key] === prereq.value).length >= prereq.count;
                 if (!valid) {
                     blockers.push(`${player.role?.name} needs >=${prereq.count} ${prereq.value}`);

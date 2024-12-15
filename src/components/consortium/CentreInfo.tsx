@@ -82,7 +82,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         else if (player.role?.name === 'Ravenkeeper') {
             playerResult = selectedPlayers.length > 0 ? (
                 players[selectedPlayers[0]].role?.name ?? 'Select Player'
-            ) : '';
+            ) : 'Select Player';
             setPlayerResult(playerResult);
         }
         // UNDERTAKER
