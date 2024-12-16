@@ -176,6 +176,14 @@ export const roles: Role[] = [
         icon: 'roles/Paper',
         abilityUses: 1,
     },
+    {
+        name: 'Nain', altName: 'Grandmother',
+        description: "Start knowing a Good player's role. If the Werewolf kills them: you die.",
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Wooden Staff',
+        night: "Learn the Grandchild's identity and role.",
+        abilityUses: 1,
+    },
 
     // OUTSIDERS
     {

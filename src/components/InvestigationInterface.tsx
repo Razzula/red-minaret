@@ -8,6 +8,7 @@ import GridList from './common/GridList/GridList';
 import { PlayerType, PlayerTypeType } from '../enums';
 import IconButton from './common/IconButton/IconButton';
 import { isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from '../game/utils';
+import { canNainSelectPlayer, isPlayerGrandchild } from '../game/Nain';
 
 interface InvestigationProps {
     title?: string;
@@ -69,7 +70,7 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     }, [relaventRole, players]);
 
     useEffect(() => {
-        const mandatoryPlayer = players.find((p) => p.role?.name === selectedRole);
+        const mandatoryPlayer = getMandatoryPlayer();
         if (mandatoryPlayer && investigator) {
             if (isPlayerIntoxicated(investigator)) {
                 setSelectedPlayers(prev => prev.filter((p) => p !== mandatoryPlayer.name));
@@ -87,6 +88,17 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
             setSelectedRole(roles[0].name);
         }
     }, [roles]);
+
+    function getMandatoryPlayer() {
+        // NAIN
+        if (relaventRole?.name === 'Nain') {
+            if (isInvestigatorIntoxicated) {
+                return players.find((p) => isPlayerGrandchild(p));
+            }
+        }
+
+        return players.find((p) => p.role?.name === selectedRole);
+    }
 
     function selectRole(role: string) {
         if (roles.length === 1) {
@@ -134,12 +146,14 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
         }
     }
 
-    function investigate() {
-        if (selectedRole && selectedPlayers.length === 2) {
+    function investigate(playersToSelect: number) {
+        if (selectedRole && selectedPlayers.length === playersToSelect) {
             onInvestigate(selectedRole, selectedPlayers, count);
             setGameState((prev) => ({ ...prev, popupEvent: undefined }));
         }
     }
+
+    const playersToSelect = relaventRole?.name === 'Nain' ? 1 : 2;
 
     return (
         <div className='dialogue-content'
@@ -167,22 +181,28 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                     {/* ROLES */}
                     <GridList columns={3}>
                         {
-                            roles.map((role, index) => (
-                                <Tooltip key={index} placement='top'>
-                                    <TooltipTrigger>
-                                        <CheckButton
-                                            key={index}
-                                            image={`/red-minaret/icons/${role.icon}.png`} altText={role.name}
-                                            isChecked={selectedRole === role.name}
-                                            onChange={() => selectRole(role.name)}
-                                        />
-                                    </TooltipTrigger>
-                                    <TooltipContent>{role.name}</TooltipContent>
-                                </Tooltip>
-                            ))
+                            roles.map((role, index) => {
+                                const player = players.find((p) => p.role?.name === role.name);
+                                return (
+                                    <Tooltip key={index} placement='top'>
+                                        <TooltipTrigger>
+                                            <CheckButton
+                                                key={index}
+                                                image={`/red-minaret/icons/${role.icon}.png`} altText={role.name}
+                                                isChecked={selectedRole === role.name}
+                                                onChange={() => selectRole(role.name)}
+                                                disabled={
+                                                    relaventRole?.name === 'Nain' && !canNainSelectPlayer(player, isInvestigatorIntoxicated)
+                                                }
+                                            />
+                                        </TooltipTrigger>
+                                        <TooltipContent>{role.name}</TooltipContent>
+                                    </Tooltip>
+                                );
+                            })
                         }
 
-                        { roles.length > 1 &&
+                        { roles.length > 1 && !(relaventRole?.name === 'Nain' && !isInvestigatorIntoxicated) &&
                             <IconButton
                                 icon={<i className='ra ra-perspective-dice-one' />}
                                 onClick={() => setSelectedRole(getRandomElement(roles).name)}
@@ -202,8 +222,7 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                     <GridList columns={3}>
                         {
                             players.map((player, index) => {
-                                // const
-                                const mandatoryPlayer = players.find((p) => p.role?.name === selectedRole);
+                                const isMandatoryPlayer = getMandatoryPlayer()?.name === player.name;
                                 return (
                                     <Tooltip key={index} placement='top'>
                                         <TooltipTrigger>
@@ -215,7 +234,13 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                                                 styles={{
                                                     width: '50px',
                                                 }}
-                                                disabled={isInvestigatorIntoxicated && player.name === mandatoryPlayer?.name}
+                                                disabled={
+                                                    relaventRole?.name === 'Nain' ? (
+                                                        !canNainSelectPlayer(player, isInvestigatorIntoxicated)
+                                                    ) : (
+                                                        isInvestigatorIntoxicated && isMandatoryPlayer
+                                                    )
+                                                }
                                             />
                                         </TooltipTrigger>
                                         <TooltipContent>{player.name}</TooltipContent>
@@ -224,11 +249,13 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                             })
                         }
 
-                        <IconButton
-                            icon={<i className='ra ra-perspective-dice-one' />}
-                            onClick={() => shufflePlayerSelection()}
-                            label='Random'
-                        />
+                        { !(relaventRole?.name === 'Nain' && !isInvestigatorIntoxicated) &&
+                            <IconButton
+                                icon={<i className='ra ra-perspective-dice-one' />}
+                                onClick={() => shufflePlayerSelection()}
+                                label='Random'
+                            />
+                        }
                     </GridList>
                 </div>
 
@@ -255,8 +282,8 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
 
                 <IconButton
                     icon={<i className='ra ra-hourglass' />}
-                    onClick={() => investigate()}
-                    disabled={!selectedRole || selectedPlayers.length !== 2}
+                    onClick={() => investigate(playersToSelect)}
+                    disabled={!selectedRole || selectedPlayers.length !== playersToSelect}
                     label='Done'
                 />
 

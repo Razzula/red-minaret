@@ -57,7 +57,11 @@
 - Artist
   - [x] Functionality (Storyteller-only)
   - [x] Drunk / Poisoned (Storyteller-only)
-  - [ ] Log messages
+  - [x] Log messages
+- Nain
+  - [x] Functionality
+  - [x] Drunk / Poisoned
+  - [x] Log messages
 
 ### Outsiders
 

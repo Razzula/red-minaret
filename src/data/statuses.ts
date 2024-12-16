@@ -56,6 +56,11 @@ export const statuses: { [key: string]: Status } = {
             "A Poisoned player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
         ],
     },
+    'Grandchild': {
+        name: 'Grandchild',
+        description: "This player is the Nain's grandchild.",
+        icon: 'roles/Wooden Staff',
+    },
 }
 
 export default statuses;

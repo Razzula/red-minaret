@@ -5,7 +5,8 @@ import 'rpg-awesome/css/rpg-awesome.min.css';
 
 import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
-import { advanceTime, handleAction, handleHunterAbility, togglePlayerAlive } from './game/core'
+import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
+import { handleHunterAbility } from './game/Hunter'
 import { canPlayerActTonight, findPlayersNeighbours } from './game/utils'
 
 import roles, { Role } from './data/roles'
@@ -184,11 +185,12 @@ function App() {
                     return tempGameState;
                 });
             }
-            // WASHERWOMAN, LIBRARIAN, INVESTIGATOR
+            // WASHERWOMAN, LIBRARIAN, INVESTIGATOR, NAIN
             else if (
                 player.role?.name === 'Washerwoman'
                 || player.role?.name === 'Librarian'
                 || player.role?.name === 'Investigator'
+                || player.role?.name === 'Nain'
             ) {
                 if (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses) {
                     setGameState((prev) => ({

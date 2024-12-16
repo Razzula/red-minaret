@@ -14,7 +14,7 @@ import statuses, { Status } from '../../data/statuses';
 import { canPlayerActTonight, getWerewolfBluffs } from '../../game/utils';
 import IconButton from '../common/IconButton/IconButton';
 import { PromptOptions } from '../common/Prompt/Prompt';
-import { handleArtistAbility } from '../../game/core';
+import { handleArtistAbility } from '../../game/Artist';
 
 type PlayerTokenProps = {
     player: Player;
