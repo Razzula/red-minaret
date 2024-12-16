@@ -24,6 +24,8 @@ export type Role  = {
         value: PlayerTypeType | TeamType;
         count: number;
     }[];
+
+    notes?: string[];
 }
 
 export type RoleOrder = {
@@ -46,7 +48,7 @@ export const roles: Role[] = [
         abilityUses: 1,
 
         prereqRoles: [
-            { key: 'type', value: PlayerType.VILLAGER, count: 1 },
+            { key: 'type', value: PlayerType.VILLAGER, count: 2 },
         ],
     },
     {
@@ -94,10 +96,10 @@ export const roles: Role[] = [
     },
     {
         name: 'Seer', altName: 'Fortune Teller',
-        description: 'Each night, choose 2 players: you learn if either is a Werewolf. There is a good player that registers as a Werewolf to you.',
+        description: 'Each night, choose two players: you learn if either is a Werewolf. There is a Good player that registers as a Werewolf to you.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Seer Eye',
-        night: 'Choose 2 players to investigate.',
+        night: 'Choose two players to investigate.',
         // note: ONE GOOD player must be set as a Red Herring
     },
     {
@@ -147,7 +149,7 @@ export const roles: Role[] = [
     },
     {
         name: 'Mayor',
-        description: 'If only 3 players live & no execution occurs, your team wins. If you die at night, another player might die instead.',
+        description: 'If only three players live, and no execution occurs: your team wins. If you die at night, another player might die instead.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Golden Key',
     },
@@ -168,6 +170,10 @@ export const roles: Role[] = [
         team: Team.GOOD, type: PlayerType.OUTSIDER,
         icon: 'roles/Envelope', // Yes it's spelt wrong
         night: 'Select a patron.',
+
+        notes:  [
+            'As a Butler can never 100% confirm they are Posioned, they should never be allowed to ignore their patron.',
+        ],
     },
     {
         name: 'Drunk',

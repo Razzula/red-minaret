@@ -111,7 +111,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
         // game log
         const event: LogEvent = {
             type: 'private',
-            message: `${currentPlayer ? gameState.players[currentPlayer].name : '...'} learnt that ${count} of ${selectedPlayers.join(' and ')} is the ${selectedRole}.`,
+            message: `${(currentPlayer !== null) ? gameState.players[currentPlayer].name : '...'} learnt that ${count} of ${selectedPlayers.join(' and ')} is the ${selectedRole}.`,
         };
         const tempGameState = {
             ...gameState,

@@ -114,14 +114,14 @@ export function isPlayerEvil(player: Player, includeRedHerring: boolean = false)
 
         if (player.role.team === Team.EVIL) {
             // SPY
-            if (player.role?.name === 'Spy') {
+            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse') {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
             return Result.STORYTELLER;
         }
 
@@ -139,7 +139,7 @@ export function isPlayerWerewolf(player: Player): Result {
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse') {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
             return Result.STORYTELLER;
         }
 
@@ -154,14 +154,14 @@ export function isPlayerMinion(player: Player): Result {
     if (player.role) {
         if (player.role.type === PlayerType.MINION) {
             // SPY
-            if (player.role?.name === 'Spy') {
+            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse') {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
             return Result.STORYTELLER;
         }
 
@@ -179,7 +179,7 @@ export function isPlayerVillager(player: Player): Result {
         }
 
         // SPY
-        if (player.role?.name === 'Spy') {
+        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
             return Result.STORYTELLER;
         }
 
@@ -194,14 +194,14 @@ export function isPlayerOutsider(player: Player): Result {
     if (player.role) {
         if (player.role.type === PlayerType.OUTSIDER) {
             // RECLUSE
-            if (player.role?.name === 'Recluse') {
+            if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // SPY
-        if (player.role?.name === 'Spy') {
+        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
             return Result.STORYTELLER;
         }
 
@@ -250,6 +250,9 @@ export function isPlayerPoisoned(player: Player): boolean {
     return player.statuses.find(status => status.name === 'Poisoned') !== undefined;
 }
 
-export function isPlayerIntoxicated(player: Player): boolean {
+export function isPlayerIntoxicated(player: Player | undefined): boolean {
+    if (player === undefined) {
+        return false;
+    }
     return isPlayerDrunk(player) || isPlayerPoisoned(player);
 }

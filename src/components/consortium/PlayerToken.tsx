@@ -150,7 +150,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
     function assignStatusToPlayer(status: Status) {
         const tempGameState = {...gameState};
         const playerStatuses = tempGameState.players[index].statuses || [];
-        playerStatuses.push(status);
+        playerStatuses.push({...status});
         tempGameState.players[index].statuses = playerStatuses;
         setGameState(tempGameState);
     }

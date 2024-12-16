@@ -19,8 +19,14 @@ export function usePrompt() {
 
     const showPrompt = (opts: PromptOptions): Promise<string | boolean | null> => {
         setOptions(opts);
-        setInputValue('');
         setIsOpen(true);
+
+        if (opts.type === 'select') {
+            setInputValue(opts.options?.[0] ?? '');
+        }
+        else {
+            setInputValue('');
+        }
 
         return new Promise((resolve) => {
             setResolver(() => resolve);

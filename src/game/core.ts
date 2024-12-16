@@ -243,81 +243,84 @@ async function handleNightKill(
 
     if (player.alive) {
         if (!playerProtected) {
-            if ( player.role?.name !== 'Soldier'
-                || isPlayerIntoxicated(player)
-            ) {
 
-                // WEREWOLF (IMP)
-                if (player.role?.name === 'Werewolf') {
-                    // a self-kill for a Werewolf, converts their Minion to the Werewolf
-                    const minions = tempGameState.players.filter(player => player.role?.type === PlayerType.MINION && player.alive);
-                    if (minions) {
-                        const minion = minions.sort(() => Math.random() - 0.5).pop();
-                        if (minion) {
-                            const werewolfRole = roles.find(role => role.name === 'Werewolf');
-                            const minionIndex = tempGameState.players.findIndex(player => player.name === minion.name);
-                            if (minion.role) {
-                                tempGameState.players[minionIndex].oldRoles.push(minion.role);
-                            }
-                            tempGameState.players[minionIndex].role = werewolfRole;
-
-                            log.push({
-                                type: 'alert',
-                                message: `${minion.name} is now the Werewolf!`,
-                            });
-                        }
-                    }
+            // SOLDIER
+            if (player.role?.name === 'Soldier') {
+                if (isPlayerIntoxicated(player)) {
+                    temp = 'soldier-null';
                 }
+                else {
+                    return [tempGameState, false, 'soldier'];
+                }
+            }
 
-                // MAYOR
-                else if (player.role?.name === 'Mayor') {
-                    if (!isPlayerDrunk(player) || !isPlayerPoisoned(player)) {
-                        const storytellerChoice = await showPrompt({
-                            type: 'select',
-                            title: 'Mayor Ability',
-                            message: 'The Mayor has been killed. You can choose to let them die, or to kill another player instead.',
-                            extras: ['You should choose what would be most interesting for the story.'],
-                            cancelText: 'Kill Mayor',
-                            confirmText: 'Kill Another Player',
-                            options: tempGameState.players.filter(player => player.alive).map(player => player.name),
-                        });
-
-                        if (storytellerChoice !== null && storytellerChoice !== player.name) {
-                            // protect Mayor
-                            log.push({
-                                type: 'alert',
-                                message: `Mayor ability protected ${player.name}.`,
-                            });
-
-                            const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
-                            return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+            // WEREWOLF (IMP)
+            if (player.role?.name === 'Werewolf') {
+                // a self-kill for a Werewolf, converts their Minion to the Werewolf
+                const minions = tempGameState.players.filter(player => player.role?.type === PlayerType.MINION && player.alive);
+                if (minions) {
+                    const minion = minions.sort(() => Math.random() - 0.5).pop();
+                    if (minion) {
+                        const werewolfRole = roles.find(role => role.name === 'Werewolf');
+                        const minionIndex = tempGameState.players.findIndex(player => player.name === minion.name);
+                        if (minion.role) {
+                            tempGameState.players[minionIndex].oldRoles.push(minion.role);
                         }
+                        tempGameState.players[minionIndex].role = werewolfRole;
 
                         log.push({
                             type: 'alert',
-                            message: `Mayor ability did not protect ${player.name}.`,
-                        });
-                    }
-                    else {
-                        log.push({
-                            type: 'alert',
-                            message: `Mayor ability failed to protect ${player.name}.`,
-                            extra: 'The Mayor was intoxicated.',
+                            message: `${minion.name} is now the Werewolf!`,
                         });
                     }
                 }
+            }
 
-                murder = true;
-                tempGameState = killPlayerByIndex(playerIndex, tempGameState);
-                // gamelog
-                log.push({
-                    type: 'severe',
-                    message: `${player.name} was murdered in the night!`,
-                });
+            // MAYOR
+            else if (player.role?.name === 'Mayor') {
+                if (!isPlayerIntoxicated(player)) {
+                    const storytellerChoice = await showPrompt({
+                        type: 'select',
+                        title: 'Mayor Ability',
+                        message: 'The Mayor has been killed. You can choose to let them die, or to kill another player instead.',
+                        extras: ['You should choose what would be most interesting for the story.'],
+                        cancelText: 'Kill Mayor',
+                        confirmText: 'Kill Another Player',
+                        options: tempGameState.players.filter(player => player.alive).map(player => player.name),
+                    });
+
+                    if (storytellerChoice !== null && storytellerChoice !== player.name) {
+                        // protect Mayor
+                        log.push({
+                            type: 'alert',
+                            message: `Mayor ability protected ${player.name}.`,
+                        });
+
+                        const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
+                        return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+                    }
+
+                    log.push({
+                        type: 'alert',
+                        message: `Mayor ability did not protect ${player.name}.`,
+                    });
+                }
+                else {
+                    log.push({
+                        type: 'alert',
+                        message: `Mayor ability failed to protect ${player.name}.`,
+                        extra: 'The Mayor was intoxicated.',
+                    });
+                }
             }
-            else {
-                temp = 'soldier';
-            }
+
+            murder = true;
+            tempGameState = killPlayerByIndex(playerIndex, tempGameState);
+            // gamelog
+            log.push({
+                type: 'severe',
+                message: `${player.name} was murdered in the night!`,
+            });
         }
         else {
             temp = 'protected';
@@ -418,6 +421,8 @@ export async function advanceTime(
                     switch (temp) {
                         case 'soldier':
                             return 'The Soldier is immune to Werewolf kills.';
+                        case 'soldier-null':
+                            return "The Soldier's ability was nullified.";
                         case 'protected':
                             return "The Doctor protected the Werewolf's target";
                         case 'dead':
@@ -732,20 +737,22 @@ export function handleAction(
                         type: 'private',
                         message: `${gameState.players[currentPlayer].name} gambled that ${gameState.players[playerIndex].name} is a ${result}.`,
                     });
-                    if (result !== gameState.players[playerIndex].role?.name) {
-                        // failed gamble
-                        tempGameState = killPlayerByIndex(currentPlayer, tempGameState);
+                    if (result !== null) {
+                        if (result !== gameState.players[playerIndex].role?.name) {
+                            // failed gamble
+                            tempGameState = killPlayerByIndex(currentPlayer, tempGameState);
+                            tempGameState.log.push({
+                                type: 'severe',
+                                message: `${gameState.players[currentPlayer].name} died!`,
+                                indent: 1,
+                            });
+                            tempGameState.logBuffer.push({
+                                type: 'severe',
+                                message: `${gameState.players[currentPlayer].name} died!`,
+                                indent: 1,
+                            });
+                        }
                         advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt);
-                        tempGameState.log.push({
-                            type: 'severe',
-                            message: `${gameState.players[currentPlayer].name} died!`,
-                            indent: 1,
-                        });
-                        tempGameState.logBuffer.push({
-                            type: 'severe',
-                            message: `${gameState.players[currentPlayer].name} died!`,
-                            indent: 1,
-                        });
                     }
                 }
             }
@@ -902,8 +909,13 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState) {
                 }
                 const werewolfRole = roles.find(role => role.name === tempGameState.players[playerIndex].role?.name);
                 if (werewolfRole !== undefined) {
-                    // Scarlet Woman becomes the Werewolf
-                    tempGameState.players[scarletWomanIndex].role = werewolfRole;
+                    if (isPlayerIntoxicated(tempGameState.players[scarletWomanIndex])) {
+                        console.log('Scarlet Woman is intoxicated'); // this is currently impossible with the current roster
+                    }
+                    else {
+                        // Scarlet Woman becomes the Werewolf
+                        tempGameState.players[scarletWomanIndex].role = werewolfRole;
+                    }
                 }
 
                 tempGameState.log.push({

@@ -6,6 +6,8 @@ export type Status = {
     drunk?: boolean;
     poisoned?: boolean;
     altDescription?: string;
+
+    notes?: string[];
 }
 
 export const statuses: { [key: string]: Status } = {
@@ -13,6 +15,10 @@ export const statuses: { [key: string]: Status } = {
         name: 'Drunk',
         description: 'This player does not know, but they are the Drunk. They think they are a Villager, but are not. None of their abilities work.',
         icon: 'statuses/Beer',
+
+        notes: [
+            "A Drunk player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
+        ],
     },
     'Red Herring': {
         name: 'Red Herring',
@@ -45,6 +51,10 @@ export const statuses: { [key: string]: Status } = {
         description: "This player's ability is nullified for the day.",
         expiration: 0, // expires at night
         icon: 'roles/Green Potion 2',
+
+        notes: [
+            "A Poisoned player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
+        ],
     },
 }
 

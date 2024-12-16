@@ -32,6 +32,7 @@ export type GameState = {
     state: PlayStateType;
     turn?: number;
     turnOrder?: number[];
+    advancementBlocked?: string;
 
     /* special state used to handle certain game cases */
     special?: {
@@ -245,6 +246,18 @@ function App() {
             gameOver('Villagers');
         }
     }, [gameState.state]);
+
+    useEffect(() => {
+        if (currentPlayer) {
+            const role = gameState.players[currentPlayer].role;
+            if (role?.name === 'Seer') {
+                setGameState((prev) => ({
+                    ...prev,
+                    advancementBlocked: selectedPlayers.length < 2 ? 'Seer must select two players!' : undefined,
+                }));
+            }
+        }
+    }, [currentPlayer, selectedPlayers, gameState.players]);
 
     function gameOver(winner: string) {
         const log: LogEvent[] = [

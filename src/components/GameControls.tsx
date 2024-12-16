@@ -102,6 +102,12 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                     label={(
                         <div>
                             Assign Roles
+                            { werewolfPool.length <= 0 &&
+                                <div className='error'>
+                                    <hr />
+                                    You require a <strong className='evil'>Werewolf</strong>, but none are available.
+                                </div>
+                            }
                             { gameState.players.length > 5 && minionPool.length <= 0 &&
                                 <div className='error'>
                                     <hr />
@@ -110,7 +116,10 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                             }
                         </div>
                     )}
-                    disabled={gameState.players.length > 5 && minionPool.length <= 0}
+                    disabled={
+                        (gameState.players.length > 5 && minionPool.length <= 0)
+                        || werewolfPool.length <= 0
+                    }
                 />
 
                 <IconButton
@@ -148,8 +157,18 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
             <IconButton
                 icon={<i className='ra ra-hourglass' />}
                 onClick={advanceTime}
-                disabled={gameState.state !== PlayState.PLAYING}
-                label='Continue'
+                disabled={gameState.advancementBlocked !== undefined || gameState.state !== PlayState.PLAYING}
+                label={(
+                    <div>
+                        Continue
+                        { gameState.advancementBlocked &&
+                            <div className='error'>
+                                <hr />
+                                {gameState.advancementBlocked}
+                            </div>
+                        }
+                    </div>
+                )}
             />
         );
     }

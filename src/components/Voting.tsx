@@ -9,7 +9,7 @@ import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 
 import styles from './consortium/Consortium.module.scss';
-import { isPlayerVillager, Result } from '../game/utils';
+import { isPlayerIntoxicated, isPlayerPoisoned, isPlayerVillager, Result } from '../game/utils';
 
 type VotingProps = {
     gameState: GameState;
@@ -38,8 +38,8 @@ export function Voting({
 
             // VIRGIN
             const nominated = gameState.players.find(player => player.name === nominatedPlayer);
-            const isDrunk = nominated?.statuses.find(status => status.name === 'Drunk');
-            if (!isDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
+            const isNominatedDrunk = isPlayerIntoxicated(nominated);
+            if (!isNominatedDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
                 if (nominated.role.abilityUses != undefined && nominated.abilityUses < nominated.role.abilityUses) {
                     const nominator = gameState.players.find(player => player.name === nominatingPlayer);
                     const tempGameState = { ...gameState };
@@ -96,7 +96,7 @@ export function Voting({
     const castVotes = Object.values(votes).reduce((count, value) => (value ? count + 1 : count), 0);
     const voteThreshold = Math.ceil(totalVotes / 2);
 
-    const butler = gameState.players.find(player => player.role?.name === 'Butler')?.name;
+    const butler = gameState.players.find(player => player.alive && player.role?.name === 'Butler');
     const patron = gameState.players.find(player => {
         const patronStatus = player.statuses.find(status => status.name === 'Patron');
         return patronStatus !== undefined && !patronStatus.poisoned;
@@ -130,7 +130,7 @@ export function Voting({
 
         //  BUTLER
         if (butler && playerName === patron) {
-            tempVotes[butler] = false;
+            tempVotes[butler?.name] = false;
         }
 
         setVotes(tempVotes);
@@ -253,7 +253,8 @@ export function Voting({
                             Object.entries(votes).map(([playerName, vote]) => {
 
                                 const butlerCannotVote = (
-                                    playerName === butler // BUTLER
+                                    playerName === butler?.name // BUTLER
+                                    && !isPlayerPoisoned(butler)
                                     && (patron !== undefined ? !votes[patron] : true)
                                 );
 
