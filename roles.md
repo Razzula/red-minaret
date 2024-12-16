@@ -50,6 +50,10 @@
   - [x] Functionality
   - [x] Drunk / Poisoned
   - [x] Log messages
+- Fool
+  - [x] Functionality
+  - [x] Drunk / Poisoned
+  - [ ] Log messages
 
 ### Outsiders
 

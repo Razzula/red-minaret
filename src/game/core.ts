@@ -893,7 +893,34 @@ export function killPlayer(playerName: string, gameState: GameState) {
 }
 
 export function killPlayerByIndex(playerIndex: number, gameState: GameState) {
+
     const tempGameState = { ...gameState };
+
+    // FOOL
+    if (tempGameState.players[playerIndex].role?.name === 'Fool') {
+        const fool = tempGameState.players[playerIndex];
+        if (fool.abilityUses < (fool.role?.abilityUses ?? 0)) {
+            tempGameState.players[playerIndex].abilityUses += 1; // ability will be used
+            if (!isPlayerIntoxicated(fool)) {
+                // cheat death
+                tempGameState.log.push({
+                    type: 'alert',
+                    message: `${fool.name} cheated death!`,
+                    extra: 'They are the Fool.',
+                });
+                return tempGameState;
+            }
+            else {
+                tempGameState.log.push({
+                    type: 'alert',
+                    message: 'The Fool ability failed to activate.',
+                    extra: 'They were intoxicated.',
+                });
+            }
+        }
+    }
+
+    // kill!
     tempGameState.players[playerIndex].alive = false;
 
     // SCARLET WOMAN
@@ -925,6 +952,7 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState) {
             }
         }
     }
+
 
     return tempGameState;
 }

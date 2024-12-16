@@ -162,6 +162,13 @@ export const roles: Role[] = [
         night: "Guess a player's role.",
         delay: 1,
     },
+    {
+        name: 'Fool',
+        description: "The first time this player dies, they don't!",
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Coal',
+        abilityUses: 1,
+    },
 
     // OUTSIDERS
     {
