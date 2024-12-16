@@ -169,6 +169,13 @@ export const roles: Role[] = [
         icon: 'roles/Coal',
         abilityUses: 1,
     },
+    {
+        name: 'Artist',
+        description: 'Once per game, during the day, privately ask the Storyteller a yes/no question, which they must answer truthfully.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Paper',
+        abilityUses: 1,
+    },
 
     // OUTSIDERS
     {

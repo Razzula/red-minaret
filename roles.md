@@ -54,6 +54,10 @@
   - [x] Functionality
   - [x] Drunk / Poisoned
   - [ ] Log messages
+- Artist
+  - [x] Functionality (Storyteller-only)
+  - [x] Drunk / Poisoned (Storyteller-only)
+  - [ ] Log messages
 
 ### Outsiders
 

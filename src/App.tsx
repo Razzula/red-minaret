@@ -495,6 +495,11 @@ function App() {
         switch (specialState) {
             case 'Hunter':
                 handleHunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers, showPrompt);
+                break;
+            case 'Artist':
+                break;
+            default:
+                break;
         }
     }
 

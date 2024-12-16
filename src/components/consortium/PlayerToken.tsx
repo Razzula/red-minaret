@@ -14,6 +14,7 @@ import statuses, { Status } from '../../data/statuses';
 import { canPlayerActTonight, getWerewolfBluffs } from '../../game/utils';
 import IconButton from '../common/IconButton/IconButton';
 import { PromptOptions } from '../common/Prompt/Prompt';
+import { handleArtistAbility } from '../../game/core';
 
 type PlayerTokenProps = {
     player: Player;
@@ -338,6 +339,14 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                         onClick={() => enterSpecialState('Hunter')}
                                         disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
                                         label='Shoot'
+                                    />
+                                }
+                                { gameState.state !== PlayState.SETUP && gameState.time !== 0 && player.role?.name === 'Artist' &&
+                                    <IconButton
+                                        icon={<img src={`/red-minaret/icons/${player.role.icon}.png`} alt='Hunter Ability' />}
+                                        onClick={() => handleArtistAbility(gameState, setGameState, showPrompt)}
+                                        disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
+                                        label='Question the Storyteller'
                                     />
                                 }
                             </div>
