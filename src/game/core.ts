@@ -242,12 +242,14 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
     setGameState(tempGameState);
 }
 
-async function handleNightKill(
-    playerIndex: number, player: Player, tempGameState: GameState, log: LogEvent[],
+export async function handleNightKill(
+    playerIndex: number, tempGameState: GameState, log: LogEvent[],
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
 ): Promise<[GameState, boolean, string]> {
     let murder = false;
     let temp  = '';
+
+    const player = tempGameState.players[playerIndex];
 
     const hasProtectedStatus = player.statuses?.find(status => status.name === 'Protected');
     const playerProtected = hasProtectedStatus !== undefined && !hasProtectedStatus.drunk && !hasProtectedStatus.poisoned;
@@ -308,7 +310,7 @@ async function handleNightKill(
                         });
 
                         const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
-                        return handleNightKill(mayorChoice, tempGameState.players[mayorChoice], tempGameState, log, showPrompt);
+                        return handleNightKill(mayorChoice, tempGameState, log, showPrompt);
                     }
 
                     log.push({
@@ -367,7 +369,7 @@ export async function advanceTime(
     currentPlayer: number | null, setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>,
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
 ) {
-    let tempGameState = { ...gameState };
+    let tempGameState: GameState | null = { ...gameState };
     let { day, time } = tempGameState;
 
     if (time === 0) {
@@ -421,154 +423,14 @@ export async function advanceTime(
     time++;
     // MORNING
     if (time === 1) {
-        // HANDLE MURDER
-        let murder = false;
-        let temp = '';
-
-        const popupEvent: PopupEvent = { message: 'It is a new day!' };
-        const log: LogEvent[] = [];
-
-        for (const [index, player] of tempGameState.players.entries()) {
-            const hasTargetedStatus = player.statuses?.find(status => status.name === 'Targeted');
-            const playerTargeted = hasTargetedStatus !== undefined && !hasTargetedStatus.drunk && !hasTargetedStatus.poisoned;
-
-            if (playerTargeted) {
-                [tempGameState, murder, temp] = await handleNightKill(
-                    index, player, tempGameState, log, showPrompt
-                );
-            }
-        }
-
-        if (!murder) {
-            // alert
-            popupEvent.heading = 'Day drops, day rises. Dusk is sweet, the sunrise sweeter.';
-            // gamelog
-            log.push({
-                type: 'public',
-                message: 'Nobody was murdered in the night...',
-                extra: (() => {
-                    switch (temp) {
-                        case 'soldier':
-                            return 'The Soldier is immune to Werewolf kills.';
-                        case 'soldier-null':
-                            return "The Soldier's ability was nullified.";
-                        case 'protected':
-                            return "The Doctor protected the Werewolf's target";
-                        case 'dead':
-                            return "An already-dead player was targeted...";
-                        default:
-                            return undefined;
-                    }
-                })()
-            });
-        }
-        else {
-            popupEvent.heading = 'A red sun rises, blood has been spilled this night...';
-        }
-
-        if (log.length > 0) {
-            log.forEach(logEvent => {
-                tempGameState.log.push(logEvent);
-                tempGameState.logBuffer.push(logEvent);
-            })
-        }
-        popupEvent.events = tempGameState.logBuffer;
-        tempGameState.logBuffer = [];
-        if (popupEvent) {
-            tempGameState.popupEvent = popupEvent;
-        }
+        handleDawn(tempGameState, showPrompt);
     }
     // NEW DAY
     else if (time > 2) {
-
-        // handle lynch
-        if (gameState.choppingBlock) {
-            const lynchedIndex = tempGameState.players.findIndex(player => player.name === gameState.choppingBlock?.playerName);
-
-            const popupEvent: PopupEvent = {}
-            const log: LogEvent[] = [];
-
-            tempGameState = killPlayerByIndex(lynchedIndex, tempGameState);
-            tempGameState.lastNight.lynched = lynchedIndex;
-            tempGameState.choppingBlock = undefined;
-
-            log.push({
-                type: 'severe',
-                message: `${tempGameState.players[lynchedIndex].name} was lynched!`,
-            });
-
-            // SAINT
-            if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-                if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Poisoned') === undefined) {
-                    // game log
-                    tempGameState.log = log;
-                    // alert
-                    popupEvent.heading = 'The Saint has been lynched!';
-                    popupEvent.events = log;
-                    tempGameState.popupEvent = popupEvent;
-                    tempGameState.state = PlayState.DEFEAT;
-                    setGameState({ ...tempGameState });
-                    return;
-                }
-                else {
-                    // game log
-                    log.push({
-                        type: 'private',
-                        message: 'The game continues...',
-                        indent: 1,
-                        extra: `${tempGameState.players[lynchedIndex].name} was the Saint, however, they were poisoned.`,
-                    });
-                    // alert
-                    popupEvent.heading = 'The Saint has been lynched!';
-                    tempGameState.popupEvent = popupEvent;
-                }
-            }
-            popupEvent.events = log;
-            tempGameState.popupEvent = popupEvent;
-            log.forEach(logEvent => {
-                tempGameState.log.push(logEvent);
-            });
+        tempGameState = handleDusk(tempGameState, setGameState);
+        if (tempGameState === null) {
+            return;
         }
-        else {
-            tempGameState.lastNight.lynched = undefined;
-
-            tempGameState.log.push({
-                type: 'public',
-                message: 'Nobody was lynched.',
-            });
-
-            // MAYOR
-            const mayorIndex = tempGameState.players.findIndex(player => player.role?.name === 'Mayor');
-            if (mayorIndex !== -1) {
-                // only three players
-                const numberOfLivingPlayers = tempGameState.players.reduce((count, player) => (player.alive ? count + 1 : count), 0);
-                if (tempGameState.players[mayorIndex].alive && numberOfLivingPlayers === 3) {
-
-                    // not nullified
-                    if (tempGameState.players[mayorIndex].statuses?.find(status => status.name === 'Poisoned') === undefined
-                        && tempGameState.players[mayorIndex].statuses?.find(status => status.name === 'Drunk') === undefined
-                    ) {
-                        // villager victory
-                        tempGameState.state = PlayState.VICTORY;
-
-                        tempGameState.log.push({
-                            type: 'alert',
-                            message: 'Mayor victory conditions met!',
-                            indent: 1,
-                        });
-                    }
-                    else {
-                        tempGameState.popupEvent = {
-                            heading: 'Mayor ability blocked.',
-                            message: 'The Mayor ability would have activated, but they are incapacitated.',
-                        };
-                    }
-
-                }
-            }
-        }
-        tempGameState.nominations = [];
-        tempGameState.nominators = [];
 
         time = 0;
         day++;
@@ -593,6 +455,163 @@ export async function advanceTime(
     });
 
     setGameState({ ...tempGameState, day, time });
+}
+
+export async function handleDawn(tempGameState: GameState, showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>) {
+
+    // HANDLE MURDER
+    let murder = false;
+    let temp = '';
+
+    const popupEvent: PopupEvent = { message: 'It is a new day!' };
+    const log: LogEvent[] = [];
+
+    for (const [index, player] of tempGameState.players.entries()) {
+        const hasTargetedStatus = player.statuses?.find(status => status.name === 'Targeted');
+        const playerTargeted = hasTargetedStatus !== undefined && !hasTargetedStatus.drunk && !hasTargetedStatus.poisoned;
+
+        if (playerTargeted) {
+            [tempGameState, murder, temp] = await handleNightKill(
+                index, tempGameState, log, showPrompt
+            );
+        }
+    }
+
+    if (!murder) {
+        // alert
+        popupEvent.heading = 'Day drops, day rises. Dusk is sweet, the sunrise sweeter.';
+        // gamelog
+        log.push({
+            type: 'public',
+            message: 'Nobody was murdered in the night...',
+            extra: (() => {
+                switch (temp) {
+                    case 'soldier':
+                        return 'The Soldier is immune to Werewolf kills.';
+                    case 'soldier-null':
+                        return "The Soldier's ability was nullified.";
+                    case 'protected':
+                        return "The Doctor protected the Werewolf's target";
+                    case 'dead':
+                        return "An already-dead player was targeted...";
+                    default:
+                        return undefined;
+                }
+            })()
+        });
+    }
+    else {
+        popupEvent.heading = 'A red sun rises, blood has been spilled this night...';
+    }
+
+    if (log.length > 0) {
+        log.forEach(logEvent => {
+            tempGameState.log.push(logEvent);
+            tempGameState.logBuffer.push(logEvent);
+        })
+    }
+    popupEvent.events = tempGameState.logBuffer;
+    tempGameState.logBuffer = [];
+    if (popupEvent) {
+        tempGameState.popupEvent = popupEvent;
+    }
+
+    return tempGameState;
+}
+
+export function handleDusk(tempGameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>): GameState | null {
+    // handle lynch
+    if (tempGameState.choppingBlock) {
+        const lynchedIndex = tempGameState.players.findIndex(player => player.name === tempGameState.choppingBlock?.playerName);
+
+        const popupEvent: PopupEvent = {}
+        const log: LogEvent[] = [];
+
+        tempGameState = killPlayerByIndex(lynchedIndex, tempGameState);
+        tempGameState.lastNight.lynched = lynchedIndex;
+        tempGameState.choppingBlock = undefined;
+
+        log.push({
+            type: 'severe',
+            message: `${tempGameState.players[lynchedIndex].name} was lynched!`,
+        });
+
+        // SAINT
+        if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
+            if (!isPlayerPoisoned(tempGameState.players[lynchedIndex])) {
+                // game log
+                tempGameState.log = log;
+                // alert
+                popupEvent.heading = 'The Saint has been lynched!';
+                popupEvent.events = log;
+                tempGameState.popupEvent = popupEvent;
+                tempGameState.state = PlayState.DEFEAT;
+                setGameState({ ...tempGameState });
+                return null;
+            }
+            else {
+                // game log
+                log.push({
+                    type: 'private',
+                    message: 'The game continues...',
+                    indent: 1,
+                    extra: `${tempGameState.players[lynchedIndex].name} was the Saint, however, they were poisoned.`,
+                });
+                // alert
+                popupEvent.heading = 'The Saint has been lynched!';
+                tempGameState.popupEvent = popupEvent;
+            }
+        }
+        popupEvent.events = log;
+        tempGameState.popupEvent = popupEvent;
+        log.forEach(logEvent => {
+            tempGameState.log.push(logEvent);
+        });
+    }
+    else {
+        tempGameState.lastNight.lynched = undefined;
+
+        tempGameState.log.push({
+            type: 'public',
+            message: 'Nobody was lynched.',
+        });
+
+        // MAYOR
+        const mayorIndex = tempGameState.players.findIndex(player => player.role?.name === 'Mayor');
+        if (mayorIndex !== -1) {
+            // only three players
+            const numberOfLivingPlayers = tempGameState.players.reduce((count, player) => (player.alive ? count + 1 : count), 0);
+            if (tempGameState.players[mayorIndex].alive && numberOfLivingPlayers === 3) {
+
+                // no execution
+                if (tempGameState.lastNight.lynched === undefined) {
+
+                    // not nullified
+                    if (!isPlayerIntoxicated(tempGameState.players[mayorIndex])) {
+                        // villager victory
+                        tempGameState.state = PlayState.VICTORY;
+
+                        tempGameState.log.push({
+                            type: 'alert',
+                            message: 'Mayor victory conditions met!',
+                            indent: 1,
+                        });
+                    }
+                    else {
+                        tempGameState.popupEvent = {
+                            heading: 'Mayor ability blocked.',
+                            message: 'The Mayor ability would have activated, but they are incapacitated.',
+                        };
+                    }
+                }
+
+            }
+        }
+    }
+    tempGameState.nominations = [];
+    tempGameState.nominators = [];
+
+    return tempGameState;
 }
 
 function updateStatuses(statuses: Status[], time: number) {
@@ -809,7 +828,7 @@ export function killPlayer(playerName: string, gameState: GameState) {
     return killPlayerByIndex(gameState.players.findIndex(player => player.name === playerName), gameState);
 }
 
-export function killPlayerByIndex(playerIndex: number, gameState: GameState) {
+export function killPlayerByIndex(playerIndex: number, gameState: GameState): GameState {
 
     const tempGameState = { ...gameState };
 

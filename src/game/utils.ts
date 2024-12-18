@@ -1,13 +1,39 @@
+import { Pseudonym } from "src/data/pseudonyms";
 import { GameState, Player } from "../App";
 import { PromptOptions } from "../components/common/Prompt/Prompt";
 import { Role } from "../data/roles";
-import { PlayerType, Team } from "../enums";
+import { PlayerType, PlayState, Team } from "../enums";
 
 export enum Result {
     TRUE,
     FALSE,
     STORYTELLER, // sometimes, the storyteller has to make a decision
     NULL,
+}
+
+export function defaultGameState(playerCount: number = 5, pseudonyms: Pseudonym[]): GameState  {
+    return {
+        day: 0,
+        time: 0,
+        state: PlayState.SETUP,
+        players: [...pseudonyms]
+            // .sort(() => Math.random() - 0.5) // shuffle
+            .slice(4, 4 + playerCount)
+            .map((pseudonym, index) => ({
+                name: pseudonym.name,
+                realName: `Player ${index + 1}`,
+                alive: true,
+                statuses: [],
+                ghostVotes: 1,
+                abilityUses: 0,
+                knowledge: [],
+                oldRoles: [],
+            })),
+        nominations: [],
+        nominators: [],
+        log: [], logBuffer: [],
+        lastNight: {},
+    };
 }
 
 export function findPlayersNeighbours(gameState: GameState, currentPlayer: number): number[] {

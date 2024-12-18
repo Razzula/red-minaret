@@ -21,14 +21,17 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-      "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "types": ["vitest/globals"],
+        "baseUrl": ".",
     },
     "include": [
-        "src"
+        "src",
+        "vitest.setup.ts",
     ],
     "references": [
         {
-            "path": "./tsconfig.node.json"
+            "path": "./tsconfig.node.json",
         }
     ]
 }

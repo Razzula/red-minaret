@@ -7,7 +7,7 @@ import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
 import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
 import { handleHunterAbility } from './game/Hunter'
-import { canPlayerActTonight, findPlayersNeighbours } from './game/utils'
+import { canPlayerActTonight, defaultGameState, findPlayersNeighbours, isPlayerDrunk, isPlayerPoisoned } from './game/utils'
 
 import roles, { Role } from './data/roles'
 import { Status } from './data/statuses'
@@ -97,35 +97,10 @@ export type PopupEvent = {
     };
 }
 
-function defaultGameState(playerCount: number = 5): GameState  {
-    return {
-        day: 0,
-        time: 0,
-        state: PlayState.SETUP,
-        players: [...pseudonyms]
-            // .sort(() => Math.random() - 0.5) // shuffle
-            .slice(4, 4 + playerCount)
-            .map((pseudonym, index) => ({
-                name: pseudonym.name,
-                realName: `Player ${index + 1}`,
-                alive: true,
-                statuses: [],
-                ghostVotes: 1,
-                abilityUses: 0,
-                knowledge: [],
-                oldRoles: [],
-            })),
-        nominations: [],
-        nominators: [],
-        log: [], logBuffer: [],
-        lastNight: {},
-    };
-}
-
 function App() {
 
     const [gameState, setGameState] = useState<GameState>(loadGameState() || {
-        ...defaultGameState(),
+        ...defaultGameState(5, pseudonyms),
         popupEvent: {
             override: {
                 type: 'welcome',
@@ -301,7 +276,7 @@ function App() {
     function resetGameState(keepNames = false) {
         if (keepNames) {
             setGameState((prev) => ({
-                ...defaultGameState(),
+                ...defaultGameState(prev.players.length, pseudonyms),
                 players: prev.players.map(player => ({
                     ...player,
                     alive: true,
@@ -312,7 +287,7 @@ function App() {
             }));
         }
         else {
-            setGameState(defaultGameState(gameState.players.length));
+            setGameState(defaultGameState(gameState.players.length, pseudonyms));
         }
         setCurrentPlayer(null);
         setSelectedPlayers([]);
@@ -478,11 +453,11 @@ function App() {
         let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
 
         // DRUNK
-        if (player.statuses?.find(status => status.name === 'Drunk')) {
+        if (isPlayerDrunk(player)) {
             instruction = `${instruction} Remember, this player is the Drunk!`;
         }
         // POISONED
-        else if (player.statuses?.find(status => status.name === 'Poisoned')) {
+        else if (isPlayerPoisoned(player)) {
             instruction = `${instruction} Remember, this player has been poisoned!`;
         }
 
