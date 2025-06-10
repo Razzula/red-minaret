@@ -267,9 +267,14 @@ function App() {
     }
 
     function loadGameState() {
-        const cachedGameState = localStorage.getItem('gameState');
-        if (cachedGameState) {
-            return parse(cachedGameState);
+        try {
+            const cachedGameState = localStorage.getItem('gameState');
+            if (cachedGameState) {
+                return parse(cachedGameState);
+            }
+        }
+        catch (e) {
+            console.error('Error loading game state from local storage:', e);
         }
         return null;
     }
