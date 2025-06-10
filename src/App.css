@@ -20,6 +20,10 @@
     justify-content: space-between;
     align-items: center;
     /* height: 100vh; */
+    width: 100%;
+    max-width: 100vw;
+    /* overflow: hidden; */
+    /* box-sizing: border-box; */
 }
 
 .column {
@@ -241,4 +245,26 @@ button > i {
 
 .error {
     color: #ff5338;
+}
+
+.sidebar.leftPanel,
+.sidebar.rightPanel {
+    display: none;
+}
+
+.sidebar.leftPanel.visible,
+.sidebar.rightPanel.visible {
+    display: flex;
+}
+
+@media (min-width: 768px) and (min-height: 500px) {
+    .sidebar.leftPanel,
+    .sidebar.rightPanel {
+        /* force visibility of panels */
+        display: flex !important;
+    }
+}
+
+@media (max-width: 767px) {
+    
 }

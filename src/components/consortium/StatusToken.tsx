@@ -13,19 +13,36 @@ type StatusTokenProps = {
     index: number;
     centreX: number;
     centreY: number;
-    radius: number;
+    centrepieceRadius: number;
+    playerX: number;
+    playerY: number;
+    consortiumRadius: number;
+    playerRadius: number;
     angle: number;
     isPlayerActive: boolean;
     playerRole?: Role;
     removeStatus: (status: Status) => void;
 };
 
-const StatusToken: React.FC<StatusTokenProps> = ({status, index, centreX, centreY, radius, angle, isPlayerActive, playerRole, removeStatus}) => {
+const StatusToken: React.FC<StatusTokenProps> = ({
+    status, index, centreX, centreY, centrepieceRadius, playerX, playerY, playerRadius, angle,
+    isPlayerActive, playerRole, removeStatus
+}) => {
 
-    const maxStatuses = 3;
-    const distanceMultiplier = (maxStatuses - (index + 1)) / maxStatuses;
-    const newX = centreX + (radius - 50) * distanceMultiplier * Math.sin(angle);
-    const newY = centreY - (radius - 50) * distanceMultiplier * Math.cos(angle);
+    const maxStatusLength = 4;
+    const t = index / (maxStatusLength - 1);
+
+    // position of consortium centre, towards player; endpoint of status 'chain'
+    const innerX = centreX + (1.5 * centrepieceRadius * Math.sin(angle));
+    const innerY = centreY - (1.5 * centrepieceRadius * Math.cos(angle));
+    
+    // position of player centre, towards centre; endpoint of status 'chain'
+    const outterX = playerX - (playerRadius * Math.sin(angle));
+    const outterY = playerY + (playerRadius * Math.cos(angle));
+
+    // const distanceMultiplier = 1;
+    const newX = outterX + t * (innerX - outterX);
+    const newY = outterY + t * (innerY - outterY);
 
     const fake = status.drunk || status.poisoned;
 

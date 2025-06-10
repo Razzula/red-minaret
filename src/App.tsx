@@ -120,9 +120,18 @@ function App() {
     const [werewolfPool, setWerewolfPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.WEREWOLF ? index : null).filter(i => i !== null));
     const [minionPool, setMinionPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.MINION ? index : null).filter(i => i !== null));
 
+    const [showLeftPanel, setShowLeftPanel] = useState<boolean>(false);
+    const [showRightPanel, setShowRightPanel] = useState<boolean>(false);
+
     const { showPrompt, PromptDialog } = usePrompt();
 
     const timeSymbol = getTimeSymbol();
+
+    useEffect(() => {
+        // temp
+        setShowLeftPanel(false);
+        setShowRightPanel(false);
+    }, []);
 
     useEffect(() => {
         if (gameState) {
@@ -556,7 +565,7 @@ function App() {
 
             {/* LEFT COLUMN */}
             <div className='verticalCentre'>
-                <div className='sidebar'>
+                <div className={`sidebar leftPanel ${showLeftPanel ? 'visible' : ''}`}>
                     { gameState.state === PlayState.SETUP ?
                         <div>
                             {/* TODO: make this its own component? */}
@@ -589,11 +598,13 @@ function App() {
                                             <input type='checkbox'
                                                 checked={gameSettings.useOriginalNames}
                                                 onChange={() => setGameSettings((prev) => ({...prev, useOriginalNames: !prev.useOriginalNames}))}
-                                            /> Use original names
+                                            />
+                                            Use original
                                             <Tooltip>
                                                 <TooltipTrigger><i className='ra ra-help help' /></TooltipTrigger>
                                                 <TooltipContent>Blood on the Clocktower</TooltipContent>
                                             </Tooltip>
+                                            names
                                         </li>
                                     </ul>
                                 </Tab>
@@ -715,7 +726,7 @@ function App() {
 
             {/* RIGHT COLUMN */}
             <div className='verticalCentre'>
-                <div className='sidebar'>
+                <div className={`sidebar rightPanel ${showRightPanel ? 'visible' : ''}`}>
                     <div>
                         <h2>Players</h2>
                         <Tabs>

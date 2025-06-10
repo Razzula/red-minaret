@@ -15,12 +15,14 @@
     height: 100px;
 }
 
+.centreButton {
+    width: 100px !important;
+    height: 100px !important;
+}
+
 .status {
     position: absolute;
     transform: translate(-50%, -50%);
-
-    width: 50px;
-    height: 50px;
 }
 
 .circleButton {
@@ -37,6 +39,7 @@
     flex-direction: column;
 
     background-color: var(--grey);
+    margin: 0px !important;
 }
 
 .circleButtonImg {
@@ -138,4 +141,27 @@
 
 .drunk, .poisoned {
     background-color: var(--purple);
+}
+
+@media (max-width: 767px) {
+    .profilePicture {
+        width: 38px;
+        height: 38px;
+    }
+    .player {
+        width: 70px;
+        height: 70px;
+    }
+    .centreButton {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    .circleButtonImg {
+        width: 32px;
+        height: 32px;
+    }
+    .statusCircleImg {
+        width: 24px;
+        height: 24px;
+    }
 }

@@ -9,19 +9,20 @@ import styles from './Consortium.module.scss';
 type PseudonymTokenProps = {
     pseudonym: string;
     realName?: string;
-    centreX: number;
-    centreY: number;
-    radius: number;
+    playerX: number;
+    playerY: number;
+    playerRadius: number;
+    padding: number;
     angle: number;
 
     setPseudonym: (pseudonym: string) => void;
     renamePlayer: () => void;
 };
 
-const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, centreX, centreY, radius, angle, renamePlayer, setPseudonym}) => {
+const PseudonymToken: React.FC<PseudonymTokenProps> = ({pseudonym, realName, playerX, playerY, playerRadius, angle, renamePlayer, setPseudonym}) => {
 
-    const newX = centreX + (radius - 50) * Math.sin(angle);
-    const newY = centreY - (radius - 50) * Math.cos(angle);
+    const newX = playerX + (playerRadius) * Math.sin(angle);
+    const newY = playerY - (playerRadius) * Math.cos(angle);
 
     const meta = pseudonyms.find(p => p.name === pseudonym);
 

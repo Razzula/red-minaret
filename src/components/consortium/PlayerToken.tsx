@@ -23,7 +23,8 @@ type PlayerTokenProps = {
     index: number;
     centreX: number;
     centreY: number;
-    radius: number;
+    centrepieceRadius: number;
+    consortiumRadius: number;
     currentPlayer: number | null;
     selectedPlayers: number[];
     settings: Settings;
@@ -41,20 +42,24 @@ type PlayerTokenProps = {
 }
 
 const PlayerToken: React.FC<PlayerTokenProps> = ({
-    player, gameState, setGameState, index, centreX, centreY, radius, currentPlayer, selectedPlayers,
+    player, gameState, setGameState, index, centreX, centreY, centrepieceRadius, consortiumRadius, currentPlayer, selectedPlayers,
     settings,
     togglePlayerAlive, handleClick, removePlayer, setCurrentPlayer,
     villagerPool, outsiderPool, werewolfPool, minionPool,
     showPrompt,
 }) => {
 
+    const isMobile = (typeof window !== 'undefined') && (window.innerWidth <= 767);
+
     const role = gameState.players[index].role;
     const roleDisplayName = settings.useOriginalNames ? (role?.altName ?? role?.name) : role?.name;
-    const circleDiameter = 100;
+    const circleDiameter = isMobile ? 60 : 100;
+    const circleRadius = circleDiameter / 2;
+    const padding = isMobile ? 5 : 40;
 
     const angle = (index * 2 * Math.PI) / (gameState.players?.length || 0);
-    const x = centreX + (radius - circleDiameter) * Math.sin(angle);
-    const y = centreY - (radius - circleDiameter) * Math.cos(angle);
+    const x = centreX + (consortiumRadius - circleRadius - padding) * Math.sin(angle);
+    const y = centreY - (consortiumRadius - circleRadius - padding) * Math.cos(angle);
 
     const isActive = currentPlayer === index;
     const isInactive = currentPlayer !== null && currentPlayer !== index;
@@ -211,6 +216,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         <div>
             <div className={styles.player}
                 style={{
+                    position: 'absolute',
                     left: `${x}px`,
                     top: `${y}px`,
                 }}
@@ -361,7 +367,11 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                         index={index}
                         centreX={centreX}
                         centreY={centreY}
-                        radius={radius}
+                        centrepieceRadius={centrepieceRadius}
+                        playerX={x}
+                        playerY={y}
+                        consortiumRadius={consortiumRadius}
+                        playerRadius={circleRadius}
                         angle={angle}
                         isPlayerActive={isActive}
                         playerRole={role}
@@ -373,9 +383,10 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                 <PseudonymToken
                     pseudonym={player.name}
                     realName={player.realName}
-                    centreX={centreX}
-                    centreY={centreY}
-                    radius={radius}
+                    playerX={x}
+                    playerY={y}
+                    playerRadius={circleRadius}
+                    padding={padding}
                     angle={angle}
                     renamePlayer={renamePlayer}
                     setPseudonym={setPseudonym}

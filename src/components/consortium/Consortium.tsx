@@ -15,6 +15,7 @@ import IconButton from '../common/IconButton/IconButton';
 import { canPlayerActTonight } from '../../game/utils';
 import CentreInfo from './CentreInfo';
 import { PromptOptions } from '../common/Prompt/Prompt';
+import classNames from 'classnames';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -47,19 +48,23 @@ const Consortium: React.FC<ConsortiumProps> = ({
 }) => {
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [centerX, setCenterX] = useState(0);
-    const [centerY, setCenterY] = useState(0);
+    const [centreX, setcentreX] = useState(0);
+    const [centreY, setcentreY] = useState(0);
     const [radius, setRadius] = useState(0);
 
     const [votingAllowed, setVotingAllowed] = useState(false);
+
+    const isMobile = (typeof window !== 'undefined') && (window.innerWidth <= 767);
+    const centrepieceRadius = isMobile ? 25 : 50;
 
     useEffect(() => {
         const updateDimensions = () => {
             if (containerRef.current) {
                 const container = containerRef.current;
                 const { width, height } = container.getBoundingClientRect();
-                setCenterX(width / 2);
-                setCenterY(height / 2);
+                console.log(container, width);
+                setcentreX(width / 2);
+                setcentreY(height / 2);
                 setRadius(Math.min(width, height) / 2);
             }
         };
@@ -133,7 +138,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
         >
 
             {/* ALERT POPUP */}
-            { gameState.popupEvent && (
+            {gameState.popupEvent && (
                 <Dialog open={gameState.popupEvent !== undefined}>
                     <DialogContent>
                         {
@@ -290,7 +295,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
                                             return null;
                                     }
                                 })()
-                            :
+                                :
                                 // HANDLE NORMAL POPUPS
                                 <div className='dialogue-content'
                                     style={{
@@ -298,13 +303,13 @@ const Consortium: React.FC<ConsortiumProps> = ({
                                     }}
                                 >
                                     <div className='column'>
-                                        { gameState.popupEvent.heading &&
+                                        {gameState.popupEvent.heading &&
                                             <div className='dialogueHeading'>{gameState.popupEvent.heading}</div>
                                         }
-                                        { gameState.popupEvent.message &&
+                                        {gameState.popupEvent.message &&
                                             <div>{gameState.popupEvent.message}</div>
                                         }
-                                        { gameState.popupEvent.events && gameState.popupEvent.events?.length > 0 &&
+                                        {gameState.popupEvent.events && gameState.popupEvent.events?.length > 0 &&
                                             <Log events={gameState.popupEvent.events} />
                                         }
                                         <Tooltip placement='bottom'>
@@ -320,7 +325,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
                         }
                     </DialogContent>
                 </Dialog>
-                )
+            )
             }
 
             <div className='centrepiece'>
@@ -339,9 +344,10 @@ const Consortium: React.FC<ConsortiumProps> = ({
                         gameState={gameState}
                         setGameState={setGameState}
                         index={index}
-                        centreX={centerX}
-                        centreY={centerY}
-                        radius={radius}
+                        centreX={centreX}
+                        centreY={centreY}
+                        centrepieceRadius={centrepieceRadius}
+                        consortiumRadius={radius}
                         currentPlayer={currentPlayer}
                         selectedPlayers={selectedPlayers}
                         settings={settings}
@@ -390,11 +396,10 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
                 <Tooltip>
                     <TooltipTrigger>
                         <button
-                            className={styles.circleButton}
-                            style={{
-                                width: '100px',
-                                height: '100px',
-                            }}
+                            className={classNames(
+                                styles.circleButton,
+                                styles.centreButton,
+                            )}
                             onClick={addPlayer}
                         >
                             <i className='ra ra-health' />
@@ -411,21 +416,19 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             setCentrepiece(
                 <div>
                     <button
-                        className={styles.circleButton}
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                        }}
+                        className={classNames(
+                            styles.circleButton,
+                            styles.centreButton,
+                        )}
                         onClick={() => handleSpecialAction('Hunter')}
                     >
                         Shoot
                     </button>
                     <button
-                        className={styles.circleButton}
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                        }}
+                        className={classNames(
+                            styles.circleButton,
+                            styles.centreButton,
+                        )}
                         onClick={cancelSpecialState}
                     >
                         Cancel
@@ -443,11 +446,10 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
                         <Tooltip>
                             <TooltipTrigger>
                                 <button
-                                    className={styles.circleButton}
-                                    style={{
-                                        width: '100px',
-                                        height: '100px',
-                                    }}
+                                    className={classNames(
+                                        styles.circleButton,
+                                        styles.centreButton,
+                                    )}
                                     disabled={!votingAllowed}
                                 >
                                     <i className='ra ra-noose' />
