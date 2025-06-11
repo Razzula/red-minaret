@@ -161,7 +161,7 @@ function App() {
 
                 // game log
                 setGameState((prev) => {
-                    const tempGameState = {...prev};
+                    const tempGameState = { ...prev };
                     tempGameState.currentEvent = {
                         type: 'private',
                         message: `${player.name} learnt that x of ${neighbours.map(
@@ -423,7 +423,7 @@ function App() {
                                         image={`/red-minaret/icons/${role.icon}.png`}
                                         altText={displayName}
                                         isChecked={rolePool.includes(index)}
-                                        onChange={active ? () => updateRolePool(index) : () => {}}
+                                        onChange={active ? () => updateRolePool(index) : () => { }}
                                         disabled={!valid}
                                         styles={{
                                             cursor: valid ? (active ? 'pointer' : 'help') : 'not-allowed',
@@ -438,7 +438,7 @@ function App() {
                                     >
                                         <div><strong>{displayName}</strong></div>
                                         <div>{role.description}</div>
-                                        { blockers.length > 0 &&
+                                        {blockers.length > 0 &&
                                             <div className='error'>
                                                 {
                                                     // explain why this role is disabled, if so
@@ -501,7 +501,7 @@ function App() {
     }
 
     function shuffleCodeNames() {
-        const tempGameState = {...gameState};
+        const tempGameState = { ...gameState };
         const shuffledNames = [...pseudonyms].sort(() => Math.random() - 0.5);
         tempGameState.players.forEach((player, index) => {
             player.name = shuffledNames[index].name;
@@ -510,7 +510,7 @@ function App() {
     }
 
     function addPlayer() {
-        const tempGameState = {...gameState};
+        const tempGameState = { ...gameState };
         const playerName = [...pseudonyms]
             .sort(() => Math.random() - 0.5)
             .find(pseudonym => !gameState.players.find(player => player.name === pseudonym.name))?.name
@@ -525,10 +525,13 @@ function App() {
     }
 
     function removePlayer(name: string) {
-        const tempGameState = {...gameState};
+        const tempGameState = { ...gameState };
         tempGameState.players = tempGameState.players.filter(player => player.name !== name);
         setGameState(tempGameState);
     }
+
+    const blocked = (gameState.players.length > 5 && minionPool.length <= 0)
+        || werewolfPool.length <= 0;
 
     return (
         <div className='tempname'>
@@ -553,17 +556,17 @@ function App() {
             />
 
             {/* PROMPT */}
-            { PromptDialog }
+            {PromptDialog}
 
             {/* TOP-RIGHT */}
             <div className='dialogue-x'>
                 <IconButton
                     icon={<i className='ra ra-book' />}
-                    onClick={() => setGameState((prev) => ({...prev, popupEvent: { override: { type: 'help' } } }))}
+                    onClick={() => setGameState((prev) => ({ ...prev, popupEvent: { override: { type: 'help' } } }))}
                     label='How to Play'
                 />
 
-                { !isMobile || !showLeftPanel &&
+                {(!isMobile || !showLeftPanel) &&
                     <IconButton
                         icon={<i className='ra ra-cycle' />}
                         onClick={() => resetGameState()}
@@ -582,10 +585,11 @@ function App() {
 
             {/* TOP-LEFT */}
             <div className='dialogue-y'>
-                { isMobile && //!showLeftPanel &&
+                {isMobile && //!showLeftPanel &&
                     <IconButton
                         icon={<i className='ra ra-cog' />}
                         onClick={() => setShowLeftPanel(!showLeftPanel)}
+                        className={ (blocked && !showLeftPanel) ? 'warble' : '' }
                         label='Settings'
                     />
                 }
@@ -594,13 +598,13 @@ function App() {
             {/* LEFT COLUMN */}
             <div className='verticalCentre'>
                 <div className={`sidebar leftPanel ${showLeftPanel ? 'visible' : ''}`}>
-                    { gameState.state === PlayState.SETUP ?
+                    {gameState.state === PlayState.SETUP ?
                         <div>
                             {/* TODO: make this its own component? */}
                             <h2>Configuration</h2>
                             <Tabs>
                                 <Tab label='Roster'>
-                                    <h3>{ gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers' }</h3>
+                                    <h3>{gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers'}</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool, true)}
                                     </div>
@@ -610,7 +614,7 @@ function App() {
                                         {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool, true)}
                                     </div>
 
-                                    <h3>{ gameSettings.useOriginalNames ? 'Demons' : 'Werewolves' }</h3>
+                                    <h3>{gameSettings.useOriginalNames ? 'Demons' : 'Werewolves'}</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool, true)}
                                     </div>
@@ -625,7 +629,7 @@ function App() {
                                         <li>
                                             <input type='checkbox'
                                                 checked={gameSettings.useOriginalNames}
-                                                onChange={() => setGameSettings((prev) => ({...prev, useOriginalNames: !prev.useOriginalNames}))}
+                                                onChange={() => setGameSettings((prev) => ({ ...prev, useOriginalNames: !prev.useOriginalNames }))}
                                             />
                                             Use original
                                             <Tooltip>
@@ -642,7 +646,7 @@ function App() {
                         <div>
                             <h2><u>Roster</u></h2>
 
-                            <h3>{ gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers' }</h3>
+                            <h3>{gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers'}</h3>
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool)}
                             </div>
@@ -652,7 +656,7 @@ function App() {
                                 {roleSettingsPanel(PlayerType.OUTSIDER, outsiderPool, setOutsiderPool)}
                             </div>
 
-                            <h3>{ gameSettings.useOriginalNames ? 'Demons' : 'Werewolves' }</h3>
+                            <h3>{gameSettings.useOriginalNames ? 'Demons' : 'Werewolves'}</h3>
                             <div className='column'>
                                 {roleSettingsPanel(PlayerType.WEREWOLF, werewolfPool, setWerewolfPool)}
                             </div>
@@ -682,7 +686,7 @@ function App() {
                                 margin: '10px',
                             }}
                         >
-                            { gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}` }
+                            {gameState.state === PlayState.SETUP ? 'Setup' : `Day ${gameState.day}`}
                         </span>
                         <i className={timeSymbol} />
                     </h2>
@@ -690,9 +694,9 @@ function App() {
 
                     <span>
                         <p>
-                        { currentPlayer !== null &&
-                            <span>{getNightInstruction()}</span>
-                        }
+                            {currentPlayer !== null &&
+                                <span>{getNightInstruction()}</span>
+                            }
                         </p>
                     </span>
                 </div>
@@ -740,7 +744,7 @@ function App() {
                         height: '32px',
                         backgroundColor: '#505050',
                         margin: '0 10px',
-                    }}/>
+                    }} />
 
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
@@ -782,7 +786,7 @@ function App() {
                                 >
                                     <div><strong>{player.name || player.realName}</strong> ({player.realName})</div>
 
-                                    { player.role?.name === 'Werewolf' &&
+                                    {player.role?.name === 'Werewolf' &&
                                         <div>
                                             <h2>
                                                 Bluffs
@@ -796,40 +800,40 @@ function App() {
                                                 </Tooltip>
                                             </h2>
                                             <GridList columns={3}>
-                                            {
-                                                /* TODO: currently, this re-selects on every update, but should persist */
-                                                gameState.bluffs?.map(
-                                                    role => (
-                                                        <Tooltip>
-                                                            <TooltipTrigger>
-                                                                <img
-                                                                    src={`/red-minaret/icons/${role.icon}.png`}
-                                                                    alt={role.name}
-                                                                    style={{
-                                                                        cursor: 'help',
-                                                                    }}
-                                                                />
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <div
-                                                                    style={{
-                                                                        maxWidth: '400px',
-                                                                    }}
-                                                                >
-                                                                    <div><strong>{role.name}</strong></div>
-                                                                    <div>{role.description}</div>
-                                                                </div>
-                                                            </TooltipContent>
-                                                        </Tooltip>
+                                                {
+                                                    /* TODO: currently, this re-selects on every update, but should persist */
+                                                    gameState.bluffs?.map(
+                                                        role => (
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <img
+                                                                        src={`/red-minaret/icons/${role.icon}.png`}
+                                                                        alt={role.name}
+                                                                        style={{
+                                                                            cursor: 'help',
+                                                                        }}
+                                                                    />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <div
+                                                                        style={{
+                                                                            maxWidth: '400px',
+                                                                        }}
+                                                                    >
+                                                                        <div><strong>{role.name}</strong></div>
+                                                                        <div>{role.description}</div>
+                                                                    </div>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )
                                                     )
-                                                )
-                                            }
+                                                }
                                             </GridList>
                                         </div>
                                     }
 
                                     <div>
-                                        { player.knowledge?.length > 0 &&
+                                        {player.knowledge?.length > 0 &&
                                             <div>
                                                 <h2>Knowledge</h2>
                                                 <Log events={player.knowledge} />

@@ -267,6 +267,22 @@ button > i {
     display: flex;
 }
 
+.warble {
+    animation: warble 3s infinite;
+}
+
+@keyframes warble {
+    0% {
+        box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 10px 8px rgba(255, 255, 255, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+    }
+}
+
 @media (min-width: 768px) and (min-height: 500px) {
     .sidebar.leftPanel,
     .sidebar.rightPanel {
