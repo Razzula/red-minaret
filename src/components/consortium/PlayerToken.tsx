@@ -251,7 +251,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                             }
                         </button>
                         </TooltipTrigger>
-                        <TooltipContent maxWidth={500}>
+                        <TooltipContent>
                             <TooltipHoverContent>
                                 <div>
                                     <div><strong>{roleDisplayName}</strong></div>

@@ -125,6 +125,8 @@ function App() {
 
     const { showPrompt, PromptDialog } = usePrompt();
 
+    const isMobile = (typeof window !== 'undefined') && (window.innerWidth <= 767);
+
     const timeSymbol = getTimeSymbol();
 
     useEffect(() => {
@@ -561,11 +563,32 @@ function App() {
                     label='How to Play'
                 />
 
-                <IconButton
-                    icon={<i className='ra ra-cycle' />}
-                    onClick={() => resetGameState()}
-                    label='Reset'
-                />
+                { !isMobile || !showLeftPanel &&
+                    <IconButton
+                        icon={<i className='ra ra-cycle' />}
+                        onClick={() => resetGameState()}
+                        label='Reset'
+                    />
+                }
+
+                {/* { isMobile && //!showRightPanel &&
+                    <IconButton
+                    icon={<i className='ra ra-scroll-unfurled' />}
+                    onClick={() => setShowRightPanel(!showRightPanel)}
+                    label='Game Log'
+                    />
+                    } */}
+            </div>
+
+            {/* TOP-LEFT */}
+            <div className='dialogue-y'>
+                { isMobile && //!showLeftPanel &&
+                    <IconButton
+                        icon={<i className='ra ra-cog' />}
+                        onClick={() => setShowLeftPanel(!showLeftPanel)}
+                        label='Settings'
+                    />
+                }
             </div>
 
             {/* LEFT COLUMN */}
@@ -644,7 +667,7 @@ function App() {
             </div>
 
             {/* CENTRAL COLUMN */}
-            <div className='centreColumn'>
+            <div className={`centreColumn ${(showLeftPanel || showRightPanel) ? 'invisible' : ''}`}>
                 {/* TOP BOX */}
                 <div className='control-box column'
                     style={{
