@@ -1,11 +1,11 @@
 import { GameState, PopupEvent, LogEvent, Player } from '../App';
 import { PromptOptions } from '../components/common/Prompt/Prompt';
 
-import roles from '../data/roles';
+import roles, { Role } from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayerType, PlayState } from "../enums";
 import { isPlayerGrandchild } from './Nain';
-import { getWerewolfBluffs, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from "./utils";
+import { getWerewolfBluffs, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned, setRole, updateRole } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -19,6 +19,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     // clear slate
     players.forEach(player => {
         player.role = undefined;
+        player.trueRole = undefined;
         player.statuses = [];
         player.alive = true;
     });
@@ -57,17 +58,17 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
         if (werewolfIndicies.includes(index)) {
             // WEREWOLF
             const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
-            gameState.players[index].role = roles[role];
+            setRole(gameState, index, roles[role]);
             tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
         }
         else {
             // MINION
             const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
-            gameState.players[index].role = roles[role];
+            setRole(gameState, index, roles[role]);
             tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
 
             // BARON
-            if (gameState.players[index].role.name === 'Baron') {
+            if (gameState.players[index].role && gameState.players[index].role.name === 'Baron') {
                 // transfer two Villagers to the Outsider pool
                 const transferedVillagers = villagerIndicies.splice(0, 2);
                 outsiderIndicies.push(...transferedVillagers);
@@ -78,7 +79,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     outsiderIndicies.forEach(index => {
         // OUTSIDER
         const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
-        gameState.players[index].role = roles[role];
+        setRole(gameState, index, roles[role]);
         tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
 
         // DRUNK
@@ -90,7 +91,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     villagerIndicies.forEach(index => {
         // VILLAGER
         const role = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]
-        gameState.players[index].role = roles[role];
+        setRole(gameState, index, roles[role]);
         tempVillagerPool.splice(tempVillagerPool.indexOf(role), 1);
 
         if (gameState.players[index].role) {
@@ -118,8 +119,9 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
 
     // DRUNK
     if (drunkIndex !== null) {
+        const DrunkRole = roles.find(role => role.name === 'Drunk') as Role;
+        setRole(gameState, drunkIndex, DrunkRole, roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]]);
         players[drunkIndex].statuses?.push(statuses['Drunk']);
-        players[drunkIndex].role = roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]];
     }
 
     // bluffs
@@ -274,12 +276,12 @@ export async function handleNightKill(
                 if (minions) {
                     const minion = minions.sort(() => Math.random() - 0.5).pop();
                     if (minion) {
-                        const werewolfRole = roles.find(role => role.name === 'Werewolf');
+                        const werewolfRole = roles.find(role => role.name === 'Werewolf') as Role;
                         const minionIndex = tempGameState.players.findIndex(player => player.name === minion.name);
                         if (minion.role) {
-                            tempGameState.players[minionIndex].oldRoles.push(minion.role);
+                            updateRole(tempGameState, minionIndex, werewolfRole);
                         }
-                        tempGameState.players[minionIndex].role = werewolfRole;
+                        setRole(tempGameState, minionIndex, werewolfRole);
 
                         log.push({
                             type: 'alert',
@@ -877,7 +879,7 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
                     }
                     else {
                         // Scarlet Woman becomes the Werewolf
-                        tempGameState.players[scarletWomanIndex].role = werewolfRole;
+                        updateRole(tempGameState, scarletWomanIndex, werewolfRole);
                     }
                 }
 

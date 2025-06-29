@@ -150,6 +150,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
                                             return <InvestigationInterface
                                                 title={gameState.popupEvent.override.param}
                                                 players={players}
+                                                possibleRoles={[]} // TODO
                                                 setGameState={setGameState}
                                                 onInvestigate={handleInvestigate}
                                             />;

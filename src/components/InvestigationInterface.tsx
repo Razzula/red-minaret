@@ -7,17 +7,18 @@ import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 import { PlayerType, PlayerTypeType } from '../enums';
 import IconButton from './common/IconButton/IconButton';
-import { isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from '../game/utils';
+import { getActiveRoles, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from '../game/utils';
 import { canNainSelectPlayer, isPlayerGrandchild } from '../game/Nain';
 
 interface InvestigationProps {
     title?: string;
     players: Player[];
+    possibleRoles: Role[];
     onInvestigate: (selectedRole: string, selectedPlayers: string[], count: number) => void;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
-const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, onInvestigate, setGameState }) => {
+const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, /*possibleRoles,*/ onInvestigate, setGameState }) => {
 
     const [roleFilter, setRoleFilter] = useState<PlayerTypeType>();
     const [roles, setRoles] = useState<Role[]>([]);
@@ -32,14 +33,15 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     const isInvestigatorIntoxicated = investigator ? isPlayerIntoxicated(investigator) : false;
 
     useEffect(() => {
-        const definedRoles = players.flatMap((player) => (player.role ? [player.role] : []));
+        const activeRoles = getActiveRoles(players);
+        console.log(activeRoles);
         if (roleFilter) {
             setRoles(
-                definedRoles.filter((role) => role.type === roleFilter)
+                activeRoles.filter((role) => role.type === roleFilter)
             );
         }
         else {
-            setRoles(definedRoles);
+            setRoles(activeRoles);
         }
     }, [players, roleFilter]);
 
@@ -97,6 +99,10 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
             }
         }
 
+        const player = players.find((p) => p.trueRole?.name === selectedRole);
+        if (player) {
+            return player;
+        }
         return players.find((p) => p.role?.name === selectedRole);
     }
 

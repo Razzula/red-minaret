@@ -11,7 +11,7 @@ import GridList from '../common/GridList/GridList';
 import roles from '../../data/roles';
 import CheckButton from '../common/CheckButton/CheckButton';
 import statuses, { Status } from '../../data/statuses';
-import { canPlayerActTonight, getWerewolfBluffs } from '../../game/utils';
+import { canPlayerActTonight, getWerewolfBluffs, setRole } from '../../game/utils';
 import IconButton from '../common/IconButton/IconButton';
 import { PromptOptions } from '../common/Prompt/Prompt';
 import { handleArtistAbility } from '../../game/Artist';
@@ -133,7 +133,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         const role = roles.find((role) => role.name === roleName);
         if (role) {
             const tempGameState = {...gameState};
-            tempGameState.players[index].role = role;
+            setRole(tempGameState, index, role);
 
             // update bluffs
             tempGameState.bluffs = getWerewolfBluffs(tempGameState, roles);
@@ -254,7 +254,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                         <TooltipContent>
                             <TooltipHoverContent>
                                 <div>
-                                    <div><strong>{roleDisplayName}</strong></div>
+                                    <div><strong>{player.trueRole ? `${player.trueRole.name} ` : ''}{roleDisplayName}</strong></div>
                                     <div>{player.role?.description || <i>No Role Assigned</i>}</div>
                                 </div>
                                 { isPendingExecution &&

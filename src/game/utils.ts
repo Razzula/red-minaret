@@ -11,7 +11,7 @@ export enum Result {
     NULL,
 }
 
-export function defaultGameState(playerCount: number = 5, pseudonyms: Pseudonym[]): GameState  {
+export function defaultGameState(playerCount: number = 5, pseudonyms: Pseudonym[]): GameState {
     return {
         day: 0,
         time: 0,
@@ -23,6 +23,8 @@ export function defaultGameState(playerCount: number = 5, pseudonyms: Pseudonym[
                 name: pseudonym.name,
                 realName: `Player ${index + 1}`,
                 alive: true,
+                role: undefined,
+                trueRole: undefined,
                 statuses: [],
                 ghostVotes: 1,
                 abilityUses: 0,
@@ -34,6 +36,34 @@ export function defaultGameState(playerCount: number = 5, pseudonyms: Pseudonym[
         log: [], logBuffer: [],
         lastNight: {},
     };
+}
+
+export function getActiveRoles(players: Player[]): Role[] {
+    return players.flatMap((player) => [
+        ...(player.trueRole ? [player.trueRole] : [player.role]),
+    ])
+        .filter((role) => role !== undefined);
+}
+
+export function setRole(gameState: GameState, playerIndex: number, role: Role, fakeRole?: Role): GameState {
+    const player = gameState.players[playerIndex];
+    if (player) {
+        gameState.players[playerIndex].trueRole = role;
+        gameState.players[playerIndex].role = (fakeRole ? fakeRole : role);
+    }
+    return gameState;
+}
+
+export function updateRole(gameState: GameState, playerIndex: number, role: Role, fakeRole?: Role): GameState {
+    const player = gameState.players[playerIndex];
+    if (player) {
+        // if the player already has a role, add it to their old roles
+        if (player.trueRole) {
+            gameState.players[playerIndex].oldRoles.push(player.trueRole);
+        }
+        setRole(gameState, playerIndex, role, fakeRole);
+    }
+    return gameState;
 }
 
 export function findPlayersNeighbours(gameState: GameState, currentPlayer: number): number[] {

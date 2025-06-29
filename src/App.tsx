@@ -73,6 +73,7 @@ export type Player = {
     realName?: string; // this is the player's real name (optional)
     alive: boolean;
     role?: Role;
+    trueRole?: Role; // the player's true role, if different from their believed role
     oldRoles: Role[];
     statuses: Status[];
     ghostVotes: number;
@@ -297,6 +298,7 @@ function App() {
                 players: prev.players.map(player => ({
                     ...player,
                     alive: true,
+                    trueRole: undefined,
                     role: undefined,
                     statuses: [],
                     ghostVotes: 1,
