@@ -26,6 +26,7 @@ import Log from './components/Log';
 import IconButton from './components/common/IconButton/IconButton';
 import { usePrompt } from './components/common/Prompt/Prompt';
 import Soundboard from './components/SoundBoard';
+import { scripts } from './data/scripts';
 
 export type GameState = {
     day: number;
@@ -458,6 +459,47 @@ function App() {
         );
     }
 
+    function scriptsPanel(rolePool: number[]) {
+
+        const roleNames: string[] = rolePool.map(index => roles[index].name);
+        
+        return (
+            <GridList columns={6}>
+                {
+                    scripts.map((script) => {
+                        const isActive = (script.roles.length === roleNames.length) && script.roles.every(roleName => roleNames.includes(roleName));
+                        return (
+                            <Tooltip key={script.name}>
+                                <TooltipTrigger>
+                                    <CheckButton
+                                        image={`/red-minaret/icons/${script.icon}.png`}
+                                        altText={script.name}
+                                        isChecked={isActive}
+                                        onChange={() => {
+                                            // add script roles to the pool
+                                            const newRoles = script.roles.map(roleName => roles.findIndex(role => role.name === roleName));
+                                            console.log(newRoles);
+                                            setVillagerPool(newRoles.filter(index => roles[index].type === PlayerType.VILLAGER));
+                                            setOutsiderPool(newRoles.filter(index => roles[index].type === PlayerType.OUTSIDER));
+                                            setWerewolfPool(newRoles.filter(index => roles[index].type === PlayerType.WEREWOLF));
+                                            setMinionPool(newRoles.filter(index => roles[index].type === PlayerType.MINION));
+                                        }}
+                                    />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div>
+                                        <strong>{script.name}</strong>
+                                        <div>{script.description}</div>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        );
+                    })
+                }
+            </GridList>
+        );
+    }
+
     function getNightInstruction() {
         if (currentPlayer === null) {
             return null;
@@ -604,6 +646,8 @@ function App() {
                             <h2>Configuration</h2>
                             <Tabs>
                                 <Tab label='Roster'>
+                                    { scriptsPanel([...villagerPool, ...outsiderPool, ...werewolfPool, ...minionPool]) }
+
                                     <h3>{gameSettings.useOriginalNames ? 'Townsfolk' : 'Villagers'}</h3>
                                     <div className='column'>
                                         {roleSettingsPanel(PlayerType.VILLAGER, villagerPool, setVillagerPool, true)}
