@@ -54,7 +54,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
 
         const duplicatedRoles = gameState.players.some((player, i) =>
             gameState.players.findIndex((p, ii) =>
-                p.role?.name === player.role?.name && ii !== i
+                (p.role?.name === player.role?.name || p.trueRole?.name === player.trueRole?.name) && ii !== i
             ) !== -1
         );
         if (duplicatedRoles) {

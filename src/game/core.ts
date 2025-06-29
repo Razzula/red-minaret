@@ -121,7 +121,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     if (drunkIndex !== null) {
         const DrunkRole = roles.find(role => role.name === 'Drunk') as Role;
         setRole(gameState, drunkIndex, DrunkRole, roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]]);
-        players[drunkIndex].statuses?.push(statuses['Drunk']);
+        players[drunkIndex].statuses?.push({...statuses.Drunk});
     }
 
     // bluffs

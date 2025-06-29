@@ -133,7 +133,14 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
         const role = roles.find((role) => role.name === roleName);
         if (role) {
             const tempGameState = {...gameState};
-            setRole(tempGameState, index, role);
+
+            if (roleName === 'Drunk') {
+                setRole(tempGameState, index, role, role);
+                tempGameState.players[index].statuses.push({...statuses.Drunk});
+            }
+            else {
+                setRole(tempGameState, index, role);
+            }
 
             // update bluffs
             tempGameState.bluffs = getWerewolfBluffs(tempGameState, roles);
