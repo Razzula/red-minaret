@@ -5,7 +5,7 @@ import roles, { Role } from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayerType, PlayState, Team } from "../enums";
 import { isPlayerGrandchild } from './Nain';
-import { getWerewolfBluffs, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerLunatic, isPlayerMarionette, isPlayerPoisoned, Result, setRole, updateRole } from "./utils";
+import { canPlayerActTonight, getWerewolfBluffs, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerLunatic, isPlayerMarionette, isPlayerPoisoned, Result, setRole, updateRole } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -55,7 +55,6 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     const villagerIndicies = players.map((_player, index) => index).filter(index => !evilIndicies.includes(index) && !outsiderIndicies.includes(index));
 
     // assign roles
-    // debugger;
     evilIndicies.forEach(index => {
         if (werewolfIndicies.includes(index)) {
             // WEREWOLF
@@ -356,6 +355,25 @@ export async function handleNightKill(
                 }
             }
 
+            else if (player.role?.type === PlayerType.OUTSIDER) {
+                // BLIGHTFANG
+                const blightfangIndex = tempGameState.players.findIndex(player => player.trueRole?.name === 'Blightfang');
+                // an Outsider-kill for a Blightfang, converts them into a Blightfang
+                if (blightfangIndex !== -1) {
+                    const blightfangCount = tempGameState.players.filter(player => player.trueRole?.name === 'Blightfang').length;
+                    if (blightfangCount < 2) {
+                        // kill the Blightfang
+                        const newBlightfangIndex = playerIndex;
+                        playerIndex = blightfangIndex; // death handled by night kill
+
+                        // infect the Outsider
+                        const blightfangRole = {...roles.find(role => role.name === 'Blightfang')} as Role;
+                        updateRole(tempGameState, newBlightfangIndex, blightfangRole);
+                        tempGameState.players[newBlightfangIndex].abilityUses = tempGameState.players[blightfangIndex].abilityUses;
+                    }
+                }
+            }
+
             // MAYOR
             else if (player.role?.name === 'Mayor') {
                 if (!isPlayerIntoxicated(player, tempGameState)) {
@@ -481,6 +499,8 @@ export async function advanceTime(
                     player.role?.abilityUses !== undefined
                     && player.abilityUses < player.role?.abilityUses
                     && player.role?.night !== undefined
+                    && canPlayerActTonight(player, tempGameState)
+                    && player.role?.type !== PlayerType.WEREWOLF
                     // some roles only increment under certain conditions
                     && (player.role?.condition === undefined || (
                         (player.role?.condition === 'dead' && !player.alive)
@@ -807,8 +827,16 @@ export function handleAction(
 
     let tempGameState = { ...gameState };
 
-    if ((currentRole.name === 'Werewolf' || currentRole.name === 'Bloodhound') && gameState.day > currentRoleDelay) {
-        // WEREWOLF, BLOODHOUND
+    if (
+        (
+            currentRole.name === 'Werewolf'
+            || currentRole.name === 'Bloodhound'
+            || currentRole.name === 'Blightfang'
+            || (currentRole.name === 'Dragulf' && gameState.lastDeath !== gameState.day - 1)
+        )
+        && gameState.day > currentRoleDelay
+    ) {
+        // WEREWOLF, BLOODHOUND, BLIGHTFANG, DRAGULF
         const statusToApply = { ...statuses['Targeted'] };
         if (playerIsIntoxicated) {
             // POISONED
@@ -1002,24 +1030,27 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
 
     const tempGameState = { ...gameState };
 
-    // FOOL
-    if (tempGameState.players[playerIndex].role?.name === 'Fool') {
-        const fool = tempGameState.players[playerIndex];
-        if (fool.abilityUses < (fool.role?.abilityUses ?? 0)) {
+    // FOOL, DRAGULF
+    if (
+        tempGameState.players[playerIndex].role?.name === 'Fool'
+        || tempGameState.players[playerIndex].role?.name === 'Dragulf'
+    ) {
+        const player = tempGameState.players[playerIndex];
+        if (player.abilityUses < (player.role?.abilityUses ?? 0)) {
             tempGameState.players[playerIndex].abilityUses += 1; // ability will be used
-            if (!isPlayerIntoxicated(fool, gameState)) {
+            if (!isPlayerIntoxicated(player, gameState)) {
                 // cheat death
                 tempGameState.log.push({
                     type: 'alert',
-                    message: `${fool.name} cheated death!`,
-                    extra: 'They are the Fool.',
+                    message: `${player.name} cheated death!`,
+                    extra: `They are the ${tempGameState.players[playerIndex].role?.name}.`,
                 });
                 return tempGameState;
             }
             else {
                 tempGameState.log.push({
                     type: 'alert',
-                    message: 'The Fool ability failed to activate.',
+                    message: `The ${tempGameState.players[playerIndex].role?.name} ability failed to activate.`,
                     extra: 'They were intoxicated.',
                 });
             }
@@ -1027,7 +1058,6 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
     }
 
     // TEA LADY
-    debugger;
     const neighbours = getPlayerNeighbours(tempGameState.players, playerIndex);
     const teaLadyNeighbour = neighbours.find(neighbour => {
         return (
@@ -1051,6 +1081,7 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
 
     // kill!
     tempGameState.players[playerIndex].alive = false;
+    tempGameState.lastDeath = tempGameState.day;
 
     // SCARLET WOMAN
     if (tempGameState.players[playerIndex].role?.type === PlayerType.WEREWOLF) {

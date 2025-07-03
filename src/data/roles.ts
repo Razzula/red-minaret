@@ -284,6 +284,25 @@ export const roles: Role[] = [
         night: 'Choose a role to kill. (If role not in play, Storyteller decides).',
         delay: 1,
     },
+    {
+        name: 'Blightfang', altName: 'Fang Gu',
+        description: 'Each night*, choose a player: they die. The first Outsider this kills becomes an Evil Fang Gu, and you die instead. There is an extra Outsider in play.',
+        team: Team.EVIL, type: PlayerType.WEREWOLF,
+        order: { type: 'early' },
+        icon: 'roles/Monster Egg',
+        night: 'Choose a player to kill.',
+        delay: 1,
+    },
+    {
+        name: 'Dragulf', altName: 'Zombuul',
+        description: 'Each night*, if no-one died today, choose a player: they die. The first time you die, you live but register as dead.',
+        team: Team.EVIL, type: PlayerType.WEREWOLF,
+        order: { type: 'early' },
+        icon: 'roles/Bone',
+        night: 'Choose a player to kill.',
+        delay: 1,
+        abilityUses: 1,
+    },
 
     // MINIONS
     {

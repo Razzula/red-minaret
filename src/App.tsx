@@ -59,6 +59,7 @@ export type GameState = {
     currentEvent?: LogEvent;
     popupEvent?: PopupEvent;
     bluffs?: Role[];
+    lastDeath?: number; // the day of the last death
 
     lastNight: {
         lynched?: number;

@@ -290,6 +290,10 @@ export function canPlayerActTonight(player: Player, gameState: GameState): boole
         if (player.role?.name === 'Undertaker') {
             return gameState.lastNight.lynched !== undefined;
         }
+        // DRAGULF
+        else if (player.role?.name === 'Dragulf') {
+            return gameState.lastDeath !== gameState.day - 1;
+        }
         return true;
     }
     else {
