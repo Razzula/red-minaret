@@ -238,6 +238,15 @@ export const roles: Role[] = [
         night: 'Choose a player to kill.',
         delay: 1,
     },
+    {
+        name: 'Bloodhound', altName: 'Ojo',
+        description: 'Each night*, choose a role to kill. If they are not in play, the Storyteller chooses who dies.',
+        team: Team.EVIL, type: PlayerType.WEREWOLF,
+        order: { type: 'early' },
+        icon: 'roles/Monster Eye',
+        night: 'Choose a role to kill. (If role not in play, Storyteller decides).',
+        delay: 1,
+    },
 
     // MINIONS
     {
@@ -270,6 +279,12 @@ export const roles: Role[] = [
         description: 'If there are 5 or more players alive & the Werewolf dies, you become the Werewolf.',
         team: Team.EVIL, type: PlayerType.MINION,
         icon: 'roles/Cut Ruby',
+    },
+    {
+        name: 'Gobbo', altName: 'Goblin',
+        description: `If you are nominated and publicly claim "Me Boblin!" before votes are cast, and are then executed, your team wins. You must speak like a goblin (or caveman) all game, or you may die.`,
+        team: Team.EVIL, type: PlayerType.MINION,
+        icon: 'roles/Slime Gel',
     },
 ]
 

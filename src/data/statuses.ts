@@ -61,6 +61,12 @@ export const statuses: { [key: string]: Status } = {
         description: "This player is the Nain's grandchild.",
         icon: 'roles/Wooden Staff',
     },
+    'Goblin': {
+        name: 'Goblin',
+        description: 'This player has made a valid Goblin claim.',
+        expiration: 0, // expires at night
+        icon: 'roles/Slime Gel',
+    },
 }
 
 export default statuses;

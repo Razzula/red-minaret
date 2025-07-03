@@ -569,6 +569,35 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
         log.forEach(logEvent => {
             tempGameState.log.push(logEvent);
         });
+
+        // GOBBO
+        if (tempGameState.players[lynchedIndex].role?.name === 'Gobbo') {
+            if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Goblin')) {
+                if (!isPlayerPoisoned(tempGameState.players[lynchedIndex])) {
+                    // game log
+                    tempGameState.log = log;
+                    // alert
+                    popupEvent.heading = 'The Gobbo has been lynched!';
+                    popupEvent.events = log;
+                    tempGameState.popupEvent = popupEvent;
+                    tempGameState.state = PlayState.DEFEAT;
+                    setGameState({ ...tempGameState });
+                    return null;
+                }
+                else {
+                    // game log
+                    log.push({
+                        type: 'private',
+                        message: 'The game continues...',
+                        indent: 1,
+                        extra: `${tempGameState.players[lynchedIndex].name} was the Gobbo, however, they were poisoned.`,
+                    });
+                    // alert
+                    popupEvent.heading = 'The Gobbo has been lynched!';
+                    tempGameState.popupEvent = popupEvent;
+                }
+            }
+        }
     }
     else {
         tempGameState.lastNight.lynched = undefined;
@@ -648,8 +677,8 @@ export function handleAction(
 
     let tempGameState = { ...gameState };
 
-    if (currentRole.name === 'Werewolf' && gameState.day > currentRoleDelay) {
-        // WEREWOLF
+    if ((currentRole.name === 'Werewolf' || currentRole.name === 'Bloodhound' ) && gameState.day > currentRoleDelay) {
+        // WEREWOLF, BLOODHOUND
         const statusToApply = statuses['Targeted'];
         if (playerIsPoisoned) {
             // POISONED

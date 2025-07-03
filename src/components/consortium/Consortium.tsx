@@ -517,7 +517,7 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             );
 
             // WEREWOLF
-            if (currentPlayer.role?.name === 'Werewolf') {
+            if (currentPlayer.role?.type === PlayerType.WEREWOLF) {
                 // Bluffs
                 if (gameState.bluffs) {
                     commPopups.push(

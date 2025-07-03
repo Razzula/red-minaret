@@ -10,6 +10,7 @@ import GridList from './common/GridList/GridList';
 
 import styles from './consortium/Consortium.module.scss';
 import { isPlayerIntoxicated, isPlayerPoisoned, isPlayerVillager, Result } from '../game/utils';
+import statuses from '../data/statuses';
 
 type VotingProps = {
     gameState: GameState;
@@ -146,6 +147,33 @@ export function Voting({
         }
     }
 
+    function handleGobboClaim() {
+        if (nominatedPlayer && nominatingPlayer) {
+            const tempGameState = { ...gameState };
+            const nominated = tempGameState.players.find(player => player.name === nominatedPlayer);
+            if (nominated && nominated.role?.name === 'Gobbo') {
+                // Gobbo Claim
+                const gobboIndex = tempGameState.players.findIndex(player => player.name === nominated.name);
+                tempGameState.players[gobboIndex].statuses.push({...statuses.Goblin});
+
+                // game log
+                tempGameState.log.push({
+                    type: 'public',
+                    message: `${nominatingPlayer} has made a valid Goblin claim!`,
+                });
+
+                // alert
+                tempGameState.popupEvent = {
+                    heading: `${nominatingPlayer} has made a valid Goblin claim!`,
+                    message: `${nominatedPlayer} is the Gobbo.`,
+                    events: [],
+                }
+
+                setGameState(tempGameState);
+            }
+        }
+    }
+
     function profileSelect(selectedPlayer: string | undefined, selectablePlayers: string[], setPlayer: React.Dispatch<React.SetStateAction<string | undefined>>) {
         return (
             <Tooltip enableClick={true} enableHover={false}>
@@ -243,6 +271,8 @@ export function Voting({
     }
     else {
         // VOTING PROPER
+        const isGobboNominated = gameState.players.some(player => player.name === nominatedPlayer && player.role?.name === 'Gobbo');
+
         return (
             <div className='dialogue-content'>
                 <div className='column'>
@@ -272,14 +302,28 @@ export function Voting({
                     </GridList>
 
                     <span className={castVotes >= voteThreshold ? Team.GOOD : Team.EVIL}>{castVotes}/{totalVotes}</span>
-                    <Tooltip placement='bottom'>
-                        <TooltipTrigger>
-                            <button onClick={endVote} disabled={invalidSelection}>
-                                <i className='ra ra-large-hammer' />
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent>End Vote</TooltipContent>
-                    </Tooltip>
+                    <span className='row'>
+                        {/* GOBBO */}
+                        { isGobboNominated &&
+                            <Tooltip placement='bottom'>
+                                <TooltipTrigger>
+                                    <button onClick={handleGobboClaim} disabled={invalidSelection}>
+                                        <img src='/red-minaret/icons/roles/Slime Gel.png' alt='Gobbo Claim' className={styles.circleButton} />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>Gobbo Claim</TooltipContent>
+                            </Tooltip>
+                        }
+
+                        <Tooltip placement='bottom'>
+                            <TooltipTrigger>
+                                <button onClick={endVote} disabled={invalidSelection}>
+                                    <i className='ra ra-large-hammer' />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>End Vote</TooltipContent>
+                        </Tooltip>
+                    </span>
                 </div>
             </div>
         );
