@@ -44,8 +44,21 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                     blockers.push(`${player.role?.name} needs >=${prereq.count} ${prereq.value}`);
                 }
                 return valid;
-            }
-        ));
+            })
+        );
+
+        const statusPreReqs = gameState.players.every((player) =>
+            player.role?.prereqStatus?.every((prereq) => {
+                const count = gameState.players.filter((p) =>
+                    p.statuses?.some((s) => s.name === prereq.value)
+                ).length;
+                const valid = count >= prereq.count;
+                if (!valid) {
+                    blockers.push(`${player.role?.name} needs >=${prereq.count} ${prereq.value}`);
+                }
+                return valid;
+            }) ?? true
+        );
 
         const isWerewolf = gameState.players.find(x => x.role?.type === PlayerType.WEREWOLF) !== undefined;
         if (!isWerewolf) {
@@ -79,11 +92,13 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
             && !duplicatedRoles
             && allRolesAssigned
             && rolePreReqs
+            && statusPreReqs
         );
     }, [gameState]);
 
     function startGame() {
-        setGameState({ ...gameState,
+        setGameState({
+            ...gameState,
             day: 1, time: 0, state: PlayState.PLAYING,
             turn: 0,
             log: [{ type: 'heading', message: 'Day 1' }]
@@ -102,13 +117,13 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                     label={(
                         <div>
                             Assign Roles
-                            { werewolfPool.length <= 0 &&
+                            {werewolfPool.length <= 0 &&
                                 <div className='error'>
                                     <hr />
                                     You require a <strong className='evil'>Werewolf</strong>, but none are available.
                                 </div>
                             }
-                            { gameState.players.length > 5 && minionPool.length <= 0 &&
+                            {gameState.players.length > 5 && minionPool.length <= 0 &&
                                 <div className='error'>
                                     <hr />
                                     You require a <strong className='evil'>Minion</strong>, but none are available.
@@ -135,7 +150,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                     label={(
                         <div>
                             Begin Game
-                            { blocker.length > 0 &&
+                            {blocker.length > 0 &&
                                 <div className='error'>
                                     <hr />
                                     {
@@ -161,7 +176,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
                 label={(
                     <div>
                         Continue
-                        { gameState.advancementBlocked &&
+                        {gameState.advancementBlocked &&
                             <div className='error'>
                                 <hr />
                                 {gameState.advancementBlocked}

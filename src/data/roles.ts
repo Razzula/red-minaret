@@ -24,6 +24,10 @@ export type Role  = {
         value: PlayerTypeType | TeamType;
         count: number;
     }[];
+    prereqStatus?: {
+        value: string;
+        count: number;
+    }[];
 
     notes?: string[];
 }
@@ -100,7 +104,11 @@ export const roles: Role[] = [
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Seer Eye',
         night: 'Choose two players to investigate.',
-        // note: ONE GOOD player must be set as a Red Herring
+
+        // ONE GOOD player must be set as a Red Herring
+        prereqStatus: [
+            { value: 'Red Herring', count: 1 },
+        ],
     },
     {
         name: 'Undertaker',
@@ -183,6 +191,10 @@ export const roles: Role[] = [
         icon: 'roles/Wooden Staff',
         night: "Learn the Grandchild's identity and role.",
         abilityUses: 1,
+
+        prereqStatus: [
+            { value: 'Grandchild', count: 1 },
+        ],
     },
 
     // OUTSIDERS

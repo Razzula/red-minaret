@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GameState, Player } from "../../App";
-import { PlayerType } from "../../enums";
+import { PlayerType, PlayState } from "../../enums";
 import { countEvilPairs, findPlayersNeighbours, isPlayerDrunk, isPlayerEvil, isPlayerPoisoned, Result } from "../../game/utils";
 import { PromptOptions } from "../common/Prompt/Prompt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip/Tooltip";
@@ -15,9 +15,10 @@ type CentreInfoProps = {
     selectedPlayers: number[];
 
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>;
+    setSelectionPopup: (title: string | null, params?: string[]) => void;
 };
 
-export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer, players, selectedPlayers, showPrompt }) => {
+export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer, players, selectedPlayers, showPrompt, setSelectionPopup }) => {
 
     const [playerResult, setPlayerResult] = useState<string | null>(null);
 
@@ -66,6 +67,11 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         const player = players[currentPlayer];
         let playerResult: string;
 
+        if (gameState.state !== PlayState.PLAYING || gameState.popupEvent !== undefined) {
+            // game is not in progress, so no results
+            return;
+        }
+
         // SEER
         if (player.role?.name === 'Seer') {
             countEvilSubset(selectedPlayers, player.role?.name).then((result) => {
@@ -100,12 +106,14 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         else if (player.role?.name === 'Spy') {
             playerResult = selectedPlayers.length === 1 ? (gameState.players[selectedPlayers[0]].trueRole?.name ?? 'Select Player') : 'Select Player';
             setPlayerResult(playerResult);
+            setSelectionPopup('Show Spy Result', [playerResult]);
         }
         else {
             setPlayerResult('Select Player');
+            setSelectionPopup(null);
         }
 
-    }, [currentPlayer, gameState, players, selectedPlayers, showPrompt]);
+    }, [currentPlayer, players, selectedPlayers, showPrompt]);
 
     const isDrunk = isPlayerDrunk(players[currentPlayer]);
     const isPoisoned = isPlayerPoisoned(players[currentPlayer]);

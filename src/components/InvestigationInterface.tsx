@@ -20,7 +20,7 @@ interface InvestigationProps {
 
 const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, /*possibleRoles,*/ onInvestigate, setGameState }) => {
 
-    const [roleFilter, setRoleFilter] = useState<PlayerTypeType>();
+    const [roleFilters, setRoleFilters] = useState<PlayerTypeType[]>();
     const [roles, setRoles] = useState<Role[]>([]);
     const [relaventRole, setRelaventRole] = useState<Role>();
     const [investigator, setInvestigator] = useState<Player>();
@@ -34,15 +34,15 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
 
     useEffect(() => {
         const activeRoles = getActiveRoles(players);
-        if (roleFilter) {
+        if (roleFilters) {
             setRoles(
-                activeRoles.filter((role) => role.type === roleFilter)
+                activeRoles.filter((role) => roleFilters.includes(role.type as PlayerTypeType))
             );
         }
         else {
             setRoles(activeRoles);
         }
-    }, [players, roleFilter]);
+    }, [players, roleFilters]);
 
     useEffect(() => {
         const allRoles = players.flatMap((player) => (player.role ? [player.role] : []));
@@ -54,16 +54,19 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     useEffect(() => {
         switch (relaventRole?.name) {
             case 'Washerwoman':
-                setRoleFilter(PlayerType.VILLAGER);
+                setRoleFilters([PlayerType.VILLAGER]);
                 break;
             case 'Librarian':
-                setRoleFilter(PlayerType.OUTSIDER);
+                setRoleFilters([PlayerType.OUTSIDER]);
                 break;
             case 'Investigator':
-                setRoleFilter(PlayerType.MINION);
+                setRoleFilters([PlayerType.MINION]);
+                break;
+            case 'Nain':
+                setRoleFilters([PlayerType.VILLAGER, PlayerType.OUTSIDER]);
                 break;
             default:
-                setRoleFilter(undefined);
+                setRoleFilters(undefined);
                 break;
         }
 

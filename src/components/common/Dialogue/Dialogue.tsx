@@ -144,7 +144,6 @@ type DialogueContentProps = React.HTMLProps<HTMLDivElement> & {
 export const DialogueContent = React.forwardRef<HTMLDivElement, DialogueContentProps>(
     function DialogueContent(props , propRef) {
         const { overlayopacity = 0.5, children, ...rest } = props;
-        console.warn('overlayopacity', overlayopacity);
 
         const { context: floatingContext, ...context } = useDialogueContext();
         const ref = useMergeRefs([context.refs.setFloating, propRef]);

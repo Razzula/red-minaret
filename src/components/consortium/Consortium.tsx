@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState, LogEvent, Player, Settings } from '../../App';
 import { Dialogue, DialogueContent, DialogueTrigger } from '../common/Dialogue/Dialogue';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
+import { Tooltip, TooltipContent, TooltipHoverContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
 
 import styles from './Consortium.module.scss';
-import { PlayState } from '../../enums';
+import { PlayerType, PlayState } from '../../enums';
 import Log from '../Log';
 import InvestigationInterface from '../InvestigationInterface';
 import { advanceTime } from '../../game/core';
@@ -390,12 +390,14 @@ type CentrepieceProps = {
 };
 
 const Centrepiece: React.FC<CentrepieceProps> = ({
-    gameState, players, currentPlayer, selectedPlayers, showPrompt,
+    gameState, players, currentPlayer: currentPlayerIndex, selectedPlayers, showPrompt,
     addPlayer, handleSpecialAction, cancelSpecialState, togglePlayerAlive, votingAllowed, setVotingAllowed,
     setGameState,
 }) => {
 
     const [centrepiece, setCentrepiece] = useState<JSX.Element | null>(null);
+    const [commPopups, setCommPopups] = useState<JSX.Element[]>([]);
+    const [selectionCommPopup, setSelectionCommPopup] = useState<JSX.Element | null>(null);
 
     useEffect(() => {
 
@@ -478,19 +480,130 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             return;
         }
 
-        if (gameState.time === 0 && currentPlayer !== null) {
-            const playerCanAct = canPlayerActTonight(players[currentPlayer], gameState);
+        if (gameState.time === 0 && currentPlayerIndex !== null) {
+            const playerCanAct = canPlayerActTonight(players[currentPlayerIndex], gameState);
             if (playerCanAct) {
-                setCentrepiece(<CentreInfo gameState={gameState} currentPlayer={currentPlayer} players={players} selectedPlayers={selectedPlayers} showPrompt={showPrompt} />);
+                setCentrepiece(
+                    <CentreInfo
+                        gameState={gameState} currentPlayer={currentPlayerIndex} players={players} selectedPlayers={selectedPlayers} 
+                        showPrompt={showPrompt} setSelectionPopup={setSelectionPopup}
+                    />);
                 return;
             }
         }
 
         setCentrepiece(null);
+        setSelectionPopup(null);
 
-    }, [gameState, players, currentPlayer, selectedPlayers, votingAllowed]);
+    }, [gameState, players, currentPlayerIndex, selectedPlayers, votingAllowed]);
 
-    return centrepiece;
+    // COMMUNICATION POPUPS
+    useEffect(() => {
+        const commPopups: JSX.Element[] = [];
+
+        if (currentPlayerIndex === null || gameState.state !== PlayState.PLAYING || gameState.popupEvent !== undefined) {
+            // no player selected or game is not in progress, so no communication popups
+            setCommPopups(commPopups);
+            return;
+        }
+
+        const currentPlayer = players[currentPlayerIndex];
+
+        // FIRST NIGHT
+        if (gameState.day === 1 && gameState.time === 0) {
+            // Player Role
+            commPopups.push(
+                commPopup('Show Player Role', [currentPlayer.role?.name ?? '???'])
+            );
+
+            // WEREWOLF
+            if (currentPlayer.role?.name === 'Werewolf') {
+                // Bluffs
+                if (gameState.bluffs) {
+                    commPopups.push(
+                        commPopup('Show Bluffs', gameState.bluffs.map((b) => b.name))
+                    );
+                }
+                
+                // Minion
+                const minion = players.find((p) => p.role?.type === PlayerType.MINION);
+                if (minion) {
+                    commPopups.push(
+                        commPopup('Show Minion', [minion.role?.name ?? 'Error'])
+                    );
+                }
+            }
+            // MINION
+            else if (currentPlayer.role?.type === PlayerType.MINION) {
+                // Werewolf
+                const werewolves = players.filter((p) => p.role?.type === PlayerType.WEREWOLF);
+                if (werewolves.length > 0) {
+                    commPopups.push(
+                        commPopup('Show Werewolves', werewolves.map((w) => w.name))
+                    );
+                }
+            }
+
+            setCommPopups(commPopups);
+            return;
+        }
+    }, [gameState, currentPlayerIndex]);
+
+    function setSelectionPopup(title: string | null, params?: string[]) {
+        if (!title || !params || params.length === 0) {
+            setSelectionCommPopup(null);
+            return;
+        }
+        setSelectionCommPopup(commPopup(title, params));
+    }
+
+    function commPopup(title: string, params: string[]) {
+        return (
+            <div style={{
+                width: '52px',
+                height: '52px',
+            }}>
+                <Tooltip enableHover={true} enableClick={false}>
+                    <TooltipTrigger>
+                        <button
+                            className={classNames(styles.circleButton, styles.statusCircle)}
+                            disabled={false}
+                            onClick={() => setGameState((prev) => (
+                                {
+                                    ...prev,
+                                    popupEvent: {
+                                        override: {
+                                            type: 'communicate',
+                                            blackout: true,
+                                            params,
+                                        }
+                                    }
+                                }
+                            ))
+                            }
+                        >
+                            <i className='ra ra-speech-bubble' />
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <TooltipHoverContent>
+                            <div style={{ maxWidth: '300px' }}>
+                                {title}
+                            </div>
+                        </TooltipHoverContent>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            {centrepiece}
+            {commPopups}
+            {selectionCommPopup}
+        </div>
+    );
 };
 
 export default Consortium;

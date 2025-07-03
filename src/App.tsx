@@ -54,7 +54,7 @@ export type GameState = {
 
     /* extras */
     log: LogEvent[];
-    logBuffer: LogEvent[];
+    logBuffer: LogEvent[];  
     currentEvent?: LogEvent;
     popupEvent?: PopupEvent;
     bluffs?: Role[];
@@ -187,7 +187,7 @@ function App() {
                         popupEvent: {
                             override: {
                                 type: 'investigate',
-                                param: player.role?.name,
+                                params: [player.role?.name ?? ''],
                             }
                         }
                     }));
