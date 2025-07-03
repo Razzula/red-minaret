@@ -203,6 +203,12 @@ export const roles: Role[] = [
         icon: 'roles/Wool',
     },
     {
+        name: 'Cannibal',
+        description: 'You have the ability of the most recent lynch victim. If they are Evil, you are poisoned until a good player dies by execution.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Ham',
+    },
+    {
         name: 'Tea Lady',
         description: 'If both of your alive neighbours are Good, they cannot die.',
         team: Team.GOOD, type: PlayerType.VILLAGER,

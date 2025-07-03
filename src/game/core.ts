@@ -85,8 +85,6 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     outsiderIndicies.forEach(index => {
         // OUTSIDER
         const role = tempOutsiderPool[Math.floor(Math.random() * tempOutsiderPool.length)]
-        setRole(gameState, index, roles[role]);
-        tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
 
         // DRUNK
         if (roles[role].name === 'Drunk') {
@@ -95,6 +93,11 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
         else if (roles[role].name === 'Lunatic') {
             lunaticIndex = index;
         }
+        else {
+            tempOutsiderPool.splice(tempOutsiderPool.indexOf(role), 1);
+            setRole(gameState, index, roles[role]);
+        }
+
     });
 
     villagerIndicies.forEach(index => {
@@ -608,6 +611,18 @@ export async function handleDawn(
 }
 
 export function handleDusk(tempGameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>): GameState | null {
+
+    // CANNIBAL
+    const cannibalIndex = tempGameState.players.findIndex(player => player.trueRole?.name === 'Cannibal');
+    if (cannibalIndex !== -1) {
+        // restore Cannibal status
+        tempGameState.players[cannibalIndex].statuses = tempGameState.players[cannibalIndex].statuses?.filter(
+            (status) => status.name !== 'Cannibal'
+        );
+        const cannibalRole = roles.find(role => role.name === 'Cannibal') as Role;
+        updateRole(tempGameState, cannibalIndex, cannibalRole);
+    }
+
     // handle lynch
     if (tempGameState.choppingBlock) {
         const lynchedIndex = tempGameState.players.findIndex(player => player.name === tempGameState.choppingBlock?.playerName);
@@ -684,6 +699,15 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
                 }
             }
         }
+
+        // CANNIBAL
+        const cannibalIndex = tempGameState.players.findIndex(player => player.role?.name === 'Cannibal');
+        if (cannibalIndex !== -1 && isPlayerEvil(tempGameState.players[lynchedIndex]) !== Result.TRUE) {
+            tempGameState.players[cannibalIndex].statuses?.push({ ...statuses.Cannibal });
+            const cannibalRole = roles.find(role => role.name === 'Cannibal') as Role;
+            setRole(tempGameState, cannibalIndex, cannibalRole, tempGameState.players[lynchedIndex].role as Role);
+        }
+
     }
     else {
         tempGameState.lastNight.lynched = undefined;

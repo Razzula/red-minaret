@@ -84,6 +84,11 @@ export const statuses: { [key: string]: Status } = {
             "A Lunatic player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
         ],
     },
+    'Cannibal': {
+        name: 'Cannibal',
+        description: 'This player is the Cannibal.',
+        icon: 'roles/Ham',
+    }
 }
 
 export default statuses;

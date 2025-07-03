@@ -281,7 +281,7 @@ export function canPlayerActTonight(player: Player, gameState: GameState): boole
     else if (!player.alive) {
         return false;
     }
-
+    
     if (player.role?.night
         && (roleDelay <= gameState.day)
         && (player.role?.abilityUses === undefined || player.abilityUses < player.role?.abilityUses)
