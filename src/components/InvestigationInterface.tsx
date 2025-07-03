@@ -34,7 +34,6 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
 
     useEffect(() => {
         const activeRoles = getActiveRoles(players);
-        console.log(activeRoles);
         if (roleFilter) {
             setRoles(
                 activeRoles.filter((role) => role.type === roleFilter)

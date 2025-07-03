@@ -98,7 +98,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         }
         // SPY
         else if (player.role?.name === 'Spy') {
-            playerResult = selectedPlayers.length === 1 ? (gameState.players[selectedPlayers[0]].role?.name ?? 'Select Player') : 'Select Player';
+            playerResult = selectedPlayers.length === 1 ? (gameState.players[selectedPlayers[0]].trueRole?.name ?? 'Select Player') : 'Select Player';
             setPlayerResult(playerResult);
         }
         else {

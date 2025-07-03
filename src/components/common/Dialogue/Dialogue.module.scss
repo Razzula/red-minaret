@@ -1,10 +1,10 @@
-.DialogOverlay {
-    background: rgba(0, 0, 0, 0.5);
+.DialogueOverlay {
+    background: rgba(0, 0, 0, var(--dialogue-overlay-opacity, 0.5));
     display: grid;
     place-items: center;
 }
 
-.Dialog {
+.Dialogue {
     margin: 15px;
     background-color: white;
     padding: 15px;

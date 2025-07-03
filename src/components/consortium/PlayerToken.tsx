@@ -51,8 +51,13 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
 
     const isMobile = (typeof window !== 'undefined') && (window.innerWidth <= 767);
 
+    const trueRole = player.trueRole || player.role;
     const role = gameState.players[index].role;
-    const roleDisplayName = settings.useOriginalNames ? (role?.altName ?? role?.name) : role?.name;
+
+    const roleTrueName = settings.useOriginalNames ? (trueRole?.altName ?? trueRole?.name) : trueRole?.name;
+    const roleName = settings.useOriginalNames ? (role?.altName ?? role?.name) : role?.name;
+    const roleDisplayName = (roleTrueName !== roleName) ? `${roleTrueName} ${roleName}` : roleName;
+
     const circleDiameter = isMobile ? 60 : 100;
     const circleRadius = circleDiameter / 2;
     const padding = isMobile ? 5 : 40;
@@ -261,7 +266,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                         <TooltipContent>
                             <TooltipHoverContent>
                                 <div>
-                                    <div><strong>{player.trueRole ? `${player.trueRole.name} ` : ''}{roleDisplayName}</strong></div>
+                                    <div><strong>{roleDisplayName}</strong></div>
                                     <div>{player.role?.description || <i>No Role Assigned</i>}</div>
                                 </div>
                                 { isPendingExecution &&

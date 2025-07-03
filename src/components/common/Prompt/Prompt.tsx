@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '../Dialog/Dialog';
+import { Dialogue, DialogueContent } from '../Dialogue/Dialogue';
 
 export type PromptOptions = {
     title: string;
@@ -56,9 +56,9 @@ export function usePrompt() {
         setIsOpen(false);
     };
 
-    const PromptDialog = isOpen && options ? (
-        <Dialog open={isOpen}>
-            <DialogContent>
+    const PromptDialogue = isOpen && options ? (
+        <Dialogue open={isOpen}>
+            <DialogueContent>
                 <div className='dialogue-content column'>
                     <div className='dialogue-header'>{options.title}</div>
                     <div className='dialogue-body'>{options.message}</div>
@@ -101,9 +101,9 @@ export function usePrompt() {
                         </button>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+            </DialogueContent>
+        </Dialogue>
     ) : null;
 
-    return { showPrompt, PromptDialog };
+    return { showPrompt, PromptDialogue };
 }

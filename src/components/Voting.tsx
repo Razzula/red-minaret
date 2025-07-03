@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { GameState, LogEvent, Player } from '../App';
 import { Tooltip, TooltipContent, TooltipTrigger } from './common/Tooltip/Tooltip';
-import { DialogClose, useDialogContext } from './common/Dialog/Dialog';
+import { DialogueClose, useDialogueContext } from './common/Dialogue/Dialogue';
 import { enactVote } from '../game/core';
 import { Team } from '../enums';
 import CheckButton from './common/CheckButton/CheckButton';
@@ -31,7 +31,7 @@ export function Voting({
 
     const [votes, setVotes] = useState<Record<string, boolean>>(getEligibleVoters());
 
-    const { setOpen } = useDialogContext();
+    const { setOpen } = useDialogueContext();
 
     useEffect(() => {
         if (voting && nominatedPlayer) { // player nominated
@@ -221,7 +221,7 @@ export function Voting({
                         <div>
                             <Tooltip placement='bottom'>
                                 <TooltipTrigger>
-                                    <DialogClose><i className='ra ra-cancel' /></DialogClose>
+                                    <DialogueClose><i className='ra ra-cancel' /></DialogueClose>
                                 </TooltipTrigger>
                                 <TooltipContent>Close</TooltipContent>
                             </Tooltip>

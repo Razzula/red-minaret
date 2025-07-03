@@ -11,19 +11,19 @@ import {
     FloatingOverlay,
 } from "@floating-ui/react";
 
-import styles from './Dialog.module.scss';
+import styles from './Dialogue.module.scss';
 
-interface DialogOptions {
+interface DialogueOptions {
     initialOpen?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
 }
 
-function useDialog({
+function useDialogue({
     initialOpen = false,
     open: controlledOpen,
     onOpenChange: setControlledOpen
-}: DialogOptions = {}) {
+}: DialogueOptions = {}) {
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen);
     const [labelId, setLabelId] = React.useState<string | undefined>();
     const [descriptionId, setDescriptionId] = React.useState<
@@ -64,7 +64,7 @@ function useDialog({
 }
 
 type ContextType =
-    | (ReturnType<typeof useDialog> & {
+    | (ReturnType<typeof useDialogue> & {
         setLabelId: React.Dispatch<React.SetStateAction<string | undefined>>;
         setDescriptionId: React.Dispatch<
             React.SetStateAction<string | undefined>
@@ -72,40 +72,40 @@ type ContextType =
     })
     | null;
 
-const DialogContext = React.createContext<ContextType>(null);
+const DialogueContext = React.createContext<ContextType>(null);
 
-export const useDialogContext = () => {
-    const context = React.useContext(DialogContext);
+export const useDialogueContext = () => {
+    const context = React.useContext(DialogueContext);
 
     if (context == null) {
-        throw new Error("Dialog components must be wrapped in <Dialog />");
+        throw new Error("Dialogue components must be wrapped in <Dialogue />");
     }
 
     return context;
 };
 
-export function Dialog({
+export function Dialogue({
     children,
     ...options
 }: {
     children: React.ReactNode;
-} & DialogOptions) {
-    const Dialog = useDialog(options);
+} & DialogueOptions) {
+    const Dialogue = useDialogue(options);
     return (
-        <DialogContext.Provider value={Dialog}>{children}</DialogContext.Provider>
+        <DialogueContext.Provider value={Dialogue}>{children}</DialogueContext.Provider>
     );
 }
 
-interface DialogTriggerProps {
+interface DialogueTriggerProps {
     children: React.ReactNode;
     asChild?: boolean;
 }
 
-export const DialogTrigger = React.forwardRef<
+export const DialogueTrigger = React.forwardRef<
     HTMLElement,
-    React.HTMLProps<HTMLElement> & DialogTriggerProps
->(function DialogTrigger({ children, asChild = false, ...props }, propRef) {
-    const context = useDialogContext();
+    React.HTMLProps<HTMLElement> & DialogueTriggerProps
+>(function DialogueTrigger({ children, asChild = false, ...props }, propRef) {
+    const context = useDialogueContext();
     const childrenRef = (children as any).ref;
     const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef]);
 
@@ -137,38 +137,48 @@ export const DialogTrigger = React.forwardRef<
     );
 });
 
-export const DialogContent = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
->(function DialogContent(props, propRef) {
-    const { context: floatingContext, ...context } = useDialogContext();
-    const ref = useMergeRefs([context.refs.setFloating, propRef]);
+type DialogueContentProps = React.HTMLProps<HTMLDivElement> & {
+    overlayopacity?: number;
+};
 
-    if (!floatingContext.open) return null;
+export const DialogueContent = React.forwardRef<HTMLDivElement, DialogueContentProps>(
+    function DialogueContent(props , propRef) {
+        const { overlayopacity = 0.5, children, ...rest } = props;
+        console.warn('overlayopacity', overlayopacity);
 
-    return (
-        <FloatingPortal>
-            <FloatingOverlay className={styles.DialogOverlay} lockScroll>
-                <FloatingFocusManager context={floatingContext}>
-                    <div
-                        ref={ref}
-                        aria-labelledby={context.labelId}
-                        aria-describedby={context.descriptionId}
-                        {...context.getFloatingProps(props)}
-                    >
-                        {props.children}
-                    </div>
-                </FloatingFocusManager>
-            </FloatingOverlay>
-        </FloatingPortal>
-    );
-});
+        const { context: floatingContext, ...context } = useDialogueContext();
+        const ref = useMergeRefs([context.refs.setFloating, propRef]);
 
-export const DialogClose = React.forwardRef<
+        if (!floatingContext.open) return null;
+
+        return (
+            <FloatingPortal>
+                <FloatingOverlay
+                    className={styles.DialogueOverlay}
+                    lockScroll
+                    style={{ '--dialogue-overlay-opacity': overlayopacity } as React.CSSProperties}
+                >
+                    <FloatingFocusManager context={floatingContext}>
+                        <div
+                            ref={ref}
+                            aria-labelledby={context.labelId}
+                            aria-describedby={context.descriptionId}
+                            {...context.getFloatingProps(rest)}
+                        >
+                            {children}
+                        </div>
+                    </FloatingFocusManager>
+                </FloatingOverlay>
+            </FloatingPortal>
+        );
+    }
+);
+
+export const DialogueClose = React.forwardRef<
     HTMLButtonElement,
     React.ButtonHTMLAttributes<HTMLButtonElement>
->(function DialogClose(props, ref) {
-    const { setOpen } = useDialogContext();
+>(function DialogueClose(props, ref) {
+    const { setOpen } = useDialogueContext();
     return (
         <button type="button" {...props} ref={ref} onClick={() => setOpen(false)} />
     );

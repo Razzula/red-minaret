@@ -94,8 +94,9 @@ export type PopupEvent = {
     events?: LogEvent[];
     extra?: string;
     override?: {
-        type: 'investigate' | 'welcome' | 'help';
-        param?: string;
+        type: 'investigate' | 'communicate' | 'welcome' | 'help';
+        blackout?: boolean;
+        params?: string[];
     };
 }
 
@@ -125,7 +126,7 @@ function App() {
     const [showLeftPanel, setShowLeftPanel] = useState<boolean>(false);
     const [showRightPanel, setShowRightPanel] = useState<boolean>(false);
 
-    const { showPrompt, PromptDialog } = usePrompt();
+    const { showPrompt, PromptDialogue } = usePrompt();
 
     const isMobile = (typeof window !== 'undefined') && (window.innerWidth <= 767);
 
@@ -480,7 +481,6 @@ function App() {
                                         onChange={() => {
                                             // add script roles to the pool
                                             const newRoles = script.roles.map(roleName => roles.findIndex(role => role.name === roleName));
-                                            console.log(newRoles);
                                             setVillagerPool(newRoles.filter(index => roles[index].type === PlayerType.VILLAGER));
                                             setOutsiderPool(newRoles.filter(index => roles[index].type === PlayerType.OUTSIDER));
                                             setWerewolfPool(newRoles.filter(index => roles[index].type === PlayerType.WEREWOLF));
@@ -600,7 +600,7 @@ function App() {
             />
 
             {/* PROMPT */}
-            {PromptDialog}
+            {PromptDialogue}
 
             {/* TOP-RIGHT */}
             <div className='dialogue-x'>
@@ -778,10 +778,18 @@ function App() {
                     }}
                 >
                     <IconButton
+                        icon={<i className='ra ra-speech-bubble' />}
+                        onClick={() => setGameState((prev) => ({ ...prev, popupEvent: { override: { type: 'communicate', blackout: true } } }))}
+                        label={[
+                            <TooltipHoverContent key='hover'>Communicate</TooltipHoverContent>,
+                        ]}
+                    />
+
+                    <IconButton
                         icon={<i className='ra ra-ocarina' />}
                         label={[
                             <TooltipHoverContent key='hover'>Soundboard</TooltipHoverContent>,
-                            <TooltipClickContent key='click'><Soundboard /></TooltipClickContent>
+                            <TooltipClickContent key='click'><Soundboard /></TooltipClickContent>,
                         ]}
                     />
 

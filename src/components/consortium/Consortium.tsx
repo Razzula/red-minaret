@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { GameState, LogEvent, Player, Settings } from '../../App';
-import { Dialog, DialogContent, DialogTrigger } from '../common/Dialog/Dialog';
+import { Dialogue, DialogueContent, DialogueTrigger } from '../common/Dialogue/Dialogue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../common/Tooltip/Tooltip';
 import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
@@ -16,6 +16,7 @@ import { canPlayerActTonight } from '../../game/utils';
 import CentreInfo from './CentreInfo';
 import { PromptOptions } from '../common/Prompt/Prompt';
 import classNames from 'classnames';
+import CommunicateInterface from '../CommunicateInterface';
 
 type ConsortiumProps = {
     gameState: GameState;
@@ -62,7 +63,6 @@ const Consortium: React.FC<ConsortiumProps> = ({
             if (containerRef.current) {
                 const container = containerRef.current;
                 const { width, height } = container.getBoundingClientRect();
-                console.log(container, width);
                 setcentreX(width / 2);
                 setcentreY(height / 2);
                 setRadius(Math.min(width, height) / 2);
@@ -139,8 +139,8 @@ const Consortium: React.FC<ConsortiumProps> = ({
 
             {/* ALERT POPUP */}
             {gameState.popupEvent && (
-                <Dialog open={gameState.popupEvent !== undefined}>
-                    <DialogContent>
+                <Dialogue open={gameState.popupEvent !== undefined}>
+                    <DialogueContent overlayopacity={gameState.popupEvent.override?.blackout ? 1 : 0.5}>
                         {
                             gameState.popupEvent.override ?
                                 // HANDLE OVERRIDES
@@ -148,12 +148,20 @@ const Consortium: React.FC<ConsortiumProps> = ({
                                     switch (gameState.popupEvent?.override?.type) {
                                         case 'investigate':
                                             return <InvestigationInterface
-                                                title={gameState.popupEvent.override.param}
+                                                title={gameState.popupEvent.override.params ? gameState.popupEvent.override.params[0] : ''}
                                                 players={players}
                                                 possibleRoles={[]} // TODO
                                                 setGameState={setGameState}
                                                 onInvestigate={handleInvestigate}
                                             />;
+                                        case 'communicate':
+                                            return (
+                                                <CommunicateInterface
+                                                    onClose={() => setGameState((prev) => ({ ...prev, popupEvent: undefined }))}
+                                                    gameState={gameState}
+                                                    initOptions={gameState.popupEvent.override.params}
+                                                />
+                                            );
                                         case 'welcome':
                                             return (
                                                 <div className='dialogue-content'
@@ -324,8 +332,8 @@ const Consortium: React.FC<ConsortiumProps> = ({
                                     </div>
                                 </div>
                         }
-                    </DialogContent>
-                </Dialog>
+                    </DialogueContent>
+                </Dialogue>
             )
             }
 
@@ -440,10 +448,10 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
         }
 
         if (gameState.time === 2) {
-            // Voting Dialog
+            // Voting Dialogue
             setCentrepiece(
-                <Dialog>
-                    <DialogTrigger>
+                <Dialogue>
+                    <DialogueTrigger>
                         <Tooltip>
                             <TooltipTrigger>
                                 <button
@@ -458,14 +466,14 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
                             </TooltipTrigger>
                             <TooltipContent>Nominate for Lynching</TooltipContent>
                         </Tooltip>
-                    </DialogTrigger>
-                    <DialogContent>
+                    </DialogueTrigger>
+                    <DialogueContent>
                         <Voting
                             gameState={gameState} setGameState={setGameState} togglePlayerAlive={togglePlayerAlive}
                             setVotingAllowed={setVotingAllowed}
                         />
-                    </DialogContent>
-                </Dialog>
+                    </DialogueContent>
+                </Dialogue>
             );
             return;
         }
