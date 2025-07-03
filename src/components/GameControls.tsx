@@ -36,6 +36,22 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
             blockers.push('Not enough players');
         }
 
+        // WITCHER
+        const isWitcherGame = gameState.players.some((player) => player.trueRole?.name === 'Witcher');
+        if (isWitcherGame) {
+            // rules are ignroed whent there is a Witcher
+            const areEvilPlayers = gameState.players.some((player) => player.role?.team === 'Evil' && player.alive);
+            if (areEvilPlayers) {
+                setCanStartGame(false);
+                blockers.push('Witcher game requires no Evil players');
+            }
+            else {
+                setCanStartGame(enoughPlayers);
+            }
+            setBlocker(blockers);
+            return;
+        }
+
         const rolePreReqs = gameState.players.every((player) =>
             player.role?.prereqRoles === undefined || player.role.prereqRoles.every((prereq) => {
                 const poolToSearch = gameState.players.map(p => isPlayerDrunk(p) ? roles.find(r => r.name === 'Drunk') : p.role);
@@ -68,7 +84,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         const duplicatedRoles = gameState.players.some((player, i) =>
             gameState.players.findIndex((p, ii) =>
                 (p.role?.name === player.role?.name || p.trueRole?.name === player.trueRole?.name) && ii !== i
-                && !isPlayerIntoxicated(p) && !isPlayerIntoxicated(player)
+                && !isPlayerIntoxicated(p, gameState) && !isPlayerIntoxicated(player, gameState)
             ) !== -1
         );
         if (duplicatedRoles) {

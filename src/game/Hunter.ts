@@ -23,7 +23,7 @@ export async function handleHunterAbility(
                     message: `${hunter.name} shot ${target.name}.`,
                 });
 
-                if (isPlayerIntoxicated(hunter)) {
+                if (isPlayerIntoxicated(hunter, gameState)) {
                     // POISONED
                     tempGameState.log.push({
                         type: 'alert',
@@ -34,7 +34,7 @@ export async function handleHunterAbility(
                 }
                 else {
                     // kill the selected player, if they are evil
-                    const isTargetWerewolf = isPlayerWerewolf(target);
+                    const isTargetWerewolf = isPlayerWerewolf(target, gameState);
                     if (isTargetWerewolf === Result.TRUE) {
                         tempGameState.players[selectedPlayers[0]].alive = false;
 

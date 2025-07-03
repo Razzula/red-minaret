@@ -208,7 +208,12 @@ function App() {
             // check game-over conditions
             if (!gameState.players.find(player => player.role?.type === PlayerType.WEREWOLF && player.alive)) {
                 // no Werewolves alive
-                gameState.state = PlayState.VICTORY;
+
+                // WITCHER
+                const isWitcherGame = gameState.players.some(player => player.trueRole?.name === 'Witcher');
+                if (!isWitcherGame) {
+                    gameState.state = PlayState.VICTORY;
+                }
             }
             else {
                 const remainingGoodPlayers = gameState.players.filter(player => player.role?.team === Team.GOOD && player.alive).length;
@@ -514,7 +519,7 @@ function App() {
 
         let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
 
-        if (isPlayerIntoxicated(player)) {
+        if (isPlayerIntoxicated(player, gameState)) {
             instruction = `${instruction} Remember, this player is intoxicated!`;
         }
 

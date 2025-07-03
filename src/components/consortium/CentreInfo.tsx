@@ -32,7 +32,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
         let evilCount = 0;
         for (const playerIndex of playerIndexes) {
             const player = players[playerIndex];
-            const playerIsEvil = isPlayerEvil(player, source === 'Seer');
+            const playerIsEvil = isPlayerEvil(player, gameState, source === 'Seer');
             if (playerIsEvil === Result.TRUE) {
                 evilCount++;
             }
@@ -118,7 +118,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
     const isDrunk = isPlayerDrunk(players[currentPlayer]);
     const isPoisoned = isPlayerPoisoned(players[currentPlayer]);
     const isMarionette = isPlayerMarionette(players[currentPlayer]);
-    const isIntoxicated = isPlayerIntoxicated(players[currentPlayer]);
+    const isIntoxicated = isPlayerIntoxicated(players[currentPlayer], gameState);
 
     const token = (
         <span

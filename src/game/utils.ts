@@ -100,7 +100,7 @@ export async function countEvilPairs(gameState: GameState, showPrompt: (opts: Pr
     let evil = Result.NULL;
     for (const player of gameState.players) {
         if (player.alive) {
-            const playerIsEvil = isPlayerEvil(player);
+            const playerIsEvil = isPlayerEvil(player, gameState);
             if (playerIsEvil === Result.TRUE) {
                 if (evil === Result.TRUE) {
                     evilPairs++;
@@ -159,7 +159,7 @@ export function getWerewolfBluffs(gameState: GameState, roles: Role[]): Role[] {
         .slice(0, 3)
 }
 
-export function isPlayerEvil(player: Player, includeRedHerring: boolean = false): Result {
+export function isPlayerEvil(player: Player, gameState: GameState, includeRedHerring: boolean = false): Result {
 
     if (player.role) {
         if (includeRedHerring && player.statuses.find(status => status.name === 'Red Herring') !== undefined) {
@@ -170,14 +170,14 @@ export function isPlayerEvil(player: Player, includeRedHerring: boolean = false)
 
         if (player.role.team === Team.EVIL) {
             // SPY
-            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
+            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player, gameState)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player, gameState)) {
             return Result.STORYTELLER;
         }
 
@@ -187,7 +187,7 @@ export function isPlayerEvil(player: Player, includeRedHerring: boolean = false)
     return Result.NULL;
 }
 
-export function isPlayerWerewolf(player: Player): Result {
+export function isPlayerWerewolf(player: Player, gameState: GameState): Result {
 
     if (player.role) {
         if (player.role.type === PlayerType.WEREWOLF) {
@@ -195,7 +195,7 @@ export function isPlayerWerewolf(player: Player): Result {
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player, gameState)) {
             return Result.STORYTELLER;
         }
 
@@ -205,19 +205,19 @@ export function isPlayerWerewolf(player: Player): Result {
     return Result.NULL;
 }
 
-export function isPlayerMinion(player: Player): Result {
+export function isPlayerMinion(player: Player, gameState: GameState): Result {
 
     if (player.role) {
         if (player.role.type === PlayerType.MINION) {
             // SPY
-            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
+            if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player, gameState)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // RECLUSE
-        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
+        if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player, gameState)) {
             return Result.STORYTELLER;
         }
 
@@ -227,7 +227,7 @@ export function isPlayerMinion(player: Player): Result {
     return Result.NULL;
 }
 
-export function isPlayerVillager(player: Player): Result {
+export function isPlayerVillager(player: Player, gameState: GameState): Result {
 
     if (player.role) {
         if (player.role.type === PlayerType.VILLAGER) {
@@ -235,7 +235,7 @@ export function isPlayerVillager(player: Player): Result {
         }
 
         // SPY
-        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
+        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player, gameState)) {
             return Result.STORYTELLER;
         }
 
@@ -245,19 +245,19 @@ export function isPlayerVillager(player: Player): Result {
     return Result.NULL;
 }
 
-export function isPlayerOutsider(player: Player): Result {
+export function isPlayerOutsider(player: Player, gameState: GameState): Result {
 
     if (player.role) {
         if (player.role.type === PlayerType.OUTSIDER) {
             // RECLUSE
-            if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player)) {
+            if (player.role.name === 'Recluse' && !isPlayerIntoxicated(player, gameState)) {
                 return Result.STORYTELLER;
             }
             return Result.TRUE;
         }
 
         // SPY
-        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player)) {
+        if (player.role?.name === 'Spy' && !isPlayerIntoxicated(player, gameState)) {
             return Result.STORYTELLER;
         }
 
@@ -314,7 +314,11 @@ export function isPlayerLunatic(player: Player): boolean {
     return player.statuses.find(status => status.name === 'Lunatic') !== undefined;
 }
 
-export function isPlayerIntoxicated(player: Player | undefined): boolean {
+export function isWitcherInGame(gameState: GameState): boolean {
+    return gameState.players.some(player => player.trueRole?.name === 'Witcher')
+}
+
+export function isPlayerIntoxicated(player: Player | undefined, gameState: GameState): boolean {
     if (player === undefined) {
         return false;
     }
@@ -323,5 +327,6 @@ export function isPlayerIntoxicated(player: Player | undefined): boolean {
         || isPlayerPoisoned(player)
         || isPlayerMarionette(player)
         || isPlayerLunatic(player)
+        || isWitcherInGame(gameState)
     );
 }

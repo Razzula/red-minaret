@@ -326,7 +326,7 @@ export async function handleNightKill(
 
             // SOLDIER
             if (player.role?.name === 'Soldier') {
-                if (isPlayerIntoxicated(player)) {
+                if (isPlayerIntoxicated(player, tempGameState)) {
                     temp = 'soldier-null';
                 }
                 else {
@@ -358,7 +358,7 @@ export async function handleNightKill(
 
             // MAYOR
             else if (player.role?.name === 'Mayor') {
-                if (!isPlayerIntoxicated(player)) {
+                if (!isPlayerIntoxicated(player, tempGameState)) {
                     const storytellerChoice = await showPrompt({
                         type: 'select',
                         title: 'Mayor Ability',
@@ -399,9 +399,9 @@ export async function handleNightKill(
                 const farmerIndex = tempGameState.players.findIndex(player => player.role?.name === 'Farmer');
                 if (farmerIndex !== -1) {
                     const farmer = tempGameState.players[farmerIndex];
-                    if (farmer.alive && !isPlayerIntoxicated(farmer)) {
+                    if (farmer.alive && !isPlayerIntoxicated(farmer, tempGameState)) {
                         // create a new Farmer
-                        const numberOfGoodPlayers = tempGameState.players.reduce((count, player) => (player.alive && !isPlayerEvil(player) ? count + 1 : count), 0);
+                        const numberOfGoodPlayers = tempGameState.players.reduce((count, player) => (player.alive && !isPlayerEvil(player, tempGameState) ? count + 1 : count), 0);
                         if (numberOfGoodPlayers > 0) {
                             setCurrentPlayer(farmerIndex);
                             tempGameState.special = {
@@ -427,7 +427,7 @@ export async function handleNightKill(
                 const nainIndex = tempGameState.players.findIndex(player => player.role?.name === 'Nain');
                 if (nainIndex !== -1) {
                     const nain = tempGameState.players[nainIndex];
-                    if (nain.alive && !isPlayerIntoxicated(nain)) {
+                    if (nain.alive && !isPlayerIntoxicated(nain, tempGameState)) {
                         // kill the Nain
                         tempGameState.players[nainIndex].alive = false;
                         log.push({
@@ -625,6 +625,21 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
 
     // handle lynch
     if (tempGameState.choppingBlock) {
+
+        // WITCHER
+        if (tempGameState.choppingBlock?.playerName === 'Storyteller') {
+            const isWitcherInGame = tempGameState.players.some(player => player.role?.name === 'Witcher');
+            if (isWitcherInGame) {
+                // Good win
+                tempGameState.state = PlayState.VICTORY;
+            }
+            else {
+                // Good lose
+                tempGameState.state = PlayState.DEFEAT;
+            }
+            return tempGameState;
+        }
+
         const lynchedIndex = tempGameState.players.findIndex(player => player.name === tempGameState.choppingBlock?.playerName);
 
         const popupEvent: PopupEvent = {}
@@ -641,7 +656,7 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
 
         // SAINT
         if (tempGameState.players[lynchedIndex].role?.name === 'Saint') {
-            if (!isPlayerPoisoned(tempGameState.players[lynchedIndex])) {
+            if (!isPlayerIntoxicated(tempGameState.players[lynchedIndex], tempGameState)) {
                 // game log
                 tempGameState.log = log;
                 // alert
@@ -665,6 +680,7 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
                 tempGameState.popupEvent = popupEvent;
             }
         }
+
         popupEvent.events = log;
         tempGameState.popupEvent = popupEvent;
         log.forEach(logEvent => {
@@ -674,7 +690,7 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
         // GOBBO
         if (tempGameState.players[lynchedIndex].role?.name === 'Gobbo') {
             if (tempGameState.players[lynchedIndex].statuses?.find(status => status.name === 'Goblin')) {
-                if (!isPlayerPoisoned(tempGameState.players[lynchedIndex])) {
+                if (!isPlayerIntoxicated(tempGameState.players[lynchedIndex], tempGameState)) {
                     // game log
                     tempGameState.log = log;
                     // alert
@@ -702,7 +718,7 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
 
         // CANNIBAL
         const cannibalIndex = tempGameState.players.findIndex(player => player.role?.name === 'Cannibal');
-        if (cannibalIndex !== -1 && isPlayerEvil(tempGameState.players[lynchedIndex]) !== Result.TRUE) {
+        if (cannibalIndex !== -1 && isPlayerEvil(tempGameState.players[lynchedIndex], tempGameState) !== Result.TRUE) {
             tempGameState.players[cannibalIndex].statuses?.push({ ...statuses.Cannibal });
             const cannibalRole = roles.find(role => role.name === 'Cannibal') as Role;
             setRole(tempGameState, cannibalIndex, cannibalRole, tempGameState.players[lynchedIndex].role as Role);
@@ -728,7 +744,7 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
                 if (tempGameState.lastNight.lynched === undefined) {
 
                     // not nullified
-                    if (!isPlayerIntoxicated(tempGameState.players[mayorIndex])) {
+                    if (!isPlayerIntoxicated(tempGameState.players[mayorIndex], tempGameState)) {
                         // villager victory
                         tempGameState.state = PlayState.VICTORY;
 
@@ -780,7 +796,7 @@ export function handleAction(
     const playerIsPoisoned = isPlayerPoisoned(gameState.players[currentPlayer]);
     const playerIsMarionette = isPlayerMarionette(gameState.players[currentPlayer]);
     const playerIsLunatic = isPlayerLunatic(gameState.players[currentPlayer]);
-    const playerIsIntoxicated = isPlayerIntoxicated(gameState.players[currentPlayer]);
+    const playerIsIntoxicated = isPlayerIntoxicated(gameState.players[currentPlayer], gameState);
 
     const currentRole = gameState.players[currentPlayer].role;
     if (!currentRole) {
@@ -991,7 +1007,7 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
         const fool = tempGameState.players[playerIndex];
         if (fool.abilityUses < (fool.role?.abilityUses ?? 0)) {
             tempGameState.players[playerIndex].abilityUses += 1; // ability will be used
-            if (!isPlayerIntoxicated(fool)) {
+            if (!isPlayerIntoxicated(fool, gameState)) {
                 // cheat death
                 tempGameState.log.push({
                     type: 'alert',
@@ -1017,12 +1033,12 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
         return (
             tempGameState.players[neighbour].role?.name === 'Tea Lady'
             && tempGameState.players[neighbour].alive
-            && !isPlayerIntoxicated(tempGameState.players[neighbour])
+            && !isPlayerIntoxicated(tempGameState.players[neighbour], gameState)
         );
     });
     if (teaLadyNeighbour) {
         const teaNeighbours = getPlayerNeighbours(tempGameState.players, teaLadyNeighbour);
-        if (teaNeighbours.every(neighbour => isPlayerEvil(tempGameState.players[neighbour]) !== Result.TRUE)) {
+        if (teaNeighbours.every(neighbour => isPlayerEvil(tempGameState.players[neighbour], gameState) !== Result.TRUE)) {
             // Tea Lady can save this player
             tempGameState.log.push({
                 type: 'alert',
@@ -1049,7 +1065,7 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
                 }
                 const werewolfRole = roles.find(role => role.name === tempGameState.players[playerIndex].role?.name);
                 if (werewolfRole !== undefined) {
-                    if (isPlayerIntoxicated(tempGameState.players[scarletWomanIndex])) {
+                    if (isPlayerIntoxicated(tempGameState.players[scarletWomanIndex], gameState)) {
                         console.log('Scarlet Woman is intoxicated'); // this is currently impossible with the current roster
                     }
                     else {

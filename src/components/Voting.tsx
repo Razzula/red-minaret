@@ -41,7 +41,7 @@ export function Voting({
 
             // VIRGIN
             const nominated = gameState.players.find(player => player.name === nominatedPlayer);
-            const isNominatedDrunk = isPlayerIntoxicated(nominated);
+            const isNominatedDrunk = isPlayerIntoxicated(nominated, gameState);
             if (!isNominatedDrunk && nominatingPlayer != undefined && nominated?.role?.name === 'Virgin') {
                 if (nominated.role.abilityUses != undefined && nominated.abilityUses < nominated.role.abilityUses) {
                     const nominator = gameState.players.find(player => player.name === nominatingPlayer);
@@ -50,7 +50,7 @@ export function Voting({
                     const nominatedIndex = gameState.players.findIndex(player => player.name === nominated.name);
                     tempGameState.players[nominatedIndex].abilityUses += 1;
 
-                    if (nominator && isPlayerVillager(nominator) === Result.TRUE) {
+                    if (nominator && isPlayerVillager(nominator, gameState) === Result.TRUE) {
 
                         endVote();
                         setVotingAllowed(false);
@@ -234,6 +234,14 @@ export function Voting({
 
     if (!voting) {
         // NOMINATIONS
+
+        const nominatablePlayers = gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map(player => player.name);
+        // WITCHER
+        if (gameState.players.find(player => player.trueRole?.name === 'Witcher')) {
+            // Storyteller must be nominatable
+            nominatablePlayers.push('Storyteller');
+        }
+
         return (
             <div className='dialogue-content'>
 
@@ -257,7 +265,7 @@ export function Voting({
                             {
                                 profileSelect(
                                     nominatedPlayer,
-                                    gameState.players.filter(player => isPlayerEligibleToBeNominated(player)).map(player => player.name),
+                                    nominatablePlayers,
                                     setNominatedPlayer
                                 )
                             }

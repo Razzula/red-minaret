@@ -214,6 +214,12 @@ export const roles: Role[] = [
         team: Team.GOOD, type: PlayerType.VILLAGER,
         icon: 'roles/Tea From Yorkshire',
     },
+    {
+        name: 'Witcher', altName: 'Atheist',
+        description: 'You\'ve killed the Werewolves, but people are still dying... There are no Evil characters. The Storyteller is lying to you and can break the game\'s rules. You must lynch them to win.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Iron Sword',
+    },
 
     // OUTSIDERS
     {

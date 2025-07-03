@@ -13,12 +13,12 @@ import { canNainSelectPlayer, isPlayerGrandchild } from '../game/Nain';
 interface InvestigationProps {
     title?: string;
     players: Player[];
-    possibleRoles: Role[];
+    gameState: GameState;
     onInvestigate: (selectedRole: string, selectedPlayers: string[], count: number) => void;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
-const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, /*possibleRoles,*/ onInvestigate, setGameState }) => {
+const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, gameState, onInvestigate, setGameState }) => {
 
     const [roleFilters, setRoleFilters] = useState<PlayerTypeType[]>();
     const [roles, setRoles] = useState<Role[]>([]);
@@ -30,11 +30,12 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
 
     const count = 1;
 
-    const isInvestigatorIntoxicated = investigator ? isPlayerIntoxicated(investigator) : false;
+    const isInvestigatorIntoxicated = investigator ? isPlayerIntoxicated(investigator, gameState) : false;
+    const isWitcherGame = players.some((player) => player.trueRole?.name === 'Witcher');
 
     useEffect(() => {
         const activeRoles = getActiveRoles(players);
-        if (roleFilters) {
+        if (roleFilters && !isWitcherGame) {
             setRoles(
                 activeRoles.filter((role) => roleFilters.includes(role.type as PlayerTypeType))
             );
@@ -76,7 +77,7 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     useEffect(() => {
         const mandatoryPlayer = getMandatoryPlayer();
         if (mandatoryPlayer && investigator) {
-            if (isPlayerIntoxicated(investigator)) {
+            if (isPlayerIntoxicated(investigator, gameState)) {
                 setSelectedPlayers(prev => prev.filter((p) => p !== mandatoryPlayer.name));
             }
             else {
@@ -94,6 +95,11 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
     }, [roles]);
 
     function getMandatoryPlayer() {
+        // WITCHER
+        if (isWitcherGame) {
+            return null;
+        }
+
         // NAIN
         if (relaventRole?.name === 'Nain') {
             if (isInvestigatorIntoxicated) {

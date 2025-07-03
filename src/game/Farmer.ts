@@ -16,7 +16,7 @@ export async function HandleFarmerAbility(
 
         selectedPlayers.forEach((playerIndex) => {
             const player = tempGameState.players[playerIndex];
-            if (player && player.alive && isPlayerEvil(player) !== Result.TRUE) {
+            if (player && player.alive && isPlayerEvil(player, tempGameState) !== Result.TRUE) {
                 updateRole(tempGameState, playerIndex, {...farmerRole} as Role);
             }
         });

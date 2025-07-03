@@ -18,7 +18,7 @@ export function handleArtistAbility(
     showPrompt({
         title: 'Artist Ability',
         message: `The Artist may ask a yes/no question.`,
-        extras: isPlayerIntoxicated(artist) ? [`The Artist is ${isPlayerDrunk(artist) ? 'Drunk' : 'Posioned'}. You must lie.`] : ['You must answer truthfully.'],
+        extras: isPlayerIntoxicated(artist, gameState) ? [`The Artist is ${isPlayerDrunk(artist) ? 'Drunk' : 'Posioned'}. You must lie.`] : ['You must answer truthfully.'],
         type: 'text',
         confirmText: 'Yes',
         cancelText: 'No',
@@ -32,7 +32,7 @@ export function handleArtistAbility(
             {
                 type: 'private',
                 message: `The answer was: ${result !== null ? 'Yes' : 'No'}.`,
-                extra: isPlayerIntoxicated(artist) ? 'The Artist was intoxicated.' : undefined,
+                extra: isPlayerIntoxicated(artist, tempGameState) ? 'The Artist was intoxicated.' : undefined,
                 indent: 1,
             },
         ];
