@@ -1,7 +1,7 @@
 import { GameState } from "../App";
 import { PromptOptions } from "../components/common/Prompt/Prompt";
 import { PlayerType, PlayState } from "../enums";
-import { isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
+import { isPlayerIntoxicated, isPlayerWerewolf, Result } from "./utils";
 
 export async function handleHunterAbility(
     gameState: GameState, selectedPlayers: number[],

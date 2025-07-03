@@ -102,7 +102,7 @@ export function Voting({
     const butler = gameState.players.find(player => player.alive && player.role?.name === 'Butler');
     const patron = gameState.players.find(player => {
         const patronStatus = player.statuses.find(status => status.name === 'Patron');
-        return patronStatus !== undefined && !patronStatus.poisoned;
+        return patronStatus !== undefined && !patronStatus.intoxicated;
     })?.name;
 
     const invalidSelection = (
