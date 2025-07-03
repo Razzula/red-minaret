@@ -3,9 +3,9 @@ import { PromptOptions } from '../components/common/Prompt/Prompt';
 
 import roles, { Role } from '../data/roles';
 import statuses, { Status } from '../data/statuses';
-import { PlayerType, PlayState } from "../enums";
+import { PlayerType, PlayState, Team } from "../enums";
 import { isPlayerGrandchild } from './Nain';
-import { getWerewolfBluffs, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerPoisoned, Result, setRole, updateRole } from "./utils";
+import { getWerewolfBluffs, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerLunatic, isPlayerMarionette, isPlayerPoisoned, Result, setRole, updateRole } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -36,6 +36,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
             evilIndicies.push(index);
         }
     }
+    let marionetteIndex: number | null = null;
 
     const werewolfIndicies = evilIndicies.slice(0, 1);
 
@@ -48,6 +49,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
         }
     }
     let drunkIndex: number | null = null;
+    let lunaticIndex: number | null = null;
 
     // determine Villagers (remainder)
     const villagerIndicies = players.map((_player, index) => index).filter(index => !evilIndicies.includes(index) && !outsiderIndicies.includes(index));
@@ -73,6 +75,10 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
                 const transferedVillagers = villagerIndicies.splice(0, 2);
                 outsiderIndicies.push(...transferedVillagers);
             }
+            // MARIONETTE
+            else if (roles[role].name === 'Marionette') {
+                marionetteIndex = index;
+            }
         }
     });
 
@@ -85,6 +91,9 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
         // DRUNK
         if (roles[role].name === 'Drunk') {
             drunkIndex = index;
+        }
+        else if (roles[role].name === 'Lunatic') {
+            lunaticIndex = index;
         }
     });
 
@@ -121,7 +130,37 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     if (drunkIndex !== null) {
         const DrunkRole = roles.find(role => role.name === 'Drunk') as Role;
         setRole(gameState, drunkIndex, DrunkRole, roles[tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)]]);
-        players[drunkIndex].statuses?.push({...statuses.Drunk});
+        players[drunkIndex].statuses?.push({ ...statuses.Drunk });
+    }
+    // LUNATIC
+    if (lunaticIndex !== null) {
+        const LunaticRole = roles.find(role => role.name === 'Lunatic') as Role;
+        setRole(gameState, lunaticIndex, LunaticRole, roles[[...werewolfPool][Math.floor(Math.random() * werewolfPool.length)]]);
+        players[lunaticIndex].role!.team = Team.GOOD;
+        players[lunaticIndex].role!.type = PlayerType.OUTSIDER;
+        players[lunaticIndex].statuses?.push({ ...statuses.Lunatic });
+    }
+
+    // MARIONETTE
+    if (marionetteIndex !== null) {
+        const MarionetteRole = roles.find(role => role.name === 'Marionette') as Role;
+        // Marionette must neighbour the Werewolf
+        const werewolfIndex = werewolfIndicies[0];
+        const werewolfNeighbours = getPlayerNeighbours(players, werewolfIndex);
+        if (!werewolfNeighbours.includes(marionetteIndex)) {
+            const randomNeighbourIndex = werewolfNeighbours[Math.floor(Math.random() * werewolfNeighbours.length)];
+            // swap roles
+            setRole(gameState, marionetteIndex, players[randomNeighbourIndex].trueRole as Role, players[randomNeighbourIndex].role as Role);
+            const tempStatuses = players[randomNeighbourIndex].statuses || [];
+            players[randomNeighbourIndex].statuses = players[marionetteIndex].statuses || [];
+            players[marionetteIndex].statuses = tempStatuses;
+            marionetteIndex = randomNeighbourIndex;
+        }
+        const fakeRole = tempVillagerPool[Math.floor(Math.random() * tempVillagerPool.length)];
+        setRole(gameState, marionetteIndex, MarionetteRole, roles[fakeRole]);
+        players[marionetteIndex].role!.team = Team.EVIL; // Marionette is an Evil player
+        players[marionetteIndex].role!.type = PlayerType.MINION;
+        players[marionetteIndex].statuses?.push({ ...statuses.Marionette });
     }
 
     // bluffs
@@ -134,6 +173,7 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
 
 function determineTurnOrder(players: Player[]) {
     const bags: Record<string, number[]> = {};
+    const beforeBag: Record<string, number[]> = {};
 
     function pushToBag(playerIndex: number, bag: string) {
         if (bags[bag] === undefined) {
@@ -143,8 +183,8 @@ function determineTurnOrder(players: Player[]) {
     }
 
     players.forEach((player, index) => {
-        if (player.role?.order) {
-            switch (player.role.order.type) {
+        if (player.trueRole?.order) {
+            switch (player.trueRole.order.type) {
                 case 'first':
                     pushToBag(index, 'first');
                     break;
@@ -156,6 +196,17 @@ function determineTurnOrder(players: Player[]) {
                     break;
                 case 'last':
                     pushToBag(index, 'last');
+                    break;
+                case 'before':
+                    if (player.trueRole.order.relative !== undefined) {
+                        if (beforeBag[player.trueRole.order.relative] === undefined) {
+                            beforeBag[player.trueRole.order.relative] = [];
+                        }
+                        beforeBag[player.trueRole.order.relative].push(index);
+                    }
+                    else {
+                        pushToBag(index, 'default');
+                    }
                     break;
                 default:
                     pushToBag(index, 'default');
@@ -172,6 +223,16 @@ function determineTurnOrder(players: Player[]) {
         if (bags[bag] !== undefined && bags[bag].length > 0) {
             // bags[bag].sort(() => Math.random() - 0.5); // shuffle
             bags[bag].forEach(playerIndex => {
+                const playerType = players[playerIndex].role?.type;
+                if (playerType) {
+                    if (beforeBag[playerType] !== undefined) {
+                        // if this player is before another player, add them to the front of the turn order
+                        beforeBag[playerType].forEach(beforeIndex => {
+                            turnOrder.push(beforeIndex);
+                        });
+                    }
+                }
+
                 turnOrder.push(playerIndex);
             });
         }
@@ -250,12 +311,12 @@ export async function handleNightKill(
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
 ): Promise<[GameState, boolean, string]> {
     let murder = false;
-    let temp  = '';
+    let temp = '';
 
     const player = tempGameState.players[playerIndex];
 
     const hasProtectedStatus = player.statuses?.find(status => status.name === 'Protected');
-    const playerProtected = hasProtectedStatus !== undefined && !hasProtectedStatus.drunk && !hasProtectedStatus.poisoned;
+    const playerProtected = hasProtectedStatus !== undefined && !hasProtectedStatus.intoxicated;
 
     if (player.alive) {
         if (!playerProtected) {
@@ -495,7 +556,7 @@ export async function handleDawn(
 
     for (const [index, player] of tempGameState.players.entries()) {
         const hasTargetedStatus = player.statuses?.find(status => status.name === 'Targeted');
-        const playerTargeted = hasTargetedStatus !== undefined && !hasTargetedStatus.drunk && !hasTargetedStatus.poisoned;
+        const playerTargeted = hasTargetedStatus !== undefined && !hasTargetedStatus.intoxicated;
 
         if (playerTargeted) {
             [tempGameState, murder, temp] = await handleNightKill(
@@ -693,24 +754,33 @@ export function handleAction(
 
     const playerIsDrunk = isPlayerDrunk(gameState.players[currentPlayer]);
     const playerIsPoisoned = isPlayerPoisoned(gameState.players[currentPlayer]);
+    const playerIsMarionette = isPlayerMarionette(gameState.players[currentPlayer]);
+    const playerIsLunatic = isPlayerLunatic(gameState.players[currentPlayer]);
+    const playerIsIntoxicated = isPlayerIntoxicated(gameState.players[currentPlayer]);
 
     const currentRole = gameState.players[currentPlayer].role;
     if (!currentRole) {
         return;
     }
+
     const currentRoleDelay = currentRole.delay || 0;
 
     let tempGameState = { ...gameState };
 
-    if ((currentRole.name === 'Werewolf' || currentRole.name === 'Bloodhound' ) && gameState.day > currentRoleDelay) {
+    if ((currentRole.name === 'Werewolf' || currentRole.name === 'Bloodhound') && gameState.day > currentRoleDelay) {
         // WEREWOLF, BLOODHOUND
-        const statusToApply = statuses['Targeted'];
-        if (playerIsPoisoned) {
+        const statusToApply = { ...statuses['Targeted'] };
+        if (playerIsIntoxicated) {
             // POISONED
             // note: it is strange that a poisioner would ever target a Werewolf,
             // however, the BotCT rules do not prevent this...
-            statusToApply.poisoned = true;
-            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Werewolf');
+            statusToApply.intoxicated = true;
+            if (playerIsLunatic) {
+                statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Lunatic');
+            }
+            else {
+                statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', currentRole.name);
+            }
         }
 
         tempGameState.players[playerIndex].statuses?.push(statusToApply);
@@ -745,14 +815,18 @@ export function handleAction(
 
     else if (currentRole.name === 'Doctor') {
         // DOCTOR
-        const statusToApply = statuses['Protected'];
-        if (playerIsDrunk) {
-            statusToApply.drunk = true;
-            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Drunk');
-        }
-        else if (playerIsPoisoned) {
-            statusToApply.poisoned = true;
-            statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Doctor');
+        const statusToApply = { ...statuses['Protected'] };
+        if (playerIsIntoxicated) {
+            statusToApply.intoxicated = true;
+            if (playerIsDrunk) {
+                statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Drunk');
+            }
+            else if (playerIsPoisoned) {
+                statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Doctor');
+            }
+            else if (playerIsMarionette) {
+                statusToApply.altDescription = statusToApply.altDescription!.replace('$ROLE$', 'Marionette');
+            }
         }
 
         tempGameState.players[playerIndex].statuses?.push(statusToApply);
@@ -797,8 +871,8 @@ export function handleAction(
     else if (currentRole.name === 'Butler') {
         // BUTLER
         const statusToApply = statuses['Patron'];
-        if (playerIsPoisoned) {
-            statusToApply.poisoned = true;
+        if (playerIsIntoxicated) {
+            statusToApply.intoxicated = true;
         }
 
         tempGameState.players[playerIndex].statuses?.push(statuses['Patron']);
@@ -833,7 +907,7 @@ export function handleAction(
                 // };
                 setSelectedPlayers([playerIndex]);
 
-                if (playerIsDrunk || playerIsPoisoned) {
+                if (playerIsIntoxicated) {
                     console.log('gambler was intoxicated');
                 }
                 else {

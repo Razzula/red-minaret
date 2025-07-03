@@ -20,7 +20,6 @@ export async function HandleFarmerAbility(
                 updateRole(tempGameState, playerIndex, {...farmerRole} as Role);
             }
         });
-        console.log('tempGameState', tempGameState);
 
         // revert state
         tempGameState.state = tempGameState.special?.previous || PlayState.SETUP;

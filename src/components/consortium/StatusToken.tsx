@@ -44,7 +44,7 @@ const StatusToken: React.FC<StatusTokenProps> = ({
     const newX = outterX + t * (innerX - outterX);
     const newY = outterY + t * (innerY - outterY);
 
-    const fake = status.drunk || status.poisoned;
+    const fake = status.intoxicated;
 
     return (
         <div key={index}

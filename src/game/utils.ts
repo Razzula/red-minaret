@@ -48,15 +48,14 @@ export function getActiveRoles(players: Player[]): Role[] {
 export function setRole(gameState: GameState, playerIndex: number, role: Role, fakeRole?: Role): GameState {
     const player = gameState.players[playerIndex];
     if (player) {
-        gameState.players[playerIndex].trueRole = role;
-        gameState.players[playerIndex].role = (fakeRole ? fakeRole : role);
+        gameState.players[playerIndex].trueRole = {...role};
+        gameState.players[playerIndex].role = (fakeRole ? {...fakeRole} : {...role});
     }
     return gameState;
 }
 
 export function updateRole(gameState: GameState, playerIndex: number, role: Role, fakeRole?: Role): GameState {
     const player = gameState.players[playerIndex];
-    console.log('updateRole', player.name, role, fakeRole);
     if (player) {
         // if the player already has a role, add it to their old roles
         if (player.trueRole) {
@@ -307,9 +306,22 @@ export function isPlayerPoisoned(player: Player): boolean {
     return player.statuses.find(status => status.name === 'Poisoned') !== undefined;
 }
 
+export function isPlayerMarionette(player: Player): boolean {
+    return player.statuses.find(status => status.name === 'Marionette') !== undefined;
+}
+
+export function isPlayerLunatic(player: Player): boolean {
+    return player.statuses.find(status => status.name === 'Lunatic') !== undefined;
+}
+
 export function isPlayerIntoxicated(player: Player | undefined): boolean {
     if (player === undefined) {
         return false;
     }
-    return isPlayerDrunk(player) || isPlayerPoisoned(player);
+    return (
+        isPlayerDrunk(player)
+        || isPlayerPoisoned(player)
+        || isPlayerMarionette(player)
+        || isPlayerLunatic(player)
+    );
 }

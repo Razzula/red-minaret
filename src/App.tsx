@@ -7,7 +7,7 @@ import Consortium from './components/consortium/Consortium'
 import GameControls from './components/GameControls'
 import { advanceTime, handleAction, togglePlayerAlive } from './game/core'
 import { handleHunterAbility } from './game/Hunter'
-import { canPlayerActTonight, defaultGameState, findPlayersNeighbours, isPlayerDrunk, isPlayerPoisoned } from './game/utils'
+import { canPlayerActTonight, defaultGameState, findPlayersNeighbours, isPlayerIntoxicated } from './game/utils'
 
 import roles, { Role } from './data/roles'
 import { Status } from './data/statuses'
@@ -514,13 +514,8 @@ function App() {
 
         let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
 
-        // DRUNK
-        if (isPlayerDrunk(player)) {
-            instruction = `${instruction} Remember, this player is the Drunk!`;
-        }
-        // POISONED
-        else if (isPlayerPoisoned(player)) {
-            instruction = `${instruction} Remember, this player has been poisoned!`;
+        if (isPlayerIntoxicated(player)) {
+            instruction = `${instruction} Remember, this player is intoxicated!`;
         }
 
         return instruction;

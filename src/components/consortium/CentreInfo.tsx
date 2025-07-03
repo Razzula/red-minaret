@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { GameState, Player } from "../../App";
 import { PlayerType, PlayState } from "../../enums";
-import { countEvilPairs, findPlayersNeighbours, isPlayerDrunk, isPlayerEvil, isPlayerPoisoned, Result } from "../../game/utils";
+import { countEvilPairs, findPlayersNeighbours, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerMarionette, isPlayerPoisoned, Result } from "../../game/utils";
 import { PromptOptions } from "../common/Prompt/Prompt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../common/Tooltip/Tooltip";
 
@@ -117,14 +117,15 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
 
     const isDrunk = isPlayerDrunk(players[currentPlayer]);
     const isPoisoned = isPlayerPoisoned(players[currentPlayer]);
+    const isMarionette = isPlayerMarionette(players[currentPlayer]);
+    const isIntoxicated = isPlayerIntoxicated(players[currentPlayer]);
 
     const token = (
         <span
             className={classNames(
                 styles.circleButton,
                 {
-                    [styles.drunk]: isDrunk,
-                    [styles.poisoned]: isPoisoned,
+                    [styles.intoxicated]: isIntoxicated,
                 }
             )}
             style={{
@@ -138,16 +139,19 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
             { isPoisoned &&
                 <div><strong>Poisoned!</strong></div>
             }
+            { isMarionette &&
+                <div><strong>Marionette!</strong></div>
+            }
 
             <div className={classNames(
-                { 'severe': isDrunk || isPoisoned }
+                { 'severe': isIntoxicated }
             )}>
                 {playerResult}
             </div>
         </span>
     );
 
-    if (!isDrunk && !isPoisoned) {
+    if (!isIntoxicated) {
         return token;
     }
 

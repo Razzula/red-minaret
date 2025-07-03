@@ -3,7 +3,7 @@ import { GameState } from '../App';
 import { PlayerType, PlayState } from '../enums';
 import { assignRoles } from '../game/core';
 import IconButton from './common/IconButton/IconButton';
-import { isPlayerDrunk } from '../game/utils';
+import { isPlayerDrunk, isPlayerIntoxicated } from '../game/utils';
 import roles from '../data/roles';
 
 type GameControlsProps = {
@@ -68,6 +68,7 @@ function GameControls({ gameState, setGameState, resetGameState, advanceTime, se
         const duplicatedRoles = gameState.players.some((player, i) =>
             gameState.players.findIndex((p, ii) =>
                 (p.role?.name === player.role?.name || p.trueRole?.name === player.trueRole?.name) && ii !== i
+                && !isPlayerIntoxicated(p) && !isPlayerIntoxicated(player)
             ) !== -1
         );
         if (duplicatedRoles) {

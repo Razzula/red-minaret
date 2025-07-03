@@ -7,7 +7,7 @@ import CheckButton from './common/CheckButton/CheckButton';
 import GridList from './common/GridList/GridList';
 import { PlayerType, PlayerTypeType } from '../enums';
 import IconButton from './common/IconButton/IconButton';
-import { getActiveRoles, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned } from '../game/utils';
+import { getActiveRoles, isPlayerDrunk, isPlayerIntoxicated, isPlayerMarionette, isPlayerPoisoned } from '../game/utils';
 import { canNainSelectPlayer, isPlayerGrandchild } from '../game/Nain';
 
 interface InvestigationProps {
@@ -285,6 +285,9 @@ const InvestigationInterface: React.FC<InvestigationProps> = ({ title, players, 
                     }
                     { investigator && isPlayerPoisoned(investigator) &&
                         <li>{investigator.name} is poisoned!</li>
+                    }
+                    { investigator && isPlayerMarionette(investigator) &&
+                        <li>{investigator.name} is the Marionette!</li>
                     }
                 </div>
 

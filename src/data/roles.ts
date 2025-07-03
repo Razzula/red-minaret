@@ -197,13 +197,6 @@ export const roles: Role[] = [
         ],
     },
     {
-        name: 'Artist',
-        description: 'Once per game, during the day, privately ask the Storyteller a yes/no question, which they must answer truthfully.',
-        team: Team.GOOD, type: PlayerType.VILLAGER,
-        icon: 'roles/Paper',
-        abilityUses: 1,
-    },
-    {
         name: 'Farmer',
         description: 'When you die at night, a living Good player becomes a Farmer.',
         team: Team.GOOD, type: PlayerType.VILLAGER,
@@ -251,6 +244,13 @@ export const roles: Role[] = [
         description: 'If there are 5 or more players alive, you must vote for every nomination.',
         team: Team.GOOD, type: PlayerType.OUTSIDER,
         icon: 'roles/Golden Sword',
+    },
+    {
+        name: 'Lunatic',
+        description: 'You think you are a Werewolf, but you are not. The Werewolf knows who you are and who you choose at night..',
+        team: Team.GOOD, type: PlayerType.OUTSIDER,
+        order: { type: 'before', relative: 'Werewolf' },
+        icon: 'roles/Mushroom',
     },
 
     // WEREWOLVES
@@ -307,9 +307,15 @@ export const roles: Role[] = [
     },
     {
         name: 'Gobbo', altName: 'Goblin',
-        description: `If you are nominated and publicly claim "Me Boblin!" before votes are cast, and are then executed, your team wins. You must speak like a goblin (or caveman) all game, or you may die.`,
+        description: 'If you are nominated and publicly claim "Me Boblin!" before votes are cast, and are then executed, your team wins. You must speak like a goblin (or caveman) all game, or you may die.',
         team: Team.EVIL, type: PlayerType.MINION,
         icon: 'roles/Slime Gel',
+    },
+    {
+        name: 'Marionette',
+        description: 'You think you are a good character, but you are not. The Werewolf knows who you are; you neighbour them.',
+        team: Team.EVIL, type: PlayerType.MINION,
+        icon: 'roles/Rope',
     },
 ]
 

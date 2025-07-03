@@ -12,7 +12,7 @@ import Log from '../Log';
 import InvestigationInterface from '../InvestigationInterface';
 import { advanceTime } from '../../game/core';
 import IconButton from '../common/IconButton/IconButton';
-import { canPlayerActTonight } from '../../game/utils';
+import { canPlayerActTonight, isPlayerLunatic, isPlayerMarionette } from '../../game/utils';
 import CentreInfo from './CentreInfo';
 import { PromptOptions } from '../common/Prompt/Prompt';
 import classNames from 'classnames';
@@ -533,7 +533,9 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             );
 
             // WEREWOLF
-            if (currentPlayer.role?.type === PlayerType.WEREWOLF) {
+            if (currentPlayer.role?.type === PlayerType.WEREWOLF
+                || isPlayerLunatic(currentPlayer) // lunatic is treated as a werewolf for communication purposes
+            ) {
                 // Bluffs
                 if (gameState.bluffs) {
                     commPopups.push(
@@ -550,7 +552,9 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
                 }
             }
             // MINION
-            else if (currentPlayer.role?.type === PlayerType.MINION) {
+            else if (currentPlayer.role?.type === PlayerType.MINION
+                && !isPlayerMarionette(currentPlayer) // don't show werewolves if the minion is a marionette
+            ) {
                 // Werewolf
                 const werewolves = players.filter((p) => p.role?.type === PlayerType.WEREWOLF);
                 if (werewolves.length > 0) {

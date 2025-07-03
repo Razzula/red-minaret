@@ -3,8 +3,7 @@ export type Status = {
     description: string;
     expiration?: number;
     icon: string;
-    drunk?: boolean;
-    poisoned?: boolean;
+    intoxicated?: boolean;
     altDescription?: string;
 
     notes?: string[];
@@ -66,6 +65,24 @@ export const statuses: { [key: string]: Status } = {
         description: 'This player has made a valid Goblin claim.',
         expiration: 0, // expires at night
         icon: 'roles/Slime Gel',
+    },
+    'Marionette': {
+        name: 'Marionette',
+        description: 'This player does not know, but they are the Marionette. They think they are a Good player, but are not. None of their abilities work.',
+        icon: 'roles/Rope',
+
+        notes: [
+            "A Marionette player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
+        ],
+    },
+    'Lunatic': {
+        name: 'Lunatic',
+        description: 'This player does not know, but they are the Lunatic. They think they are a Werewolf, but are not. None of their abilities work.',
+        icon: 'roles/Mushroom',
+
+        notes: [
+            "A Lunatic player's ability will not work. If they are an investigator role: feed them false information. If they perform an action: that action fails.",
+        ],
     },
 }
 

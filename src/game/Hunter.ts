@@ -1,7 +1,7 @@
 import { GameState } from "../App";
 import { PromptOptions } from "../components/common/Prompt/Prompt";
 import { PlayerType, PlayState } from "../enums";
-import { isPlayerDrunk, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
+import { isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned, isPlayerWerewolf, Result } from "./utils";
 
 export async function handleHunterAbility(
     gameState: GameState, selectedPlayers: number[],
@@ -23,22 +23,13 @@ export async function handleHunterAbility(
                     message: `${hunter.name} shot ${target.name}.`,
                 });
 
-                if (isPlayerPoisoned(hunter)) {
+                if (isPlayerIntoxicated(hunter)) {
                     // POISONED
                     tempGameState.log.push({
                         type: 'alert',
                         message: `${target.name} survived!`,
                         indent: 1,
-                        extra: `${hunter.name} was poisioned.`,
-                    });
-                }
-                else if (isPlayerDrunk(hunter)) {
-                    // DRUNK
-                    tempGameState.log.push({
-                        type: 'alert',
-                        message: `${target.name} survived!`,
-                        indent: 1,
-                        extra: `${hunter.name} is drunk.`,
+                        extra: `${hunter.name} was intoxicated.`,
                     });
                 }
                 else {
