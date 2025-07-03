@@ -67,6 +67,9 @@ const TajMausoleum: string[] = [
 const TajMinaret: string[] = [
     ...TajMausoleum,
     'Farmer',
+    'Town Crier',
+    'Poppy Grower',
+    'Nightwatchman',
     'Cannibal',
     'Tea Lady',
     'Zealot',
