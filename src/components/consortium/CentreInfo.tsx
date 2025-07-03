@@ -22,7 +22,7 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
 
     const [playerResult, setPlayerResult] = useState<string | null>(null);
 
-    async function countEvilNeighbours(){
+    async function countEvilNeighbours() {
         // check neighbours (skip over dead players)
         const neighbours = findPlayersNeighbours(gameState, currentPlayer);
         return await countEvilSubset(neighbours, 'Empath');
@@ -108,6 +108,20 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
             setPlayerResult(playerResult);
             setSelectionPopup('Show Spy Result', [playerResult]);
         }
+        // TOWN CRIER
+        else if (player.role?.name === 'Town Crier') {
+            const nominatingPlayers = gameState.players.filter(
+                (player) => gameState.nominators.includes(player.name)
+            ).map(
+                (player) => gameState.players.indexOf(player)
+            );
+
+            const numberOfMinions = nominatingPlayers.filter(
+                (index) => gameState.players[index].role?.type === PlayerType.MINION
+            ).length;
+
+            setPlayerResult(numberOfMinions > 0 ? 'Yes' : 'No');
+        }
         else {
             setPlayerResult('Select Player');
             setSelectionPopup(null);
@@ -133,13 +147,13 @@ export const CentreInfo: React.FC<CentreInfoProps> = ({ gameState, currentPlayer
                 height: '100px',
             }}
         >
-            { isDrunk &&
+            {isDrunk &&
                 <div><strong>Drunk!</strong></div>
             }
-            { isPoisoned &&
+            {isPoisoned &&
                 <div><strong>Poisoned!</strong></div>
             }
-            { isMarionette &&
+            {isMarionette &&
                 <div><strong>Marionette!</strong></div>
             }
 

@@ -547,7 +547,8 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
 
                 // Minion
                 const minion = players.find((p) => p.role?.type === PlayerType.MINION);
-                if (minion) {
+                const poppyGrower = players.find((p) => p.role?.name === 'Poppy Grower');
+                if (minion && !poppyGrower?.alive) {
                     commPopups.push(
                         commPopup('Show Minion', [minion.role?.name ?? 'Error'])
                     );
@@ -559,7 +560,8 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             ) {
                 // Werewolf
                 const werewolves = players.filter((p) => p.role?.type === PlayerType.WEREWOLF);
-                if (werewolves.length > 0) {
+                const poppyGrower = players.find((p) => p.role?.name === 'Poppy Grower');
+                if (werewolves.length > 0 && !poppyGrower?.alive) {
                     commPopups.push(
                         commPopup('Show Werewolves', werewolves.map((w) => w.name))
                     );

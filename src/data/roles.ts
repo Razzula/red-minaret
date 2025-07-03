@@ -203,6 +203,28 @@ export const roles: Role[] = [
         icon: 'roles/Wool',
     },
     {
+        name: 'Town Crier',
+        description: 'Each night*, you learn if a Minion nominated today.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        night: 'Learn if a Minion nominated today.',
+        icon: 'roles/Crate',
+        delay: 1,
+    },
+    {
+        name: 'Poppy Grower',
+        description: 'Minions and Werewolves do not know each other. If you die, they learn who each other are that night.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Leather Boot',
+    },
+    {
+        name: 'Nightwatchman',
+        description: 'Once per game, at night, choose a player: they learn you are the Nightwatchman.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        night: 'Choose a player to learn you are the Nightwatchman.',
+        icon: 'roles/Lantern',
+        abilityUses: 1,
+    },
+    {
         name: 'Cannibal',
         description: 'You have the ability of the most recent lynch victim. If they are Evil, you are poisoned until a good player dies by execution.',
         team: Team.GOOD, type: PlayerType.VILLAGER,

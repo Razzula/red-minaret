@@ -570,10 +570,12 @@ export async function handleDawn(
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>,
 ) {
 
+    // HANDLE METADATA
     tempGameState.players.forEach((_, i) => {
         // reset modified state
         tempGameState.players[i].modified = false;
     });
+    tempGameState.nominators = [];
 
     // HANDLE MURDER
     let murder = false;
@@ -791,7 +793,6 @@ export function handleDusk(tempGameState: GameState, setGameState: React.Dispatc
         }
     }
     tempGameState.nominations = [];
-    tempGameState.nominators = [];
 
     return tempGameState;
 }
@@ -1116,6 +1117,15 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
                 });
             }
         }
+    }
+
+    // POPPY GROWER
+    else if (tempGameState.players[playerIndex].role?.name === 'Poppy Grower') {
+        tempGameState.players.forEach((player, index) => {
+            if (player.role?.team === Team.EVIL) {
+                tempGameState.players[index].modified = true; // mark as modified
+            }
+        });
     }
 
     return tempGameState;
