@@ -21,7 +21,7 @@ import CommunicateInterface from '../CommunicateInterface';
 type ConsortiumProps = {
     gameState: GameState;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
-    currentPlayer: number | null;
+    currentPlayerIndex: number | null;
     selectedPlayers: number[];
     settings: Settings;
     handleAction: (index: number) => void;
@@ -41,7 +41,7 @@ type ConsortiumProps = {
 };
 
 const Consortium: React.FC<ConsortiumProps> = ({
-    gameState, setGameState, currentPlayer, selectedPlayers,
+    gameState, setGameState, currentPlayerIndex, selectedPlayers,
     settings,
     handleAction, togglePlayerAlive, addPlayer, removePlayer, setCurrentPlayer, setSelectedPlayers, handleSpecialAction,
     villagerPool, outsiderPool, werewolfPool, minionPool,
@@ -85,7 +85,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
     }, [gameState.time]);
 
     function handleClick(event: React.MouseEvent<HTMLElement>, index: number) {
-        if (currentPlayer === null) {
+        if (currentPlayerIndex === null) {
             return;
         }
 
@@ -116,14 +116,14 @@ const Consortium: React.FC<ConsortiumProps> = ({
         // game log
         const event: LogEvent = {
             type: 'private',
-            message: `${(currentPlayer !== null) ? gameState.players[currentPlayer].name : '...'} learnt that ${count} of ${selectedPlayers.join(' and ')} is the ${selectedRole}.`,
+            message: `${(currentPlayerIndex !== null) ? gameState.players[currentPlayerIndex].name : '...'} learnt that ${count} of ${selectedPlayers.join(' and ')} is the ${selectedRole}.`,
         };
         const tempGameState = {
             ...gameState,
             currentEvent: event,
             popupEvent: undefined,
         };
-        advanceTime(tempGameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt);
+        advanceTime(tempGameState, setGameState, currentPlayerIndex, setCurrentPlayer, showPrompt);
     }
 
     const players = gameState.players;
@@ -339,7 +339,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
 
             <div className='centrepiece'>
                 <Centrepiece
-                    gameState={gameState} players={players} currentPlayer={currentPlayer} selectedPlayers={selectedPlayers}
+                    gameState={gameState} players={players} currentPlayerIndex={currentPlayerIndex} selectedPlayers={selectedPlayers}
                     showPrompt={showPrompt} addPlayer={addPlayer} handleSpecialAction={handleSpecialAction}
                     cancelSpecialState={cancelSpecialState} togglePlayerAlive={togglePlayerAlive}
                     votingAllowed={votingAllowed} setVotingAllowed={setVotingAllowed} setGameState={setGameState}
@@ -357,7 +357,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
                         centreY={centreY}
                         centrepieceRadius={centrepieceRadius}
                         consortiumRadius={radius}
-                        currentPlayer={currentPlayer}
+                        currentPlayer={currentPlayerIndex}
                         selectedPlayers={selectedPlayers}
                         settings={settings}
                         togglePlayerAlive={togglePlayerAlive}
@@ -377,7 +377,7 @@ const Consortium: React.FC<ConsortiumProps> = ({
 type CentrepieceProps = {
     gameState: GameState;
     players: Player[];
-    currentPlayer: number | null;
+    currentPlayerIndex: number | null;
     selectedPlayers: number[];
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>;
     addPlayer: () => void;
@@ -390,7 +390,7 @@ type CentrepieceProps = {
 };
 
 const Centrepiece: React.FC<CentrepieceProps> = ({
-    gameState, players, currentPlayer: currentPlayerIndex, selectedPlayers, showPrompt,
+    gameState, players, currentPlayerIndex, selectedPlayers, showPrompt,
     addPlayer, handleSpecialAction, cancelSpecialState, togglePlayerAlive, votingAllowed, setVotingAllowed,
     setGameState,
 }) => {
@@ -526,7 +526,9 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
         const currentPlayer = players[currentPlayerIndex];
 
         // FIRST NIGHT
-        if (gameState.day === 1 && gameState.time === 0) {
+        if (gameState.time === 0
+            && (gameState.day === 1 || currentPlayer.modified)
+        ) {
             // Player Role
             commPopups.push(
                 commPopup('Show Player Role', [currentPlayer.role?.name ?? '???'])

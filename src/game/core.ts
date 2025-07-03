@@ -570,6 +570,11 @@ export async function handleDawn(
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>,
 ) {
 
+    tempGameState.players.forEach((_, i) => {
+        // reset modified state
+        tempGameState.players[i].modified = false;
+    });
+
     // HANDLE MURDER
     let murder = false;
     let temp = '';

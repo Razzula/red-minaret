@@ -50,6 +50,8 @@ export function setRole(gameState: GameState, playerIndex: number, role: Role, f
     if (player) {
         gameState.players[playerIndex].trueRole = {...role};
         gameState.players[playerIndex].role = (fakeRole ? {...fakeRole} : {...role});
+        gameState.players[playerIndex].abilityUses = 0;
+        gameState.players[playerIndex].modified = true; // mark the player as modified
     }
     return gameState;
 }

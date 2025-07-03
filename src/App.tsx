@@ -81,6 +81,8 @@ export type Player = {
     ghostVotes: number;
     abilityUses: number;
     knowledge: LogEvent[];
+
+    modified?: boolean; // used to track if the player has been modified since last night
 }
 
 export type LogEvent = {
@@ -117,7 +119,7 @@ function App() {
         useOriginalNames: false,
     });
 
-    const [currentPlayer, setCurrentPlayer] = useState<number | null>(null);
+    const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number | null>(null);
     const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
 
     const [villagerPool, setVillagerPool] = useState<number[]>(roles.map((role, index) => role.type === PlayerType.VILLAGER ? index : null).filter(i => i !== null));
@@ -157,11 +159,11 @@ function App() {
     }, [gameState]);
 
     useEffect(() => {
-        if (currentPlayer !== null) {
-            const player = gameState.players[currentPlayer];
+        if (currentPlayerIndex !== null) {
+            const player = gameState.players[currentPlayerIndex];
             // EMPATH
             if (player.role?.name === 'Empath') {
-                const neighbours = findPlayersNeighbours(gameState, currentPlayer);
+                const neighbours = findPlayersNeighbours(gameState, currentPlayerIndex);
                 setSelectedPlayers(neighbours);
 
                 // game log
@@ -202,7 +204,7 @@ function App() {
         else {
             setSelectedPlayers([]);
         }
-    }, [currentPlayer]);
+    }, [currentPlayerIndex]);
 
     useEffect(() => {
         if (gameState.players.length > 0 && gameState.state === PlayState.PLAYING) {
@@ -246,8 +248,8 @@ function App() {
     }, [gameState.state]);
 
     useEffect(() => {
-        if (currentPlayer) {
-            const role = gameState.players[currentPlayer].role;
+        if (currentPlayerIndex) {
+            const role = gameState.players[currentPlayerIndex].role;
             if (role?.name === 'Seer') {
                 setGameState((prev) => ({
                     ...prev,
@@ -255,7 +257,7 @@ function App() {
                 }));
             }
         }
-    }, [currentPlayer, selectedPlayers, gameState.players]);
+    }, [currentPlayerIndex, selectedPlayers, gameState.players]);
 
     function gameOver(winner: string) {
         const log: LogEvent[] = [
@@ -274,7 +276,7 @@ function App() {
             ],
             time: 1,
         }));
-        setCurrentPlayer(null);
+        setCurrentPlayerIndex(null);
         setSelectedPlayers([]);
     }
 
@@ -316,14 +318,14 @@ function App() {
         else {
             setGameState(defaultGameState(gameState.players.length, pseudonyms));
         }
-        setCurrentPlayer(null);
+        setCurrentPlayerIndex(null);
         setSelectedPlayers([]);
     }
 
     function getTimeSymbol() {
         switch (gameState.time) {
             case 0:
-                if (currentPlayer === null) {
+                if (currentPlayerIndex === null) {
                     return 'ra ra-cog';
                 }
                 return 'ra ra-wolf-howl'
@@ -346,10 +348,10 @@ function App() {
 
         switch (gameState.time) {
             case 0:
-                if (currentPlayer === null) {
+                if (currentPlayerIndex === null) {
                     return 'Configure the game.';
                 }
-                return `It is ${gameState.turn ? gameState.turn + 1 : 1} o'clock (${gameState.players[currentPlayer].name}'s turn)`;
+                return `It is ${gameState.turn ? gameState.turn + 1 : 1} o'clock (${gameState.players[currentPlayerIndex].name}'s turn)`;
             case 1:
                 return 'Disscussion';
             case 2:
@@ -511,11 +513,11 @@ function App() {
     }
 
     function getNightInstruction() {
-        if (currentPlayer === null) {
+        if (currentPlayerIndex === null) {
             return null;
         }
 
-        const player = gameState.players[currentPlayer];
+        const player = gameState.players[currentPlayerIndex];
         const playerCanAct = canPlayerActTonight(player, gameState);
 
         let instruction = playerCanAct ? player.role?.night : 'There is nothing for this player to do, right now...';
@@ -528,18 +530,18 @@ function App() {
     }
 
     function handleActionCall(index: number) {
-        handleAction(index, currentPlayer, setCurrentPlayer, gameState, setGameState, selectedPlayers, setSelectedPlayers, showPrompt);
+        handleAction(index, currentPlayerIndex, setCurrentPlayerIndex, gameState, setGameState, selectedPlayers, setSelectedPlayers, showPrompt);
     }
 
     function handleSpecialAction(specialState: string) {
         switch (specialState) {
             case 'Hunter':
-                handleHunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers, showPrompt);
+                handleHunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayerIndex, setSelectedPlayers, showPrompt);
                 break;
             case 'Artist':
                 break;
             case 'Farmer':
-                HandleFarmerAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers);
+                HandleFarmerAbility(gameState, selectedPlayers, setGameState, setCurrentPlayerIndex, setSelectedPlayers);
                 break;
             default:
                 break;
@@ -746,7 +748,7 @@ function App() {
 
                     <span>
                         <p>
-                            {currentPlayer !== null &&
+                            {currentPlayerIndex !== null &&
                                 <span>{getNightInstruction()}</span>
                             }
                         </p>
@@ -767,11 +769,11 @@ function App() {
                 >
                     <Consortium
                         gameState={gameState} setGameState={setGameState}
-                        currentPlayer={currentPlayer} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
+                        currentPlayerIndex={currentPlayerIndex} selectedPlayers={selectedPlayers} setSelectedPlayers={setSelectedPlayers}
                         settings={gameSettings}
                         handleAction={handleActionCall} togglePlayerAlive={togglePlayerAliveCall}
                         addPlayer={addPlayer} removePlayer={removePlayer}
-                        setCurrentPlayer={setCurrentPlayer} handleSpecialAction={handleSpecialAction}
+                        setCurrentPlayer={setCurrentPlayerIndex} handleSpecialAction={handleSpecialAction}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                         showPrompt={showPrompt}
                     />
@@ -809,7 +811,7 @@ function App() {
                     <GameControls
                         gameState={gameState} setGameState={setGameState} resetGameState={resetGameState}
                         gameSettings={gameSettings}
-                        advanceTime={() => advanceTime(gameState, setGameState, currentPlayer, setCurrentPlayer, showPrompt)} setCurrentPlayer={setCurrentPlayer}
+                        advanceTime={() => advanceTime(gameState, setGameState, currentPlayerIndex, setCurrentPlayerIndex, showPrompt)} setCurrentPlayer={setCurrentPlayerIndex}
                         shuffleCodeNames={shuffleCodeNames}
                         villagerPool={villagerPool} outsiderPool={outsiderPool} werewolfPool={werewolfPool} minionPool={minionPool}
                     />

@@ -28,7 +28,7 @@ export const TroubleBrewing: string[] = [
     'Scarlet Woman',
     'Baron',
     'Werewolf',
-]
+];
 
 const TajGardens: string[] = [
     'Seer',
@@ -45,7 +45,7 @@ const TajGardens: string[] = [
     'Werewolf',
     'Spy',
     'Scarlet Woman',
-]
+];
 
 const TajMausoleum: string[] = [
     ...TajGardens,
@@ -61,7 +61,21 @@ const TajMausoleum: string[] = [
     'Saint',
     'Poisoner',
     'Baron',
-]
+    'Blightfang',
+];
+
+const TajMinaret: string[] = [
+    ...TajMausoleum,
+    'Farmer',
+    'Cannibal',
+    'Tea Lady',
+    'Zealot',
+    'Lunatic',
+    'Bloodhound',
+    'Dragulf',
+    'Gobbo',
+    'Marionette'
+];
 
 export const scripts: Script[] = [
     {
@@ -81,5 +95,11 @@ export const scripts: Script[] = [
         'description': 'Core experience — the main structure, rich with intrigue and depth. Initial sheet of the Taj Mahal.',
         'icon': 'roles/Golden Key',
         'roles': TajMausoleum,
+    },
+    {
+        'name': 'Taj Minaret',
+        'description': 'Advanced, complex, and challenging. The minaret of the Taj Mahal, with its intricate details and high vantage point.',
+        'icon': 'roles/Diamond',
+        'roles': TajMinaret,
     },
 ]
