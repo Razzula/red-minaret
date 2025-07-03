@@ -5,7 +5,7 @@ import roles, { Role } from '../data/roles';
 import statuses, { Status } from '../data/statuses';
 import { PlayerType, PlayState } from "../enums";
 import { isPlayerGrandchild } from './Nain';
-import { getWerewolfBluffs, isPlayerDrunk, isPlayerIntoxicated, isPlayerPoisoned, setRole, updateRole } from "./utils";
+import { getWerewolfBluffs, isPlayerDrunk, isPlayerEvil, isPlayerIntoxicated, isPlayerPoisoned, Result, setRole, updateRole } from "./utils";
 
 export function assignRoles(gameState: GameState, setGameState: React.Dispatch<React.SetStateAction<GameState>>, villagerPool: number[], outsiderPool: number[], werewolfPool: number[], minionPool: number[]) {
     const players = gameState.players;
@@ -246,6 +246,7 @@ export function enactVote(gameState: GameState, setGameState: React.Dispatch<Rea
 
 export async function handleNightKill(
     playerIndex: number, tempGameState: GameState, log: LogEvent[],
+    setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>,
     showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>
 ): Promise<[GameState, boolean, string]> {
     let murder = false;
@@ -270,7 +271,7 @@ export async function handleNightKill(
             }
 
             // WEREWOLF (IMP)
-            if (player.role?.name === 'Werewolf') {
+            else if (player.role?.name === 'Werewolf') {
                 // a self-kill for a Werewolf, converts their Minion to the Werewolf
                 const minions = tempGameState.players.filter(player => player.role?.type === PlayerType.MINION && player.alive);
                 if (minions) {
@@ -312,7 +313,7 @@ export async function handleNightKill(
                         });
 
                         const mayorChoice = tempGameState.players.findIndex(player => player.name === storytellerChoice);
-                        return handleNightKill(mayorChoice, tempGameState, log, showPrompt);
+                        return handleNightKill(mayorChoice, tempGameState, log, setCurrentPlayer, showPrompt);
                     }
 
                     log.push({
@@ -326,6 +327,26 @@ export async function handleNightKill(
                         message: `Mayor ability failed to protect ${player.name}.`,
                         extra: 'The Mayor was intoxicated.',
                     });
+                }
+            }
+
+            // FARMER
+            if (player.role?.name === 'Farmer') {
+                const farmerIndex = tempGameState.players.findIndex(player => player.role?.name === 'Farmer');
+                if (farmerIndex !== -1) {
+                    const farmer = tempGameState.players[farmerIndex];
+                    if (farmer.alive && !isPlayerIntoxicated(farmer)) {
+                        // create a new Farmer
+                        const numberOfGoodPlayers = tempGameState.players.reduce((count, player) => (player.alive && !isPlayerEvil(player) ? count + 1 : count), 0);
+                        if (numberOfGoodPlayers > 0) {
+                            setCurrentPlayer(farmerIndex);
+                            tempGameState.special = {
+                                state: 'Farmer',
+                                previous: tempGameState.state,
+                            }
+                            tempGameState.state = PlayState.SPECIAL;
+                        }
+                    }
                 }
             }
 
@@ -425,7 +446,7 @@ export async function advanceTime(
     time++;
     // MORNING
     if (time === 1) {
-        handleDawn(tempGameState, showPrompt);
+        handleDawn(tempGameState, setCurrentPlayer, showPrompt);
     }
     // NEW DAY
     else if (time > 2) {
@@ -459,7 +480,11 @@ export async function advanceTime(
     setGameState({ ...tempGameState, day, time });
 }
 
-export async function handleDawn(tempGameState: GameState, showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>) {
+export async function handleDawn(
+    tempGameState: GameState,
+    setCurrentPlayer: React.Dispatch<React.SetStateAction<number | null>>,
+    showPrompt: (opts: PromptOptions) => Promise<string | boolean | null>,
+) {
 
     // HANDLE MURDER
     let murder = false;
@@ -474,7 +499,7 @@ export async function handleDawn(tempGameState: GameState, showPrompt: (opts: Pr
 
         if (playerTargeted) {
             [tempGameState, murder, temp] = await handleNightKill(
-                index, tempGameState, log, showPrompt
+                index, tempGameState, log, setCurrentPlayer, showPrompt
             );
         }
     }
@@ -887,6 +912,29 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
         }
     }
 
+    // TEA LADY
+    debugger;
+    const neighbours = getPlayerNeighbours(tempGameState.players, playerIndex);
+    const teaLadyNeighbour = neighbours.find(neighbour => {
+        return (
+            tempGameState.players[neighbour].role?.name === 'Tea Lady'
+            && tempGameState.players[neighbour].alive
+            && !isPlayerIntoxicated(tempGameState.players[neighbour])
+        );
+    });
+    if (teaLadyNeighbour) {
+        const teaNeighbours = getPlayerNeighbours(tempGameState.players, teaLadyNeighbour);
+        if (teaNeighbours.every(neighbour => isPlayerEvil(tempGameState.players[neighbour]) !== Result.TRUE)) {
+            // Tea Lady can save this player
+            tempGameState.log.push({
+                type: 'alert',
+                message: `${tempGameState.players[teaLadyNeighbour].name} saved ${tempGameState.players[playerIndex].name}!`,
+                indent: 1,
+            });
+            return tempGameState; // no death
+        }
+    }
+
     // kill!
     tempGameState.players[playerIndex].alive = false;
 
@@ -921,4 +969,30 @@ export function killPlayerByIndex(playerIndex: number, gameState: GameState): Ga
     }
 
     return tempGameState;
+}
+
+function getPlayerNeighbours(players: Player[], playerIndex: number): number[] {
+    const neighbours: number[] = [];
+    const playerCount = players.length;
+
+    for (let i = 1; i < playerCount; i++) {
+        const leftIndex = (playerIndex - i + playerCount) % playerCount;
+        if (players[leftIndex].alive) {
+            if (leftIndex !== playerIndex) {
+                neighbours.push(leftIndex);
+            }
+            break;
+        }
+    }
+    for (let i = 1; i < playerCount; i++) {
+        const rightIndex = (playerIndex + i) % playerCount;
+        if (players[rightIndex].alive) {
+            if (rightIndex !== playerIndex && !neighbours.includes(rightIndex)) {
+                neighbours.push(rightIndex);
+            }
+            break;
+        }
+    }
+
+    return neighbours;
 }

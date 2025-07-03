@@ -361,7 +361,7 @@ const PlayerToken: React.FC<PlayerTokenProps> = ({
                                 }
                                 { gameState.state !== PlayState.SETUP && gameState.time !== 0 && player.role?.name === 'Artist' &&
                                     <IconButton
-                                        icon={<img src={`/red-minaret/icons/${player.role.icon}.png`} alt='Hunter Ability' />}
+                                        icon={<img src={`/red-minaret/icons/${player.role.icon}.png`} alt='Artist Ability' />}
                                         onClick={() => handleArtistAbility(gameState, setGameState, showPrompt)}
                                         disabled={player.role.abilityUses !== undefined && player.abilityUses >= player.role.abilityUses}
                                         label='Question the Storyteller'

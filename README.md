@@ -22,3 +22,4 @@ bun run dev
 ## Thanks
 - [The Pandemonium Institute](https://bloodontheclocktower.com/)
 - [Cainos](https://cainos.itch.io/pixel-art-icon-pack-rpg)
+- [JoeEnderman](https://www.planetminecraft.com/member/joeenderman/), whose [Yorkshire Tea Replaces Apples](https://www.planetminecraft.com/texture-pack/yorkshire-tea-replaces-apples/) sprites are used ![Box of Tea from Yorkshire](./public/icons/roles/Tea%20From%20Yorkshire.png)

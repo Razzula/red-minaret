@@ -56,6 +56,7 @@ export function setRole(gameState: GameState, playerIndex: number, role: Role, f
 
 export function updateRole(gameState: GameState, playerIndex: number, role: Role, fakeRole?: Role): GameState {
     const player = gameState.players[playerIndex];
+    console.log('updateRole', player.name, role, fakeRole);
     if (player) {
         // if the player already has a role, add it to their old roles
         if (player.trueRole) {

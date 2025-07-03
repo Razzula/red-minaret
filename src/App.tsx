@@ -27,6 +27,7 @@ import IconButton from './components/common/IconButton/IconButton';
 import { usePrompt } from './components/common/Prompt/Prompt';
 import Soundboard from './components/SoundBoard';
 import { scripts } from './data/scripts';
+import { HandleFarmerAbility } from './game/Farmer';
 
 export type GameState = {
     day: number;
@@ -425,6 +426,7 @@ function App() {
                                 <TooltipTrigger>
                                     <CheckButton
                                         image={`/red-minaret/icons/${role.icon}.png`}
+                                        imageWidth='28px'
                                         altText={displayName}
                                         isChecked={rolePool.includes(index)}
                                         onChange={active ? () => updateRolePool(index) : () => { }}
@@ -534,6 +536,9 @@ function App() {
                 handleHunterAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers, showPrompt);
                 break;
             case 'Artist':
+                break;
+            case 'Farmer':
+                HandleFarmerAbility(gameState, selectedPlayers, setGameState, setCurrentPlayer, setSelectedPlayers);
                 break;
             default:
                 break;

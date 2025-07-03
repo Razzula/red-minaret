@@ -196,6 +196,25 @@ export const roles: Role[] = [
             { value: 'Grandchild', count: 1 },
         ],
     },
+    {
+        name: 'Artist',
+        description: 'Once per game, during the day, privately ask the Storyteller a yes/no question, which they must answer truthfully.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Paper',
+        abilityUses: 1,
+    },
+    {
+        name: 'Farmer',
+        description: 'When you die at night, a living Good player becomes a Farmer.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Wool',
+    },
+    {
+        name: 'Tea Lady',
+        description: 'If both of your alive neighbours are Good, they cannot die.',
+        team: Team.GOOD, type: PlayerType.VILLAGER,
+        icon: 'roles/Tea From Yorkshire',
+    },
 
     // OUTSIDERS
     {
@@ -226,6 +245,12 @@ export const roles: Role[] = [
         description: 'If you are lynched, you and the Villagers lose.',
         team: Team.GOOD, type: PlayerType.OUTSIDER,
         icon: 'roles/Ruby Staff',
+    },
+    {
+        name: 'Zealot',
+        description: 'If there are 5 or more players alive, you must vote for every nomination.',
+        team: Team.GOOD, type: PlayerType.OUTSIDER,
+        icon: 'roles/Golden Sword',
     },
 
     // WEREWOLVES

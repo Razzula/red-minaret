@@ -7,7 +7,7 @@ import { Voting } from '../Voting';
 import PlayerToken from './PlayerToken';
 
 import styles from './Consortium.module.scss';
-import { PlayerType, PlayState } from '../../enums';
+import { PlayerType, PlayState, Team } from '../../enums';
 import Log from '../Log';
 import InvestigationInterface from '../InvestigationInterface';
 import { advanceTime } from '../../game/core';
@@ -424,28 +424,44 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
 
         if (gameState.state === PlayState.SPECIAL) {
             // Cancel
-            setCentrepiece(
-                <div>
-                    <button
-                        className={classNames(
-                            styles.circleButton,
-                            styles.centreButton,
-                        )}
-                        onClick={() => handleSpecialAction('Hunter')}
-                    >
-                        Shoot
-                    </button>
-                    <button
-                        className={classNames(
-                            styles.circleButton,
-                            styles.centreButton,
-                        )}
-                        onClick={cancelSpecialState}
-                    >
-                        Cancel
-                    </button>
-                </div>
-            );
+            if (gameState.special?.state === 'Hunter') {
+                setCentrepiece(
+                    <div>
+                        <button
+                            className={classNames(styles.circleButton, styles.centreButton)}
+                            onClick={() => handleSpecialAction('Hunter')}
+                        >
+                            Shoot
+                        </button>
+                        <button
+                            className={classNames(styles.circleButton, styles.centreButton)}
+                            onClick={cancelSpecialState}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                );
+            }
+            else if (gameState.special?.state === 'Farmer') {
+                const selectedPlayer = (selectedPlayers.length > 0) ? players[selectedPlayers[0]] : null;
+                const selectedPlayerIsValid = (
+                    selectedPlayer
+                    && selectedPlayer.alive
+                    && selectedPlayer.role?.team === Team.GOOD
+                );
+                setCentrepiece(
+                    <div>
+                        <button
+                            className={classNames(styles.circleButton, styles.centreButton)}
+                            disabled={!selectedPlayer || !selectedPlayerIsValid}
+                            onClick={() => handleSpecialAction('Farmer')}
+                        >
+                            Donn the Plough!
+                        </button>
+                    </div>
+                );
+            }
+
             return;
         }
 
@@ -485,7 +501,7 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
             if (playerCanAct) {
                 setCentrepiece(
                     <CentreInfo
-                        gameState={gameState} currentPlayer={currentPlayerIndex} players={players} selectedPlayers={selectedPlayers} 
+                        gameState={gameState} currentPlayer={currentPlayerIndex} players={players} selectedPlayers={selectedPlayers}
                         showPrompt={showPrompt} setSelectionPopup={setSelectionPopup}
                     />);
                 return;
@@ -524,7 +540,7 @@ const Centrepiece: React.FC<CentrepieceProps> = ({
                         commPopup('Show Bluffs', gameState.bluffs.map((b) => b.name))
                     );
                 }
-                
+
                 // Minion
                 const minion = players.find((p) => p.role?.type === PlayerType.MINION);
                 if (minion) {

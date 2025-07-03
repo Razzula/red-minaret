@@ -15,7 +15,7 @@ interface CommunicateInterfaceProps {
     initOptions?: string[];
 }
 
-const CommunicateInterface: React.FC<CommunicateInterfaceProps> = ({ onClose, gameState, initOptions }) => {
+const CommunicateInterface: React.FC<CommunicateInterfaceProps> = ({ onClose, initOptions }) => {
 
     const [options, setOptions] = useState<string[]>(initOptions || []);
 

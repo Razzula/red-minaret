@@ -30,6 +30,8 @@ export function Voting({
     const [nominatedPlayer, setNominatedPlayer] = useState<string>();
     const [nominatingPlayer, setNominatingPlayer] = useState<string>();
 
+    const zealot = gameState.players.find(player => player.alive && player.role?.name === 'Zealot');
+
     const [votes, setVotes] = useState<Record<string, boolean>>(getEligibleVoters());
 
     const { setOpen } = useDialogueContext();
@@ -111,7 +113,13 @@ export function Voting({
         const eligibleVoters: Record<string, boolean> = {};
         gameState.players.forEach(player => {
             if (player.alive || player.ghostVotes) {
-                eligibleVoters[player.name] = false;
+                // ZEALOT
+                if (zealot?.name === player.name && mustZealotVote()) {
+                    eligibleVoters[player.name] = true; // ZEALOT must vote
+                }
+                else {
+                    eligibleVoters[player.name] = false;
+                }
             }
         });
         return eligibleVoters;
@@ -132,6 +140,10 @@ export function Voting({
         //  BUTLER
         if (butler && playerName === patron) {
             tempVotes[butler?.name] = false;
+        }
+        // ZEALOT
+        if (zealot && mustZealotVote()) {
+            tempVotes[zealot.name] = true; // ZEALOT must vote
         }
 
         setVotes(tempVotes);
@@ -154,7 +166,7 @@ export function Voting({
             if (nominated && nominated.role?.name === 'Gobbo') {
                 // Gobbo Claim
                 const gobboIndex = tempGameState.players.findIndex(player => player.name === nominated.name);
-                tempGameState.players[gobboIndex].statuses.push({...statuses.Goblin});
+                tempGameState.players[gobboIndex].statuses.push({ ...statuses.Goblin });
 
                 // game log
                 tempGameState.log.push({
@@ -174,11 +186,16 @@ export function Voting({
         }
     }
 
+    function mustZealotVote() {
+        const alivePlayerCount = gameState.players.filter(player => player.alive).length;
+        return zealot?.alive && !isPlayerPoisoned(zealot) && alivePlayerCount >= 5;
+    }
+
     function profileSelect(selectedPlayer: string | undefined, selectablePlayers: string[], setPlayer: React.Dispatch<React.SetStateAction<string | undefined>>) {
         return (
             <Tooltip enableClick={true} enableHover={false}>
                 <TooltipTrigger>
-                    { selectedPlayer ?
+                    {selectedPlayer ?
                         <img
                             src={`/red-minaret/characters/${selectedPlayer}.png`} alt={selectedPlayer}
                             className={styles.circleButton}
@@ -220,7 +237,7 @@ export function Voting({
         return (
             <div className='dialogue-content'>
 
-                { gameState.nominations.length < gameState.players.length && gameState.nominators.length < gameState.players.length ? (
+                {gameState.nominations.length < gameState.players.length && gameState.nominators.length < gameState.players.length ? (
                     <div className='column'>
                         <div className='row'
                             style={{
@@ -304,7 +321,7 @@ export function Voting({
                     <span className={castVotes >= voteThreshold ? Team.GOOD : Team.EVIL}>{castVotes}/{totalVotes}</span>
                     <span className='row'>
                         {/* GOBBO */}
-                        { isGobboNominated &&
+                        {isGobboNominated &&
                             <Tooltip placement='bottom'>
                                 <TooltipTrigger>
                                     <button onClick={handleGobboClaim} disabled={invalidSelection}>
