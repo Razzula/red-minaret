@@ -314,6 +314,10 @@ export const roles: Role[] = [
         icon: 'roles/Monster Egg',
         night: 'Choose a player to kill.',
         delay: 1,
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.OUTSIDER, count: 2 },
+        ],
     },
     {
         name: 'Dragulf', altName: 'Zombuul',
@@ -324,6 +328,19 @@ export const roles: Role[] = [
         night: 'Choose a player to kill.',
         delay: 1,
         abilityUses: 1,
+    },
+    {
+        name: 'Howlfather', altName: 'Lord of Typhon',
+        description: 'Each night*, choose a player: they die. You have two Minions; they are your neighbours.',
+        team: Team.EVIL, type: PlayerType.WEREWOLF,
+        order: { type: 'early' },
+        icon: 'roles/Skull',
+        night: 'Choose a player to kill.',
+        delay: 1,
+
+        prereqRoles: [
+            { key: 'type', value: PlayerType.MINION, count: 2 },
+        ],
     },
 
     // MINIONS

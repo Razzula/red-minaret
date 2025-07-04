@@ -55,21 +55,71 @@ export function assignRoles(gameState: GameState, setGameState: React.Dispatch<R
     const villagerIndicies = players.map((_player, index) => index).filter(index => !evilIndicies.includes(index) && !outsiderIndicies.includes(index));
 
     // assign roles
-    evilIndicies.forEach(index => {
-        if (werewolfIndicies.includes(index)) {
-            // WEREWOLF
-            const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
-            setRole(gameState, index, roles[role]);
-            tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
+    werewolfIndicies.forEach(index => {
+        // WEREWOLF
+        const role = tempWerewolfPool[Math.floor(Math.random() * tempWerewolfPool.length)]
+        setRole(gameState, index, roles[role]);
+        tempWerewolfPool.splice(tempWerewolfPool.indexOf(role), 1);
+
+        // BLIGHTFANG
+        if (roles[role].name === 'Blightfang') {
+            // transfer one Villager to the Outsider pool
+            const transferedVillagers = villagerIndicies.splice(0, 1);
+            outsiderIndicies.push(...transferedVillagers);
         }
-        else {
+
+        // HOWLFATHER
+        if (roles[role].name === 'Howlfather') {
+            const neighbours = getPlayerNeighbours(players, index);
+            // generate a new Minion neighbour
+            const neighbourToConvert = neighbours.find(neighbourIndex => villagerIndicies.includes(neighbourIndex));
+            if (neighbourToConvert !== undefined) {
+                // transfer one Villager to the Minion pool
+                const indexOfNeighbour = villagerIndicies.indexOf(neighbourToConvert);
+                if (indexOfNeighbour !== -1) {
+                    villagerIndicies.splice(indexOfNeighbour, 1);
+                    evilIndicies.push(neighbourToConvert);
+                }
+            }
+
+            const neighbourToSwap = neighbours.find(neighbourIndex => neighbourIndex !== neighbourToConvert);
+            if (neighbourToSwap) {
+                if (!evilIndicies.includes(neighbourToSwap)) {
+                    // not already a Minion
+                    // minion not already created, can just swap indicies
+                    evilIndicies.push(neighbourToSwap);
+
+                    evilIndicies.forEach((evilIndex, i) => {
+                        if (
+                            !werewolfIndicies.includes(evilIndex)
+                            && evilIndex !== neighbourToConvert
+                        ) {
+                            evilIndicies[i] = neighbourToSwap;
+
+                            const indexOfVillager = villagerIndicies.indexOf(neighbourToSwap);
+                            const indexOfOutsider = outsiderIndicies.indexOf(neighbourToSwap);
+                            if (indexOfVillager !== -1) {
+                                villagerIndicies[indexOfVillager] = evilIndex;
+                            }
+                            else if (indexOfOutsider !== -1) {
+                                outsiderIndicies[indexOfOutsider] = evilIndex;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    });
+
+    evilIndicies.forEach(index => {
+        if (!werewolfIndicies.includes(index)) {
             // MINION
             const role = tempMinionPool[Math.floor(Math.random() * tempMinionPool.length)]
             setRole(gameState, index, roles[role]);
             tempMinionPool.splice(tempMinionPool.indexOf(role), 1);
 
             // BARON
-            if (gameState.players[index].role && gameState.players[index].role.name === 'Baron') {
+            if (gameState.players[index].role && gameState.players[index].role?.name === 'Baron') {
                 // transfer two Villagers to the Outsider pool
                 const transferedVillagers = villagerIndicies.splice(0, 2);
                 outsiderIndicies.push(...transferedVillagers);
@@ -367,7 +417,7 @@ export async function handleNightKill(
                         playerIndex = blightfangIndex; // death handled by night kill
 
                         // infect the Outsider
-                        const blightfangRole = {...roles.find(role => role.name === 'Blightfang')} as Role;
+                        const blightfangRole = { ...roles.find(role => role.name === 'Blightfang') } as Role;
                         updateRole(tempGameState, newBlightfangIndex, blightfangRole);
                         tempGameState.players[newBlightfangIndex].abilityUses = tempGameState.players[blightfangIndex].abilityUses;
                     }
